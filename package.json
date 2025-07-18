@@ -1,0 +1,13 @@
+{
+  "name": "starter-nuxt-amplify-saas",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "saas:dev": "pnpm --filter @starter-nuxt-amplify-saas/saas run dev",
+    "landing:dev": "pnpm --filter @starter-nuxt-amplify-saas/landing run dev"
+  },
+  "packageManager": "pnpm@10.13.1"
+}

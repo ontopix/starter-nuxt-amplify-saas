@@ -1,0 +1,17 @@
+version: 1
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - corepack enable
+            - PNPM_SKIP_POSTINSTALL=true pnpm install
+        build:
+          commands:
+            - pnpm run build
+      artifacts:
+        baseDirectory: .amplify-hosting
+        files:
+          - '**/*'
+      buildPath: apps/landing
+    appRoot: apps/landing
