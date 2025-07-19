@@ -1,0 +1,25 @@
+{
+  "name": "@starter-nuxt-amplify-saas/amplify",
+  "type": "module",
+  "version": "0.0.1",
+  "main": "./nuxt.config.ts",
+  "scripts": {
+    "dev": "nuxi dev .playground",
+    "dev:prepare": "nuxt prepare .playground",
+    "build": "nuxt build .playground",
+    "generate": "nuxt generate .playground",
+    "preview": "nuxt preview .playground",
+    "lint": "eslint .",
+    "sandbox:generate-outputs": "ampx generate outputs --stack $SANDBOX_STACK_NAME",
+    "sandbox:generate-graphql-client-code": "ampx generate graphql-client-code --stack $SANDBOX_STACK_NAME --out utils/graphql",
+    "generate-outputs": "ampx generate outputs --branch $AWS_BRANCH --app-id $BACKEND_APP_ID",
+    "generate-graphql-client-code": "ampx generate graphql-client-code --branch $AWS_BRANCH --app-id $BACKEND_APP_ID --out utils/graphql"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "latest",
+    "eslint": "^9.31.0",
+    "nuxt": "^4.0.0",
+    "typescript": "^5.8.3",
+    "vue": "latest"
+  }
+}

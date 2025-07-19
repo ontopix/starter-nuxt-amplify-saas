@@ -3,11 +3,21 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "layers/*"
   ],
   "scripts": {
+    "backend:sandbox:init": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:init",
+    "backend:sandbox:delete": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:delete",
+    "amplify:sandbox:generate-outputs": "pnpm --filter @starter-nuxt-amplify-saas/amplify run sandbox:generate-outputs",
+    "amplify:sandbox:generate-graphql-client-code": "pnpm --filter @starter-nuxt-amplify-saas/amplify run sandbox:generate-graphql-client-code",
     "saas:dev": "pnpm --filter @starter-nuxt-amplify-saas/saas run dev",
-    "landing:dev": "pnpm --filter @starter-nuxt-amplify-saas/landing run dev"
+    "landing:dev": "pnpm --filter @starter-nuxt-amplify-saas/landing run dev",
+    "amplify:generate-graphql-client-code": "pnpm --filter @starter-nuxt-amplify-saas/amplify run generate-graphql-client-code",
+    "amplify:generate-outputs": "pnpm --filter @starter-nuxt-amplify-saas/amplify run generate-outputs"
+  },
+  "devDependencies": {
+    "@aws-amplify/backend-cli": "^1.8.0"
   },
   "packageManager": "pnpm@10.13.1"
 }

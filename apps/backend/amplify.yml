@@ -3,10 +3,28 @@ applications:
   - appRoot: apps/backend
     backend:
       phases:
+        preBuild:
+          commands:
+            - |
+              # Check if backend-related files have changed
+              if [ -n "$AWS_COMMIT_ID" ]; then
+                CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only --cached)
+                BACKEND_CHANGES=$(echo "$CHANGED_FILES" | grep -E '^(apps/backend/|layers/amplify/)' || true)
+                
+                if [ -z "$BACKEND_CHANGES" ]; then
+                  echo "No backend changes detected in commit. Changed files:"
+                  echo "$CHANGED_FILES"
+                  echo "Skipping backend build to save time and resources."
+                  exit 0
+                fi
+                
+                echo "Backend changes detected:"
+                echo "$BACKEND_CHANGES"
+              fi
         build:
           commands:
             - corepack enable
-            - pnpm install
+            - pnpm install --frozen-lockfile --filter @starter-nuxt-amplify-saas/backend
             - pnpm run deploy
       buildPath: apps/backend
     frontend:

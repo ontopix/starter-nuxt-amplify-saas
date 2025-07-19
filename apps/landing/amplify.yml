@@ -5,7 +5,9 @@ applications:
         preBuild:
           commands:
             - corepack enable
-            - PNPM_SKIP_POSTINSTALL=true pnpm install
+            - pnpm install --frozen-lockfile
+            - pnpm -w run amplify:generate-outputs
+            - pnpm -w run amplify:generate-graphql-client-code
         build:
           commands:
             - pnpm run build

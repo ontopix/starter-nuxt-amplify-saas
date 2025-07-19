@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@aws-amplify/backend-cli':
+        specifier: ^1.8.0
+        version: 1.8.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(@types/node@24.0.14)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
 
   apps/backend:
     dependencies:
@@ -16,7 +20,7 @@ importers:
     devDependencies:
       '@aws-amplify/backend':
         specifier: ^1.16.1
-        version: 1.16.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+        version: 1.16.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/backend-cli':
         specifier: ^1.8.0
         version: 1.8.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(@types/node@24.0.14)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
@@ -38,6 +42,9 @@ importers:
 
   apps/landing:
     dependencies:
+      '@starter-nuxt-amplify-saas/amplify':
+        specifier: workspace:*
+        version: link:../../layers/amplify
       '@starter-nuxt-amplify-saas/uix':
         specifier: workspace:*
         version: link:../../layers/uix
@@ -53,6 +60,9 @@ importers:
 
   apps/saas:
     dependencies:
+      '@starter-nuxt-amplify-saas/amplify':
+        specifier: workspace:*
+        version: link:../../layers/amplify
       '@starter-nuxt-amplify-saas/uix':
         specifier: workspace:*
         version: link:../../layers/uix
@@ -66,6 +76,42 @@ importers:
         specifier: ^4.5.1
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
 
+  layers/amplify:
+    devDependencies:
+      '@nuxt/eslint':
+        specifier: latest
+        version: 1.6.0(@typescript-eslint/utils@8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.17)(eslint@9.31.0(jiti@2.4.2))(magicast@0.3.5)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
+      eslint:
+        specifier: ^9.31.0
+        version: 9.31.0(jiti@2.4.2)
+      nuxt:
+        specifier: ^4.0.0
+        version: 4.0.0(@netlify/blobs@9.1.2)(@parcel/watcher@2.5.1)(@types/node@24.0.14)(@vue/compiler-sfc@3.5.17)(db0@0.3.2(mysql2@3.9.9))(eslint@9.31.0(jiti@2.4.2))(ioredis@5.6.1)(lightningcss@1.30.1)(magicast@0.3.5)(mysql2@3.9.9)(optionator@0.9.4)(rollup@4.45.1)(terser@5.43.1)(tsx@4.20.3)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(yaml@2.8.0)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+      vue:
+        specifier: latest
+        version: 3.5.17(typescript@5.8.3)
+
+  layers/auth:
+    devDependencies:
+      '@nuxt/eslint':
+        specifier: latest
+        version: 1.6.0(@typescript-eslint/utils@8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.17)(eslint@9.31.0(jiti@2.4.2))(magicast@0.3.5)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
+      eslint:
+        specifier: ^9.31.0
+        version: 9.31.0(jiti@2.4.2)
+      nuxt:
+        specifier: ^4.0.0
+        version: 4.0.0(@netlify/blobs@9.1.2)(@parcel/watcher@2.5.1)(@types/node@24.0.14)(@vue/compiler-sfc@3.5.17)(db0@0.3.2(mysql2@3.9.9))(eslint@9.31.0(jiti@2.4.2))(ioredis@5.6.1)(lightningcss@1.30.1)(magicast@0.3.5)(mysql2@3.9.9)(optionator@0.9.4)(rollup@4.45.1)(terser@5.43.1)(tsx@4.20.3)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(yaml@2.8.0)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+      vue:
+        specifier: latest
+        version: 3.5.17(typescript@5.8.3)
+
   layers/uix:
     devDependencies:
       '@nuxt/eslint':
@@ -73,7 +119,7 @@ importers:
         version: 1.6.0(@typescript-eslint/utils@8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.17)(eslint@9.31.0(jiti@2.4.2))(magicast@0.3.5)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       '@nuxt/ui-pro':
         specifier: latest
-        version: 3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.17)
+        version: 3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.76)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0(jiti@2.4.2)
@@ -416,10 +462,8 @@ packages:
       '@aws-sdk/client-s3': ^3.750.0
       '@aws-sdk/types': ^3.734.0
 
-  '@aws-amplify/form-generator@1.2.3':
-    resolution: {integrity: sha512-5JqkG84QrzrQKgnyOMCxyrfG7FeR2Y7u0ZUxiA6jkhAxps5dfn2GlRU1lOiU+rYPqR72sqwTtraEQMOavpVowg==}
-    bundledDependencies:
-      - '@graphql-codegen/core'
+  '@aws-amplify/form-generator@1.2.4':
+    resolution: {integrity: sha512-yoTeVmdNMGDigUUSbusrMe+60s3f1TRU3FV29O6Ed63Hc5DllLEwJ3KVpV0lnKxDzDE7Oi94q08A3oIi12UOXQ==}
 
   '@aws-amplify/graphql-api-construct@1.20.3':
     resolution: {integrity: sha512-uDLOOmgr3U4iFQHPyngB3XTDnv0IhVvAme7dy39Lxmd9pJbP/FCGgXMKH09ElYBAHD0Eff2jBcRofAXDqDEocA==}
@@ -723,6 +767,10 @@ packages:
     resolution: {integrity: sha512-zb9wSTeqozISI3k9rDUCnScGslPHeAkZ6cID38Mt7JgI5QcozAGgqH7m8FWigfiu8/BGJlW/ndOQCXzWYtX8sw==}
     engines: {node: '>=18.0.0'}
 
+  '@aws-sdk/client-cloudwatch-logs@3.849.0':
+    resolution: {integrity: sha512-+11BgdFro0hV+ypIogNiRofvAGsVNZs1MxkX8fsjuGq6/uflLg3x6/RRmZCFl14Y/NAuGe3ojBp+8UCvBIf8Sg==}
+    engines: {node: '>=18.0.0'}
+
   '@aws-sdk/client-codebuild@3.848.0':
     resolution: {integrity: sha512-i2vcsK4fsp+d4eFNbjcG7rdL2yR7Vzlw1GFgwuxwyQpr7ljJWFlldDio3UATq8zpmUhY85QIC29xAKTOKjUyyA==}
     engines: {node: '>=18.0.0'}
@@ -805,6 +853,10 @@ packages:
 
   '@aws-sdk/client-ssm@3.848.0':
     resolution: {integrity: sha512-kQbNCjkI+UdZkW++rJrFLunV73EPpj+wejY7RaoFULjXPWwvhWh8OIUN5Ev5bhT32q5/8qJhx7EK0j8lhy7ogg==}
+    engines: {node: '>=18.0.0'}
+
+  '@aws-sdk/client-ssm@3.849.0':
+    resolution: {integrity: sha512-446RPHQZkMPXJgllXoHs5GfbmqNrgYJvuPMTwoVbFpyL82B9RD/fqHPz7gBjGfcyR2pu8qVIn5fIxefbNEA4Kg==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/client-sso-oidc@3.621.0':
@@ -1453,6 +1505,12 @@ packages:
     cpu: [ppc64]
     os: [aix]
 
+  '@esbuild/aix-ppc64@0.25.8':
+    resolution: {integrity: sha512-urAvrUedIqEiFR3FYSLTWQgLu5tb+m0qZw0NBEasUeo6wuqatkMDaRT+1uABiGXEu5vqgPd7FGE1BhsAIy9QVA==}
+    engines: {node: '>=18'}
+    cpu: [ppc64]
+    os: [aix]
+
   '@esbuild/android-arm64@0.25.5':
     resolution: {integrity: sha512-VGzGhj4lJO+TVGV1v8ntCZWJktV7SGCs3Pn1GRWI1SBFtRALoomm8k5E9Pmwg3HOAal2VDc2F9+PM/rEY6oIDg==}
     engines: {node: '>=18'}
@@ -1461,6 +1519,12 @@ packages:
 
   '@esbuild/android-arm64@0.25.6':
     resolution: {integrity: sha512-hd5zdUarsK6strW+3Wxi5qWws+rJhCCbMiC9QZyzoxfk5uHRIE8T287giQxzVpEvCwuJ9Qjg6bEjcRJcgfLqoA==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [android]
+
+  '@esbuild/android-arm64@0.25.8':
+    resolution: {integrity: sha512-OD3p7LYzWpLhZEyATcTSJ67qB5D+20vbtr6vHlHWSQYhKtzUYrETuWThmzFpZtFsBIxRvhO07+UgVA9m0i/O1w==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [android]
@@ -1477,6 +1541,12 @@ packages:
     cpu: [arm]
     os: [android]
 
+  '@esbuild/android-arm@0.25.8':
+    resolution: {integrity: sha512-RONsAvGCz5oWyePVnLdZY/HHwA++nxYWIX1atInlaW6SEkwq6XkP3+cb825EUcRs5Vss/lGh/2YxAb5xqc07Uw==}
+    engines: {node: '>=18'}
+    cpu: [arm]
+    os: [android]
+
   '@esbuild/android-x64@0.25.5':
     resolution: {integrity: sha512-D2GyJT1kjvO//drbRT3Hib9XPwQeWd9vZoBJn+bu/lVsOZ13cqNdDeqIF/xQ5/VmWvMduP6AmXvylO/PIc2isw==}
     engines: {node: '>=18'}
@@ -1485,6 +1555,12 @@ packages:
 
   '@esbuild/android-x64@0.25.6':
     resolution: {integrity: sha512-0Z7KpHSr3VBIO9A/1wcT3NTy7EB4oNC4upJ5ye3R7taCc2GUdeynSLArnon5G8scPwaU866d3H4BCrE5xLW25A==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [android]
+
+  '@esbuild/android-x64@0.25.8':
+    resolution: {integrity: sha512-yJAVPklM5+4+9dTeKwHOaA+LQkmrKFX96BM0A/2zQrbS6ENCmxc4OVoBs5dPkCCak2roAD+jKCdnmOqKszPkjA==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [android]
@@ -1501,6 +1577,12 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
+  '@esbuild/darwin-arm64@0.25.8':
+    resolution: {integrity: sha512-Jw0mxgIaYX6R8ODrdkLLPwBqHTtYHJSmzzd+QeytSugzQ0Vg4c5rDky5VgkoowbZQahCbsv1rT1KW72MPIkevw==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [darwin]
+
   '@esbuild/darwin-x64@0.25.5':
     resolution: {integrity: sha512-1iT4FVL0dJ76/q1wd7XDsXrSW+oLoquptvh4CLR4kITDtqi2e/xwXwdCVH8hVHU43wgJdsq7Gxuzcs6Iq/7bxQ==}
     engines: {node: '>=18'}
@@ -1509,6 +1591,12 @@ packages:
 
   '@esbuild/darwin-x64@0.25.6':
     resolution: {integrity: sha512-GfXs5kry/TkGM2vKqK2oyiLFygJRqKVhawu3+DOCk7OxLy/6jYkWXhlHwOoTb0WqGnWGAS7sooxbZowy+pK9Yg==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@esbuild/darwin-x64@0.25.8':
+    resolution: {integrity: sha512-Vh2gLxxHnuoQ+GjPNvDSDRpoBCUzY4Pu0kBqMBDlK4fuWbKgGtmDIeEC081xi26PPjn+1tct+Bh8FjyLlw1Zlg==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [darwin]
@@ -1525,6 +1613,12 @@ packages:
     cpu: [arm64]
     os: [freebsd]
 
+  '@esbuild/freebsd-arm64@0.25.8':
+    resolution: {integrity: sha512-YPJ7hDQ9DnNe5vxOm6jaie9QsTwcKedPvizTVlqWG9GBSq+BuyWEDazlGaDTC5NGU4QJd666V0yqCBL2oWKPfA==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [freebsd]
+
   '@esbuild/freebsd-x64@0.25.5':
     resolution: {integrity: sha512-PrikaNjiXdR2laW6OIjlbeuCPrPaAl0IwPIaRv+SMV8CiM8i2LqVUHFC1+8eORgWyY7yhQY+2U2fA55mBzReaw==}
     engines: {node: '>=18'}
@@ -1533,6 +1627,12 @@ packages:
 
   '@esbuild/freebsd-x64@0.25.6':
     resolution: {integrity: sha512-2SkqTjTSo2dYi/jzFbU9Plt1vk0+nNg8YC8rOXXea+iA3hfNJWebKYPs3xnOUf9+ZWhKAaxnQNUf2X9LOpeiMQ==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@esbuild/freebsd-x64@0.25.8':
+    resolution: {integrity: sha512-MmaEXxQRdXNFsRN/KcIimLnSJrk2r5H8v+WVafRWz5xdSVmWLoITZQXcgehI2ZE6gioE6HirAEToM/RvFBeuhw==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [freebsd]
@@ -1549,6 +1649,12 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@esbuild/linux-arm64@0.25.8':
+    resolution: {integrity: sha512-WIgg00ARWv/uYLU7lsuDK00d/hHSfES5BzdWAdAig1ioV5kaFNrtK8EqGcUBJhYqotlUByUKz5Qo6u8tt7iD/w==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [linux]
+
   '@esbuild/linux-arm@0.25.5':
     resolution: {integrity: sha512-cPzojwW2okgh7ZlRpcBEtsX7WBuqbLrNXqLU89GxWbNt6uIg78ET82qifUy3W6OVww6ZWobWub5oqZOVtwolfw==}
     engines: {node: '>=18'}
@@ -1557,6 +1663,12 @@ packages:
 
   '@esbuild/linux-arm@0.25.6':
     resolution: {integrity: sha512-SZHQlzvqv4Du5PrKE2faN0qlbsaW/3QQfUUc6yO2EjFcA83xnwm91UbEEVx4ApZ9Z5oG8Bxz4qPE+HFwtVcfyw==}
+    engines: {node: '>=18'}
+    cpu: [arm]
+    os: [linux]
+
+  '@esbuild/linux-arm@0.25.8':
+    resolution: {integrity: sha512-FuzEP9BixzZohl1kLf76KEVOsxtIBFwCaLupVuk4eFVnOZfU+Wsn+x5Ryam7nILV2pkq2TqQM9EZPsOBuMC+kg==}
     engines: {node: '>=18'}
     cpu: [arm]
     os: [linux]
@@ -1573,6 +1685,12 @@ packages:
     cpu: [ia32]
     os: [linux]
 
+  '@esbuild/linux-ia32@0.25.8':
+    resolution: {integrity: sha512-A1D9YzRX1i+1AJZuFFUMP1E9fMaYY+GnSQil9Tlw05utlE86EKTUA7RjwHDkEitmLYiFsRd9HwKBPEftNdBfjg==}
+    engines: {node: '>=18'}
+    cpu: [ia32]
+    os: [linux]
+
   '@esbuild/linux-loong64@0.25.5':
     resolution: {integrity: sha512-0ur7ae16hDUC4OL5iEnDb0tZHDxYmuQyhKhsPBV8f99f6Z9KQM02g33f93rNH5A30agMS46u2HP6qTdEt6Q1kg==}
     engines: {node: '>=18'}
@@ -1581,6 +1699,12 @@ packages:
 
   '@esbuild/linux-loong64@0.25.6':
     resolution: {integrity: sha512-VgKCsHdXRSQ7E1+QXGdRPlQ/e08bN6WMQb27/TMfV+vPjjTImuT9PmLXupRlC90S1JeNNW5lzkAEO/McKeJ2yg==}
+    engines: {node: '>=18'}
+    cpu: [loong64]
+    os: [linux]
+
+  '@esbuild/linux-loong64@0.25.8':
+    resolution: {integrity: sha512-O7k1J/dwHkY1RMVvglFHl1HzutGEFFZ3kNiDMSOyUrB7WcoHGf96Sh+64nTRT26l3GMbCW01Ekh/ThKM5iI7hQ==}
     engines: {node: '>=18'}
     cpu: [loong64]
     os: [linux]
@@ -1597,6 +1721,12 @@ packages:
     cpu: [mips64el]
     os: [linux]
 
+  '@esbuild/linux-mips64el@0.25.8':
+    resolution: {integrity: sha512-uv+dqfRazte3BzfMp8PAQXmdGHQt2oC/y2ovwpTteqrMx2lwaksiFZ/bdkXJC19ttTvNXBuWH53zy/aTj1FgGw==}
+    engines: {node: '>=18'}
+    cpu: [mips64el]
+    os: [linux]
+
   '@esbuild/linux-ppc64@0.25.5':
     resolution: {integrity: sha512-UZCmJ7r9X2fe2D6jBmkLBMQetXPXIsZjQJCjgwpVDz+YMcS6oFR27alkgGv3Oqkv07bxdvw7fyB71/olceJhkQ==}
     engines: {node: '>=18'}
@@ -1605,6 +1735,12 @@ packages:
 
   '@esbuild/linux-ppc64@0.25.6':
     resolution: {integrity: sha512-wyYKZ9NTdmAMb5730I38lBqVu6cKl4ZfYXIs31Baf8aoOtB4xSGi3THmDYt4BTFHk7/EcVixkOV2uZfwU3Q2Jw==}
+    engines: {node: '>=18'}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@esbuild/linux-ppc64@0.25.8':
+    resolution: {integrity: sha512-GyG0KcMi1GBavP5JgAkkstMGyMholMDybAf8wF5A70CALlDM2p/f7YFE7H92eDeH/VBtFJA5MT4nRPDGg4JuzQ==}
     engines: {node: '>=18'}
     cpu: [ppc64]
     os: [linux]
@@ -1621,6 +1757,12 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
+  '@esbuild/linux-riscv64@0.25.8':
+    resolution: {integrity: sha512-rAqDYFv3yzMrq7GIcen3XP7TUEG/4LK86LUPMIz6RT8A6pRIDn0sDcvjudVZBiiTcZCY9y2SgYX2lgK3AF+1eg==}
+    engines: {node: '>=18'}
+    cpu: [riscv64]
+    os: [linux]
+
   '@esbuild/linux-s390x@0.25.5':
     resolution: {integrity: sha512-K2dSKTKfmdh78uJ3NcWFiqyRrimfdinS5ErLSn3vluHNeHVnBAFWC8a4X5N+7FgVE1EjXS1QDZbpqZBjfrqMTQ==}
     engines: {node: '>=18'}
@@ -1629,6 +1771,12 @@ packages:
 
   '@esbuild/linux-s390x@0.25.6':
     resolution: {integrity: sha512-9N1LsTwAuE9oj6lHMyyAM+ucxGiVnEqUdp4v7IaMmrwb06ZTEVCIs3oPPplVsnjPfyjmxwHxHMF8b6vzUVAUGw==}
+    engines: {node: '>=18'}
+    cpu: [s390x]
+    os: [linux]
+
+  '@esbuild/linux-s390x@0.25.8':
+    resolution: {integrity: sha512-Xutvh6VjlbcHpsIIbwY8GVRbwoviWT19tFhgdA7DlenLGC/mbc3lBoVb7jxj9Z+eyGqvcnSyIltYUrkKzWqSvg==}
     engines: {node: '>=18'}
     cpu: [s390x]
     os: [linux]
@@ -1645,6 +1793,12 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@esbuild/linux-x64@0.25.8':
+    resolution: {integrity: sha512-ASFQhgY4ElXh3nDcOMTkQero4b1lgubskNlhIfJrsH5OKZXDpUAKBlNS0Kx81jwOBp+HCeZqmoJuihTv57/jvQ==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [linux]
+
   '@esbuild/netbsd-arm64@0.25.5':
     resolution: {integrity: sha512-pwHtMP9viAy1oHPvgxtOv+OkduK5ugofNTVDilIzBLpoWAM16r7b/mxBvfpuQDpRQFMfuVr5aLcn4yveGvBZvw==}
     engines: {node: '>=18'}
@@ -1653,6 +1807,12 @@ packages:
 
   '@esbuild/netbsd-arm64@0.25.6':
     resolution: {integrity: sha512-IjA+DcwoVpjEvyxZddDqBY+uJ2Snc6duLpjmkXm/v4xuS3H+3FkLZlDm9ZsAbF9rsfP3zeA0/ArNDORZgrxR/Q==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [netbsd]
+
+  '@esbuild/netbsd-arm64@0.25.8':
+    resolution: {integrity: sha512-d1KfruIeohqAi6SA+gENMuObDbEjn22olAR7egqnkCD9DGBG0wsEARotkLgXDu6c4ncgWTZJtN5vcgxzWRMzcw==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [netbsd]
@@ -1669,6 +1829,12 @@ packages:
     cpu: [x64]
     os: [netbsd]
 
+  '@esbuild/netbsd-x64@0.25.8':
+    resolution: {integrity: sha512-nVDCkrvx2ua+XQNyfrujIG38+YGyuy2Ru9kKVNyh5jAys6n+l44tTtToqHjino2My8VAY6Lw9H7RI73XFi66Cg==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [netbsd]
+
   '@esbuild/openbsd-arm64@0.25.5':
     resolution: {integrity: sha512-7A208+uQKgTxHd0G0uqZO8UjK2R0DDb4fDmERtARjSHWxqMTye4Erz4zZafx7Di9Cv+lNHYuncAkiGFySoD+Mw==}
     engines: {node: '>=18'}
@@ -1677,6 +1843,12 @@ packages:
 
   '@esbuild/openbsd-arm64@0.25.6':
     resolution: {integrity: sha512-l8ZCvXP0tbTJ3iaqdNf3pjaOSd5ex/e6/omLIQCVBLmHTlfXW3zAxQ4fnDmPLOB1x9xrcSi/xtCWFwCZRIaEwg==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [openbsd]
+
+  '@esbuild/openbsd-arm64@0.25.8':
+    resolution: {integrity: sha512-j8HgrDuSJFAujkivSMSfPQSAa5Fxbvk4rgNAS5i3K+r8s1X0p1uOO2Hl2xNsGFppOeHOLAVgYwDVlmxhq5h+SQ==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [openbsd]
@@ -1693,8 +1865,20 @@ packages:
     cpu: [x64]
     os: [openbsd]
 
+  '@esbuild/openbsd-x64@0.25.8':
+    resolution: {integrity: sha512-1h8MUAwa0VhNCDp6Af0HToI2TJFAn1uqT9Al6DJVzdIBAd21m/G0Yfc77KDM3uF3T/YaOgQq3qTJHPbTOInaIQ==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [openbsd]
+
   '@esbuild/openharmony-arm64@0.25.6':
     resolution: {integrity: sha512-+SqBcAWoB1fYKmpWoQP4pGtx+pUUC//RNYhFdbcSA16617cchuryuhOCRpPsjCblKukAckWsV+aQ3UKT/RMPcA==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [openharmony]
+
+  '@esbuild/openharmony-arm64@0.25.8':
+    resolution: {integrity: sha512-r2nVa5SIK9tSWd0kJd9HCffnDHKchTGikb//9c7HX+r+wHYCpQrSgxhlY6KWV1nFo1l4KFbsMlHk+L6fekLsUg==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [openharmony]
@@ -1711,6 +1895,12 @@ packages:
     cpu: [x64]
     os: [sunos]
 
+  '@esbuild/sunos-x64@0.25.8':
+    resolution: {integrity: sha512-zUlaP2S12YhQ2UzUfcCuMDHQFJyKABkAjvO5YSndMiIkMimPmxA+BYSBikWgsRpvyxuRnow4nS5NPnf9fpv41w==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [sunos]
+
   '@esbuild/win32-arm64@0.25.5':
     resolution: {integrity: sha512-O2S7SNZzdcFG7eFKgvwUEZ2VG9D/sn/eIiz8XRZ1Q/DO5a3s76Xv0mdBzVM5j5R639lXQmPmSo0iRpHqUUrsxw==}
     engines: {node: '>=18'}
@@ -1719,6 +1909,12 @@ packages:
 
   '@esbuild/win32-arm64@0.25.6':
     resolution: {integrity: sha512-42QOgcZeZOvXfsCBJF5Afw73t4veOId//XD3i+/9gSkhSV6Gk3VPlWncctI+JcOyERv85FUo7RxuxGy+z8A43Q==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@esbuild/win32-arm64@0.25.8':
+    resolution: {integrity: sha512-YEGFFWESlPva8hGL+zvj2z/SaK+pH0SwOM0Nc/d+rVnW7GSTFlLBGzZkuSU9kFIGIo8q9X3ucpZhu8PDN5A2sQ==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [win32]
@@ -1735,6 +1931,12 @@ packages:
     cpu: [ia32]
     os: [win32]
 
+  '@esbuild/win32-ia32@0.25.8':
+    resolution: {integrity: sha512-hiGgGC6KZ5LZz58OL/+qVVoZiuZlUYlYHNAmczOm7bs2oE1XriPFi5ZHHrS8ACpV5EjySrnoCKmcbQMN+ojnHg==}
+    engines: {node: '>=18'}
+    cpu: [ia32]
+    os: [win32]
+
   '@esbuild/win32-x64@0.25.5':
     resolution: {integrity: sha512-TXv6YnJ8ZMVdX+SXWVBo/0p8LTcrUYngpWjvm91TMjjBQii7Oz11Lw5lbDV5Y0TzuhSJHwiH4hEtC1I42mMS0g==}
     engines: {node: '>=18'}
@@ -1743,6 +1945,12 @@ packages:
 
   '@esbuild/win32-x64@0.25.6':
     resolution: {integrity: sha512-NgJPHHbEpLQgDH2MjQu90pzW/5vvXIZ7KOnPyNBm92A6WgZ/7b6fJyUBjoumLqeOQQGqY2QjQxRo97ah4Sj0cA==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [win32]
+
+  '@esbuild/win32-x64@0.25.8':
+    resolution: {integrity: sha512-cn3Yr7+OaaZq1c+2pe+8yxC8E144SReCQjN6/2ynubzYjvyqZjTXfQJpAcQpsdJq3My7XADANiYGHoFC69pLQw==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
@@ -1874,12 +2082,6 @@ packages:
 
   '@graphql-tools/merge@8.4.2':
     resolution: {integrity: sha512-XbrHAaj8yDuINph+sAfuq3QCZ/tKblrTLOpirK0+CAgNlZUCHs0Fa+xtMUURgwCVThLle1AF7svJCxFizygLsw==}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-
-  '@graphql-tools/merge@9.0.22':
-    resolution: {integrity: sha512-bjOs9DlTbo1Yz2UzQcJ78Dn9/pKyY2zNaoqNLfRTTSkO56QFkvqhfjQuqJcqu+V3rtaB2o0VMpWaY6JT8ZTvQA==}
-    engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
@@ -4867,6 +5069,11 @@ packages:
 
   esbuild@0.25.6:
     resolution: {integrity: sha512-GVuzuUwtdsghE3ocJ9Bs8PNoF13HNQ5TXbEi2AhvVb8xU1Iwt9Fos9FEamfoee+u/TOsn7GUWc04lz46n2bbTg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  esbuild@0.25.8:
+    resolution: {integrity: sha512-vVC0USHGtMi8+R4Kz8rt6JhEWLxsv9Rnu/lGYbPR8u47B+DCBksq9JarW0zOO7bs37hyOK1l2/oqtbciutL5+Q==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -8414,30 +8621,33 @@ packages:
   zod@3.25.17:
     resolution: {integrity: sha512-8hQzQ/kMOIFbwOgPrm9Sf9rtFHpFUMy4HvN0yEB0spw14aYi0uT5xG5CE2DB9cd51GWNsz+DNO7se1kztHMKnw==}
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
 snapshots:
 
-  '@ai-sdk/provider-utils@2.2.8(zod@3.25.17)':
+  '@ai-sdk/provider-utils@2.2.8(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       nanoid: 3.3.11
       secure-json-parse: 2.7.0
-      zod: 3.25.17
+      zod: 3.25.76
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/ui-utils@1.2.11(zod@3.25.17)':
+  '@ai-sdk/ui-utils@1.2.11(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.17)
-      zod: 3.25.17
-      zod-to-json-schema: 3.24.6(zod@3.25.17)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
+      zod: 3.25.76
+      zod-to-json-schema: 3.24.6(zod@3.25.76)
 
-  '@ai-sdk/vue@1.2.12(vue@3.5.17(typescript@5.8.3))(zod@3.25.17)':
+  '@ai-sdk/vue@1.2.12(vue@3.5.17(typescript@5.8.3))(zod@3.25.76)':
     dependencies:
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.17)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.17)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.76)
       swrv: 1.1.0(vue@3.5.17(typescript@5.8.3))
     optionalDependencies:
       vue: 3.5.17(typescript@5.8.3)
@@ -8561,10 +8771,10 @@ snapshots:
       - encoding
       - supports-color
 
-  '@aws-amplify/auth-construct@1.8.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)':
+  '@aws-amplify/auth-construct@1.8.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)':
     dependencies:
-      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.17)
-      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.76)
+      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/plugin-types': 1.11.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-sdk/util-arn-parser': 3.804.0
       aws-cdk-lib: 2.204.0(constructs@10.4.2)
@@ -8582,11 +8792,11 @@ snapshots:
       '@smithy/types': 3.7.2
       tslib: 2.8.1
 
-  '@aws-amplify/backend-auth@1.7.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)':
+  '@aws-amplify/backend-auth@1.7.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)':
     dependencies:
-      '@aws-amplify/auth-construct': 1.8.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
-      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.17)
-      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+      '@aws-amplify/auth-construct': 1.8.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
+      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.76)
+      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/plugin-types': 1.11.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       aws-cdk-lib: 2.204.0(constructs@10.4.2)
       constructs: 10.4.2
@@ -8604,7 +8814,7 @@ snapshots:
       '@aws-amplify/cli-core': 2.2.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(@types/node@24.0.14)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/client-config': 1.8.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-amplify@3.848.0)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/deployed-backend-client': 1.8.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-amplify@3.848.0)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
-      '@aws-amplify/form-generator': 1.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@aws-amplify/form-generator': 1.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@aws-amplify/model-generator': 1.2.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-amplify@3.848.0)(@aws-sdk/client-cloudformation@3.848.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
       '@aws-amplify/platform-core': 1.10.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/plugin-types': 1.11.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
@@ -8647,10 +8857,10 @@ snapshots:
       - tedious
       - typescript
 
-  '@aws-amplify/backend-data@1.6.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)':
+  '@aws-amplify/backend-data@1.6.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)':
     dependencies:
-      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.17)
-      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.76)
+      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/data-construct': 1.16.3(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/data-schema-types': 1.2.0
       '@aws-amplify/graphql-generator': 0.5.3
@@ -8683,10 +8893,10 @@ snapshots:
       - aws-crt
       - constructs
 
-  '@aws-amplify/backend-function@1.14.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)':
+  '@aws-amplify/backend-function@1.14.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)':
     dependencies:
-      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.17)
-      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.76)
+      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/plugin-types': 1.11.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-sdk/client-s3': 3.848.0
       aws-cdk-lib: 2.204.0(constructs@10.4.2)
@@ -8702,9 +8912,13 @@ snapshots:
     dependencies:
       zod: 3.25.17
 
-  '@aws-amplify/backend-output-storage@1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)':
+  '@aws-amplify/backend-output-schemas@1.7.0(zod@3.25.76)':
     dependencies:
-      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.17)
+      zod: 3.25.76
+
+  '@aws-amplify/backend-output-storage@1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)':
+    dependencies:
+      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.76)
       '@aws-amplify/platform-core': 1.10.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/plugin-types': 1.11.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       aws-cdk-lib: 2.204.0(constructs@10.4.2)
@@ -8727,10 +8941,10 @@ snapshots:
       - aws-crt
       - constructs
 
-  '@aws-amplify/backend-storage@1.4.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)':
+  '@aws-amplify/backend-storage@1.4.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)':
     dependencies:
-      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.17)
-      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.76)
+      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/plugin-types': 1.11.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       aws-cdk-lib: 2.204.0(constructs@10.4.2)
       constructs: 10.4.2
@@ -8740,15 +8954,15 @@ snapshots:
       - aws-crt
       - zod
 
-  '@aws-amplify/backend@1.16.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)':
+  '@aws-amplify/backend@1.16.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)':
     dependencies:
-      '@aws-amplify/backend-auth': 1.7.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
-      '@aws-amplify/backend-data': 1.6.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
-      '@aws-amplify/backend-function': 1.14.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
-      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.17)
-      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+      '@aws-amplify/backend-auth': 1.7.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
+      '@aws-amplify/backend-data': 1.6.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
+      '@aws-amplify/backend-function': 1.14.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
+      '@aws-amplify/backend-output-schemas': 1.7.0(zod@3.25.76)
+      '@aws-amplify/backend-output-storage': 1.3.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/backend-secret': 1.4.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
-      '@aws-amplify/backend-storage': 1.4.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.17)
+      '@aws-amplify/backend-storage': 1.4.1(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)(zod@3.25.76)
       '@aws-amplify/client-config': 1.8.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-amplify@3.848.0)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/data-schema': 1.21.1
       '@aws-amplify/platform-core': 1.10.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
@@ -8883,7 +9097,7 @@ snapshots:
       - aws-crt
       - constructs
 
-  '@aws-amplify/form-generator@1.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@aws-amplify/form-generator@1.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@aws-amplify/appsync-modelgen-plugin': 2.15.2(graphql@15.10.1)
       '@aws-amplify/codegen-ui': 2.20.3
@@ -8894,7 +9108,6 @@ snapshots:
       '@aws-sdk/client-appsync': 3.848.0
       '@aws-sdk/client-s3': 3.848.0
       '@graphql-codegen/typescript': 4.1.6(graphql@15.10.1)
-      '@graphql-tools/merge': 9.0.22(graphql@15.10.1)
       graphql: 15.10.1
       node-fetch: 3.3.2
       prettier: 3.6.2
@@ -9076,9 +9289,9 @@ snapshots:
       '@aws-amplify/deployed-backend-client': 1.8.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/client-amplify@3.848.0)(@aws-sdk/client-cloudformation@3.848.0)(@aws-sdk/client-s3@3.848.0)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/platform-core': 1.10.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
       '@aws-amplify/plugin-types': 1.11.0(@aws-cdk/cli-plugin-contract@2.181.1)(@aws-sdk/types@3.840.0)(aws-cdk-lib@2.204.0(constructs@10.4.2))(constructs@10.4.2)
-      '@aws-sdk/client-cloudwatch-logs': 3.848.0
+      '@aws-sdk/client-cloudwatch-logs': 3.849.0
       '@aws-sdk/client-lambda': 3.848.0
-      '@aws-sdk/client-ssm': 3.848.0
+      '@aws-sdk/client-ssm': 3.849.0
       '@aws-sdk/credential-providers': 3.848.0
       '@aws-sdk/types': 3.840.0
       '@opentelemetry/api': 1.9.0
@@ -9491,6 +9704,55 @@ snapshots:
       - aws-crt
 
   '@aws-sdk/client-cloudwatch-logs@3.848.0':
+    dependencies:
+      '@aws-crypto/sha256-browser': 5.2.0
+      '@aws-crypto/sha256-js': 5.2.0
+      '@aws-sdk/core': 3.846.0
+      '@aws-sdk/credential-provider-node': 3.848.0
+      '@aws-sdk/middleware-host-header': 3.840.0
+      '@aws-sdk/middleware-logger': 3.840.0
+      '@aws-sdk/middleware-recursion-detection': 3.840.0
+      '@aws-sdk/middleware-user-agent': 3.848.0
+      '@aws-sdk/region-config-resolver': 3.840.0
+      '@aws-sdk/types': 3.840.0
+      '@aws-sdk/util-endpoints': 3.848.0
+      '@aws-sdk/util-user-agent-browser': 3.840.0
+      '@aws-sdk/util-user-agent-node': 3.848.0
+      '@smithy/config-resolver': 4.1.4
+      '@smithy/core': 3.7.1
+      '@smithy/eventstream-serde-browser': 4.0.4
+      '@smithy/eventstream-serde-config-resolver': 4.1.2
+      '@smithy/eventstream-serde-node': 4.0.4
+      '@smithy/fetch-http-handler': 5.1.0
+      '@smithy/hash-node': 4.0.4
+      '@smithy/invalid-dependency': 4.0.4
+      '@smithy/middleware-content-length': 4.0.4
+      '@smithy/middleware-endpoint': 4.1.16
+      '@smithy/middleware-retry': 4.1.17
+      '@smithy/middleware-serde': 4.0.8
+      '@smithy/middleware-stack': 4.0.4
+      '@smithy/node-config-provider': 4.1.3
+      '@smithy/node-http-handler': 4.1.0
+      '@smithy/protocol-http': 5.1.2
+      '@smithy/smithy-client': 4.4.8
+      '@smithy/types': 4.3.1
+      '@smithy/url-parser': 4.0.4
+      '@smithy/util-base64': 4.0.0
+      '@smithy/util-body-length-browser': 4.0.0
+      '@smithy/util-body-length-node': 4.0.0
+      '@smithy/util-defaults-mode-browser': 4.0.24
+      '@smithy/util-defaults-mode-node': 4.0.24
+      '@smithy/util-endpoints': 3.0.6
+      '@smithy/util-middleware': 4.0.4
+      '@smithy/util-retry': 4.0.6
+      '@smithy/util-utf8': 4.0.0
+      '@types/uuid': 9.0.8
+      tslib: 2.8.1
+      uuid: 9.0.1
+    transitivePeerDependencies:
+      - aws-crt
+
+  '@aws-sdk/client-cloudwatch-logs@3.849.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -10490,6 +10752,53 @@ snapshots:
       - aws-crt
 
   '@aws-sdk/client-ssm@3.848.0':
+    dependencies:
+      '@aws-crypto/sha256-browser': 5.2.0
+      '@aws-crypto/sha256-js': 5.2.0
+      '@aws-sdk/core': 3.846.0
+      '@aws-sdk/credential-provider-node': 3.848.0
+      '@aws-sdk/middleware-host-header': 3.840.0
+      '@aws-sdk/middleware-logger': 3.840.0
+      '@aws-sdk/middleware-recursion-detection': 3.840.0
+      '@aws-sdk/middleware-user-agent': 3.848.0
+      '@aws-sdk/region-config-resolver': 3.840.0
+      '@aws-sdk/types': 3.840.0
+      '@aws-sdk/util-endpoints': 3.848.0
+      '@aws-sdk/util-user-agent-browser': 3.840.0
+      '@aws-sdk/util-user-agent-node': 3.848.0
+      '@smithy/config-resolver': 4.1.4
+      '@smithy/core': 3.7.1
+      '@smithy/fetch-http-handler': 5.1.0
+      '@smithy/hash-node': 4.0.4
+      '@smithy/invalid-dependency': 4.0.4
+      '@smithy/middleware-content-length': 4.0.4
+      '@smithy/middleware-endpoint': 4.1.16
+      '@smithy/middleware-retry': 4.1.17
+      '@smithy/middleware-serde': 4.0.8
+      '@smithy/middleware-stack': 4.0.4
+      '@smithy/node-config-provider': 4.1.3
+      '@smithy/node-http-handler': 4.1.0
+      '@smithy/protocol-http': 5.1.2
+      '@smithy/smithy-client': 4.4.8
+      '@smithy/types': 4.3.1
+      '@smithy/url-parser': 4.0.4
+      '@smithy/util-base64': 4.0.0
+      '@smithy/util-body-length-browser': 4.0.0
+      '@smithy/util-body-length-node': 4.0.0
+      '@smithy/util-defaults-mode-browser': 4.0.24
+      '@smithy/util-defaults-mode-node': 4.0.24
+      '@smithy/util-endpoints': 3.0.6
+      '@smithy/util-middleware': 4.0.4
+      '@smithy/util-retry': 4.0.6
+      '@smithy/util-utf8': 4.0.0
+      '@smithy/util-waiter': 4.0.6
+      '@types/uuid': 9.0.8
+      tslib: 2.8.1
+      uuid: 9.0.1
+    transitivePeerDependencies:
+      - aws-crt
+
+  '@aws-sdk/client-ssm@3.849.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -12003,10 +12312,16 @@ snapshots:
   '@esbuild/aix-ppc64@0.25.6':
     optional: true
 
+  '@esbuild/aix-ppc64@0.25.8':
+    optional: true
+
   '@esbuild/android-arm64@0.25.5':
     optional: true
 
   '@esbuild/android-arm64@0.25.6':
+    optional: true
+
+  '@esbuild/android-arm64@0.25.8':
     optional: true
 
   '@esbuild/android-arm@0.25.5':
@@ -12015,10 +12330,16 @@ snapshots:
   '@esbuild/android-arm@0.25.6':
     optional: true
 
+  '@esbuild/android-arm@0.25.8':
+    optional: true
+
   '@esbuild/android-x64@0.25.5':
     optional: true
 
   '@esbuild/android-x64@0.25.6':
+    optional: true
+
+  '@esbuild/android-x64@0.25.8':
     optional: true
 
   '@esbuild/darwin-arm64@0.25.5':
@@ -12027,10 +12348,16 @@ snapshots:
   '@esbuild/darwin-arm64@0.25.6':
     optional: true
 
+  '@esbuild/darwin-arm64@0.25.8':
+    optional: true
+
   '@esbuild/darwin-x64@0.25.5':
     optional: true
 
   '@esbuild/darwin-x64@0.25.6':
+    optional: true
+
+  '@esbuild/darwin-x64@0.25.8':
     optional: true
 
   '@esbuild/freebsd-arm64@0.25.5':
@@ -12039,10 +12366,16 @@ snapshots:
   '@esbuild/freebsd-arm64@0.25.6':
     optional: true
 
+  '@esbuild/freebsd-arm64@0.25.8':
+    optional: true
+
   '@esbuild/freebsd-x64@0.25.5':
     optional: true
 
   '@esbuild/freebsd-x64@0.25.6':
+    optional: true
+
+  '@esbuild/freebsd-x64@0.25.8':
     optional: true
 
   '@esbuild/linux-arm64@0.25.5':
@@ -12051,10 +12384,16 @@ snapshots:
   '@esbuild/linux-arm64@0.25.6':
     optional: true
 
+  '@esbuild/linux-arm64@0.25.8':
+    optional: true
+
   '@esbuild/linux-arm@0.25.5':
     optional: true
 
   '@esbuild/linux-arm@0.25.6':
+    optional: true
+
+  '@esbuild/linux-arm@0.25.8':
     optional: true
 
   '@esbuild/linux-ia32@0.25.5':
@@ -12063,10 +12402,16 @@ snapshots:
   '@esbuild/linux-ia32@0.25.6':
     optional: true
 
+  '@esbuild/linux-ia32@0.25.8':
+    optional: true
+
   '@esbuild/linux-loong64@0.25.5':
     optional: true
 
   '@esbuild/linux-loong64@0.25.6':
+    optional: true
+
+  '@esbuild/linux-loong64@0.25.8':
     optional: true
 
   '@esbuild/linux-mips64el@0.25.5':
@@ -12075,10 +12420,16 @@ snapshots:
   '@esbuild/linux-mips64el@0.25.6':
     optional: true
 
+  '@esbuild/linux-mips64el@0.25.8':
+    optional: true
+
   '@esbuild/linux-ppc64@0.25.5':
     optional: true
 
   '@esbuild/linux-ppc64@0.25.6':
+    optional: true
+
+  '@esbuild/linux-ppc64@0.25.8':
     optional: true
 
   '@esbuild/linux-riscv64@0.25.5':
@@ -12087,10 +12438,16 @@ snapshots:
   '@esbuild/linux-riscv64@0.25.6':
     optional: true
 
+  '@esbuild/linux-riscv64@0.25.8':
+    optional: true
+
   '@esbuild/linux-s390x@0.25.5':
     optional: true
 
   '@esbuild/linux-s390x@0.25.6':
+    optional: true
+
+  '@esbuild/linux-s390x@0.25.8':
     optional: true
 
   '@esbuild/linux-x64@0.25.5':
@@ -12099,10 +12456,16 @@ snapshots:
   '@esbuild/linux-x64@0.25.6':
     optional: true
 
+  '@esbuild/linux-x64@0.25.8':
+    optional: true
+
   '@esbuild/netbsd-arm64@0.25.5':
     optional: true
 
   '@esbuild/netbsd-arm64@0.25.6':
+    optional: true
+
+  '@esbuild/netbsd-arm64@0.25.8':
     optional: true
 
   '@esbuild/netbsd-x64@0.25.5':
@@ -12111,10 +12474,16 @@ snapshots:
   '@esbuild/netbsd-x64@0.25.6':
     optional: true
 
+  '@esbuild/netbsd-x64@0.25.8':
+    optional: true
+
   '@esbuild/openbsd-arm64@0.25.5':
     optional: true
 
   '@esbuild/openbsd-arm64@0.25.6':
+    optional: true
+
+  '@esbuild/openbsd-arm64@0.25.8':
     optional: true
 
   '@esbuild/openbsd-x64@0.25.5':
@@ -12123,7 +12492,13 @@ snapshots:
   '@esbuild/openbsd-x64@0.25.6':
     optional: true
 
+  '@esbuild/openbsd-x64@0.25.8':
+    optional: true
+
   '@esbuild/openharmony-arm64@0.25.6':
+    optional: true
+
+  '@esbuild/openharmony-arm64@0.25.8':
     optional: true
 
   '@esbuild/sunos-x64@0.25.5':
@@ -12132,10 +12507,16 @@ snapshots:
   '@esbuild/sunos-x64@0.25.6':
     optional: true
 
+  '@esbuild/sunos-x64@0.25.8':
+    optional: true
+
   '@esbuild/win32-arm64@0.25.5':
     optional: true
 
   '@esbuild/win32-arm64@0.25.6':
+    optional: true
+
+  '@esbuild/win32-arm64@0.25.8':
     optional: true
 
   '@esbuild/win32-ia32@0.25.5':
@@ -12144,10 +12525,16 @@ snapshots:
   '@esbuild/win32-ia32@0.25.6':
     optional: true
 
+  '@esbuild/win32-ia32@0.25.8':
+    optional: true
+
   '@esbuild/win32-x64@0.25.5':
     optional: true
 
   '@esbuild/win32-x64@0.25.6':
+    optional: true
+
+  '@esbuild/win32-x64@0.25.8':
     optional: true
 
   '@eslint-community/eslint-utils@4.7.0(eslint@9.31.0(jiti@2.4.2))':
@@ -12351,12 +12738,6 @@ snapshots:
   '@graphql-tools/merge@8.4.2(graphql@15.10.1)':
     dependencies:
       '@graphql-tools/utils': 9.2.1(graphql@15.10.1)
-      graphql: 15.10.1
-      tslib: 2.8.1
-
-  '@graphql-tools/merge@9.0.22(graphql@15.10.1)':
-    dependencies:
-      '@graphql-tools/utils': 10.9.0(graphql@15.10.1)
       graphql: 15.10.1
       tslib: 2.8.1
 
@@ -12750,7 +13131,7 @@ snapshots:
       unixify: 1.0.0
       urlpattern-polyfill: 8.0.2
       yargs: 17.7.2
-      zod: 3.25.17
+      zod: 3.25.76
     transitivePeerDependencies:
       - encoding
       - rollup
@@ -13093,12 +13474,12 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@nuxt/ui-pro@3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.17)':
+  '@nuxt/ui-pro@3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.76)':
     dependencies:
-      '@ai-sdk/vue': 1.2.12(vue@3.5.17(typescript@5.8.3))(zod@3.25.17)
+      '@ai-sdk/vue': 1.2.12(vue@3.5.17(typescript@5.8.3))(zod@3.25.76)
       '@nuxt/kit': 3.17.7(magicast@0.3.5)
       '@nuxt/schema': 3.17.7
-      '@nuxt/ui': 3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.17)
+      '@nuxt/ui': 3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.76)
       '@standard-schema/spec': 1.0.0
       '@vueuse/core': 13.5.0(vue@3.5.17(typescript@5.8.3))
       consola: 3.4.2
@@ -13117,7 +13498,7 @@ snapshots:
       unplugin-auto-import: 19.3.0(@nuxt/kit@3.17.7(magicast@0.3.5))(@vueuse/core@13.5.0(vue@3.5.17(typescript@5.8.3)))
       unplugin-vue-components: 28.8.0(@babel/parser@7.28.0)(@nuxt/kit@3.17.7(magicast@0.3.5))(vue@3.5.17(typescript@5.8.3))
     optionalDependencies:
-      zod: 3.25.17
+      zod: 3.25.76
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -13161,7 +13542,7 @@ snapshots:
       - vue
       - vue-router
 
-  '@nuxt/ui@3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.17)':
+  '@nuxt/ui@3.2.0(@babel/parser@7.28.0)(@netlify/blobs@9.1.2)(db0@0.3.2(mysql2@3.9.9))(embla-carousel@8.6.0)(ioredis@5.6.1)(jwt-decode@4.0.0)(magicast@0.3.5)(typescript@5.8.3)(vite@7.0.5(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.17(typescript@5.8.3)))(vue@3.5.17(typescript@5.8.3))(zod@3.25.76)':
     dependencies:
       '@iconify/vue': 5.0.0(vue@3.5.17(typescript@5.8.3))
       '@internationalized/date': 3.8.2
@@ -13208,7 +13589,7 @@ snapshots:
       vue-component-type-helpers: 2.2.12
     optionalDependencies:
       vue-router: 4.5.1(vue@3.5.17(typescript@5.8.3))
-      zod: 3.25.17
+      zod: 3.25.76
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -16091,6 +16472,35 @@ snapshots:
       '@esbuild/win32-ia32': 0.25.6
       '@esbuild/win32-x64': 0.25.6
 
+  esbuild@0.25.8:
+    optionalDependencies:
+      '@esbuild/aix-ppc64': 0.25.8
+      '@esbuild/android-arm': 0.25.8
+      '@esbuild/android-arm64': 0.25.8
+      '@esbuild/android-x64': 0.25.8
+      '@esbuild/darwin-arm64': 0.25.8
+      '@esbuild/darwin-x64': 0.25.8
+      '@esbuild/freebsd-arm64': 0.25.8
+      '@esbuild/freebsd-x64': 0.25.8
+      '@esbuild/linux-arm': 0.25.8
+      '@esbuild/linux-arm64': 0.25.8
+      '@esbuild/linux-ia32': 0.25.8
+      '@esbuild/linux-loong64': 0.25.8
+      '@esbuild/linux-mips64el': 0.25.8
+      '@esbuild/linux-ppc64': 0.25.8
+      '@esbuild/linux-riscv64': 0.25.8
+      '@esbuild/linux-s390x': 0.25.8
+      '@esbuild/linux-x64': 0.25.8
+      '@esbuild/netbsd-arm64': 0.25.8
+      '@esbuild/netbsd-x64': 0.25.8
+      '@esbuild/openbsd-arm64': 0.25.8
+      '@esbuild/openbsd-x64': 0.25.8
+      '@esbuild/openharmony-arm64': 0.25.8
+      '@esbuild/sunos-x64': 0.25.8
+      '@esbuild/win32-arm64': 0.25.8
+      '@esbuild/win32-ia32': 0.25.8
+      '@esbuild/win32-x64': 0.25.8
+
   escalade@3.2.0: {}
 
   escape-html@1.0.3: {}
@@ -16721,7 +17131,7 @@ snapshots:
   graphql-tag@2.12.6(graphql@15.10.1):
     dependencies:
       graphql: 15.10.1
-      tslib: 2.6.3
+      tslib: 2.3.1
 
   graphql-transformer-common@4.34.0:
     dependencies:
@@ -17015,7 +17425,7 @@ snapshots:
 
   is-lower-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.4.1
 
   is-map@2.0.3: {}
 
@@ -17094,7 +17504,7 @@ snapshots:
 
   is-upper-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.4.1
 
   is-url-superb@4.0.0: {}
 
@@ -17396,7 +17806,7 @@ snapshots:
 
   lower-case@2.0.2:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.4.1
 
   lru-cache@10.4.3: {}
 
@@ -18984,7 +19394,7 @@ snapshots:
 
   sponge-case@1.0.1:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.4.1
 
   sqlstring@2.3.3: {}
 
@@ -19134,7 +19544,7 @@ snapshots:
 
   swap-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.4.1
 
   swrv@1.1.0(vue@3.5.17(typescript@5.8.3)):
     dependencies:
@@ -19216,7 +19626,7 @@ snapshots:
 
   title-case@3.0.3:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.4.1
 
   tmp-promise@3.0.3:
     dependencies:
@@ -19274,7 +19684,7 @@ snapshots:
 
   tsx@4.19.4:
     dependencies:
-      esbuild: 0.25.6
+      esbuild: 0.25.8
       get-tsconfig: 4.10.1
     optionalDependencies:
       fsevents: 2.3.3
@@ -19577,11 +19987,11 @@ snapshots:
 
   upper-case-first@2.0.2:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.4.1
 
   upper-case@2.0.2:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.4.1
 
   uqr@0.1.2: {}
 
@@ -19975,8 +20385,10 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
-  zod-to-json-schema@3.24.6(zod@3.25.17):
+  zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
-      zod: 3.25.17
+      zod: 3.25.76
 
   zod@3.25.17: {}
+
+  zod@3.25.76: {}
