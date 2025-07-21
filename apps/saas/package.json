@@ -18,6 +18,10 @@
     "@starter-nuxt-amplify-saas/auth": "workspace:*",
     "nuxt": "^4.0.0",
     "vue": "^3.5.17",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "date-fns": "^4.1.0",
+    "@unovis/vue": "^1.5.2",
+    "@unovis/ts": "^1.5.2",
+    "@vueuse/nuxt": "^13.5.0"
   }
 }
