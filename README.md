@@ -1,259 +1,316 @@
 # Nuxt Amplify SaaS Starter
 
-A comprehensive SaaS boilerplate built with Nuxt 4 and AWS Amplify Gen2, using amonorepo structure with Nuxt layers architecture. This starter provides everything you need to build a modern, scalable SaaS application with authentication, billing, and multi-tenant support.
+A modern full-stack SaaS application built with Nuxt 4, AWS Amplify Gen2, and Nuxt UI Pro. This project provides a complete foundation for building scalable SaaS applications with authentication, dashboard, and AWS backend integration.
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture
 
-This project consists of three main applications built on a shared foundation:
+This is a **monorepo** containing:
 
-- **Backend** (`apps/backend/`): AWS Amplify Gen2 infrastructure with CDK, Lambda functions, and GraphQL API
-- **Landing** (`apps/landing/`): Public marketing site built with Nuxt SSG
-- **SaaS** (`apps/saas/`): Main authenticated SaaS application built with Nuxt SSR
+### Applications
+- **`apps/backend/`** - AWS Amplify Gen2 backend (Auth, API, Database)
+- **`apps/saas/`** - Main SaaS dashboard application (Nuxt 4 SSR)
+- **`apps/landing/`** - Marketing landing page (Nuxt 4 SSG)
 
-### Nuxt Layers System
+### Nuxt Layers
+- **`layers/uix/`** - UI foundation layer (Nuxt UI Pro + Tailwind)
+- **`layers/amplify/`** - AWS Amplify integration layer
+- **`layers/auth/`** - Authentication components and logic
 
-The project uses Nuxt layers for code organization and reusability:
+## ✨ Features
 
-- **UIX Layer** (`layers/uix/`): Foundation UI components with Nuxt UI Pro and Tailwind CSS
-- Additional layers: auth, amplify, billing, app, site, debug (planned)
-
-```
-apps/
-├── backend/     # AWS Amplify Gen2 infrastructure
-├── landing/     # Public marketing site
-└── saas/        # Main SaaS application
-
-layers/
-└── uix/         # UI/UX foundation layer
-
-docs/
-├── ARCHITECTURE.md  # Technical architecture details
-├── PRD.md          # Product requirements
-└── PLAN/           # Implementation phases
-```
-
-## 🛠️ Technology Stack
-
-- **Frontend**: Nuxt 4, Vue 3, TypeScript, Nuxt UI Pro, Tailwind CSS
-- **Backend**: AWS Amplify Gen2, CDK, Lambda, AppSync GraphQL
-- **Database**: DynamoDB with GraphQL API
-- **Authentication**: AWS Cognito with MFA support
-- **Billing**: Stripe integration
-- **AI**: Amazon Bedrock integration
+- **🔐 Authentication**: Complete auth flow (signup, signin, password reset) with AWS Cognito
+- **📊 Dashboard**: Professional dashboard interface with collapsible sidebar
+- **🎨 UI Components**: Built with Nuxt UI Pro for consistent, beautiful design
+- **📱 Responsive**: Mobile-first design that works on all devices
+- **⚡ Performance**: Optimized with Nuxt 4's latest performance improvements
+- **🔧 Configurable**: Easy-to-customize navigation and theming
+- **☁️ AWS Ready**: Full AWS Amplify integration with DynamoDB and GraphQL API
 
 ## 📋 Prerequisites
 
-- **Node.js**: >= 20.19.0
-- **pnpm**: 10.13.1 (required)
-- **AWS CLI**: Configured with appropriate credentials
-- **AWS Amplify CLI**: Latest version
+Before you begin, ensure you have:
 
-## 🚀 Development Environment Setup
+- **Node.js** >= 20.19.0
+- **pnpm** 10.13.1 (will be installed automatically via corepack)
+- **AWS CLI** configured with appropriate credentials
+- **AWS Account** with Amplify access
 
-### 1. Install Dependencies
+## 🚀 Local Development Setup
+
+### Step 1: Clone and Install
 
 ```bash
-# Install pnpm if not already installed
-npm install -g pnpm@10.13.1
+git clone <your-repo-url>
+cd starter-nuxt-amplify-saas
 
-# Install project dependencies
+# Enable corepack for pnpm
+corepack enable
+
+# Install all dependencies
 pnpm install
 ```
 
-### 2. Backend Development with Sandbox
+### Step 2: Initialize AWS Amplify Sandbox
 
-The backend uses AWS Amplify Gen2 with a sandbox environment for local development:
+The sandbox creates a temporary AWS environment for development:
 
 ```bash
-# Navigate to backend directory
-cd apps/backend
-
-# Start the sandbox environment (deploys to AWS)
-pnpm exec ampx sandbox
-
-# This will:
-# - Deploy backend infrastructure to AWS
-# - Generate GraphQL types
-# - Provide local development endpoints
+# Initialize and deploy the backend to AWS sandbox
+pnpm backend:sandbox:init
 ```
 
-### 3. Frontend Development
+This command will:
+- Deploy AWS resources (Cognito, DynamoDB, AppSync) to your AWS account
+- Create a sandbox environment isolated from production
+- Generate `amplify_outputs.json` with connection details
 
-Once the backend sandbox is running, start the frontend applications:
+### Step 3: Generate Amplify Configuration
 
-#### SaaS Application (Main App)
 ```bash
-# Start the SaaS app development server
+# Generate Amplify outputs for frontend
+pnpm amplify:sandbox:generate-outputs
+
+# Generate GraphQL client code and types
+pnpm amplify:sandbox:generate-graphql-client-code
+```
+
+### Step 4: Start Development Server
+
+```bash
+# Start the SaaS application
 pnpm saas:dev
 
-# Available at: http://localhost:3000
-```
-
-#### Landing Page
-```bash
-# Start the landing page development server
+# OR start the landing page
 pnpm landing:dev
-
-# Available at: http://localhost:3001
 ```
 
-### 4. Development Workflow
+Your applications will be available at:
+- **SaaS Dashboard**: http://localhost:3000
+- **Landing Page**: http://localhost:3001
 
-1. **Backend First**: Always ensure the backend sandbox is running before starting frontend development
-2. **Code Generation**: The sandbox automatically generates TypeScript types from your GraphQL schema
-3. **Hot Reload**: Both frontend applications support hot module replacement
-4. **Layer Development**: Make changes to the UIX layer and see them reflected across applications
+### Step 5: Test Authentication
 
-## 🔧 Building Applications
+1. Navigate to http://localhost:3000
+2. Click "Sign Up" to create a test account
+3. Complete the email verification process
+4. Sign in and explore the dashboard
 
-### SaaS Application
+### 🧹 Cleanup Sandbox
+
+When you're done developing:
+
 ```bash
-cd apps/saas
-pnpm build
+pnpm backend:sandbox:delete
 ```
 
-### Landing Page (Static Site)
-```bash
-cd apps/landing
-pnpm generate
-```
+## 🌐 Production Deployment
 
-### Backend
+### Method 1: AWS Amplify Console (Recommended)
+
+#### Step 1: Create Amplify App for Backend
+
+1. Go to [AWS Amplify Console](https://console.aws.amazon.com/amplify/)
+2. Click "Create new app" → "Deploy without Git provider"
+3. Give it a name like `your-project-backend`
+4. Note the **App ID** (you'll need it later)
+
+#### Step 2: Deploy Backend
+
 ```bash
+# Set environment variables
+export AWS_BRANCH=main  # or your deployment branch
+export AWS_APP_ID=your-amplify-backend-app-id
+
+# Deploy backend to production
 cd apps/backend
-pnpm exec ampx deploy
+pnpm run deploy
 ```
 
-## 🌐 Production Deployment on AWS Amplify
+#### Step 3: Create Amplify App for Frontend
 
-### 1. Backend Deployment
+1. In AWS Amplify Console, click "Create new app" → "Deploy from Git"
+2. Connect your Git repository
+3. Select your main branch
+4. **Build settings**: Amplify will auto-detect the `amplify.yml` in `apps/saas/`
+5. **Environment variables**: Set any required variables (see below)
+6. Deploy the app
 
-Deploy your backend infrastructure to production:
+#### Step 4: Configure Environment Variables
+
+In your Amplify frontend app settings, add:
 
 ```bash
-cd apps/backend
+# Required for build process
+AWS_BRANCH=main
+BACKEND_APP_ID=your-amplify-backend-app-id
 
-# Deploy to production branch
-pnpm exec ampx pipeline-deploy --branch production --app-id YOUR_APP_ID
-
-# Or deploy directly
-pnpm exec ampx deploy --branch production
+# Optional: Custom domain settings
+NUXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
-### 2. Frontend Deployment
+### Method 2: Manual Build & Deploy
 
-#### Option A: Using Amplify Hosting (Recommended)
+If you prefer manual deployment:
 
-1. **Connect Repository**: Link your Git repository to AWS Amplify Hosting
-2. **Configure Build Settings**: Use the provided `amplify.yml` files in each app directory
-3. **Environment Variables**: Set required environment variables in Amplify Console
-
-#### Option B: Manual Deployment
-
-**Landing Page:**
 ```bash
-cd apps/landing
-pnpm generate
-# Upload dist/ folder to S3 or CloudFront
-```
-
-**SaaS Application:**
-```bash
+# Build the application
 cd apps/saas
-pnpm build
-# Deploy .output/ folder to Amplify Hosting or serverless platform
+pnpm run build
+
+# Deploy the .amplify-hosting directory to your hosting provider
+# The build output will be in .amplify-hosting/
 ```
 
-### 3. Environment Configuration
+## ⚙️ Configuration
 
-Set the following environment variables in AWS Amplify Console:
+### Dashboard Menu Configuration
+
+Customize the navigation menu in `apps/saas/app/app.config.ts`:
+
+```typescript
+export default defineAppConfig({
+  dashboard: {
+    navigation: {
+      main: [
+        // Main navigation group
+        [{
+          label: 'Home',
+          icon: 'i-lucide-house',
+          to: '/'
+        }, {
+          label: 'Analytics',
+          icon: 'i-lucide-bar-chart',
+          to: '/analytics',
+          badge: 'New'
+        }, {
+          label: 'Settings',
+          icon: 'i-lucide-settings',
+          type: 'trigger',
+          defaultOpen: true,
+          children: [{
+            label: 'General',
+            to: '/settings'
+          }, {
+            label: 'Team',
+            to: '/settings/team'
+          }]
+        }],
+        // Secondary navigation group
+        [{
+          label: 'Help & Support',
+          icon: 'i-lucide-help-circle',
+          to: 'https://your-support-url.com',
+          target: '_blank'
+        }]
+      ]
+    }
+  }
+})
+```
+
+### Theme Configuration
+
+Customize colors and themes in `layers/uix/app.config.ts`:
+
+```typescript
+export default defineAppConfig({
+  ui: {
+    colors: {
+      primary: 'blue',
+      gray: 'slate'
+    }
+  }
+})
+```
+
+### AWS Backend Configuration
+
+Backend resources are defined in:
+- **Authentication**: `apps/backend/amplify/auth/resource.ts`
+- **Database**: `apps/backend/amplify/data/resource.ts`
+- **Main config**: `apps/backend/amplify/backend.ts`
+
+## 🛠️ Available Scripts
+
+From the project root:
 
 ```bash
-# Required for all environments
-NODE_VERSION=20.19.0
-AMPLIFY_MONOREPO_APP_ROOT=apps/landing  # or apps/saas
+# Backend commands
+pnpm backend:sandbox:init        # Initialize development sandbox
+pnpm backend:sandbox:delete      # Delete development sandbox
 
-# SaaS App specific
-NUXT_PUBLIC_AMPLIFY_APP_ID=your_amplify_app_id
-NUXT_PUBLIC_AMPLIFY_REGION=us-east-1
+# Generate Amplify configuration
+pnpm amplify:sandbox:generate-outputs           # Generate outputs for sandbox
+pnpm amplify:sandbox:generate-graphql-client-code  # Generate GraphQL types
+pnpm amplify:generate-outputs                   # Generate outputs for production
+pnpm amplify:generate-graphql-client-code       # Generate GraphQL types for production
 
-# Production specific
-NODE_ENV=production
+# Frontend development
+pnpm saas:dev                    # Start SaaS app development
+pnpm landing:dev                 # Start landing page development
 ```
 
-### 4. Branch Configuration
-
-- **Main Branch**: Automatically deploys to production
-- **Develop Branch**: Deploys to staging environment
-- **Feature Branches**: Can be configured for preview deployments
-
-## 🧪 Testing and Quality
-
-### Linting
-```bash
-# Lint UIX layer
-cd layers/uix
-pnpm lint
-
-# Add linting for other components as needed
-```
-
-### Type Checking
-```bash
-# Type check applications
-cd apps/saas
-pnpm typecheck
-
-cd apps/landing
-pnpm typecheck
-```
-
-## 📚 Key Features
-
-- **Multi-Tenant Architecture**: Data isolation by organization ID
-- **Role-Based Access Control**: Owner, Admin, Member roles
-- **GraphQL API**: Type-safe backend with auto-generated types
-- **Authentication**: AWS Cognito with MFA support
-- **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **Accessibility**: WCAG 2.1 AA compliance
-- **Dark/Light Mode**: Built-in theme switching
-
-## 🔄 Development Commands Reference
+From individual apps:
 
 ```bash
-# Package management
-pnpm install                    # Install dependencies
-pnpm saas:dev                  # Start SaaS app development
-pnpm landing:dev               # Start landing page development
+# In apps/saas/
+pnpm dev                         # Development server
+pnpm build                       # Production build
+pnpm preview                     # Preview production build
 
-# Backend
-cd apps/backend && pnpm exec ampx sandbox    # Start sandbox
-cd apps/backend && pnpm exec ampx deploy     # Deploy backend
-
-# Building
-cd apps/saas && pnpm build              # Build SaaS app
-cd apps/landing && pnpm generate        # Generate landing page
-
-# Quality
-cd layers/uix && pnpm lint              # Lint UIX layer
+# In apps/backend/
+pnpm sandbox:init                # Initialize sandbox
+pnpm deploy                      # Deploy to production
 ```
 
-## 📖 Documentation
+## 🔧 Troubleshooting
 
-For detailed information, refer to:
+### Common Issues
 
-- `docs/ARCHITECTURE.md` - Complete technical architecture
-- `docs/PRD.md` - Product requirements and specifications
-- `docs/PLAN/` - Implementation phases and roadmap
-- `CLAUDE.md` - Development guidelines for AI assistance
+**"Cannot read properties of undefined (reading 'navigation')"**
+- Make sure `app.config.ts` is in the correct location: `apps/saas/app/app.config.ts`
+- Restart your development server after config changes
+
+**AWS Authentication Errors**
+- Ensure your AWS CLI is configured: `aws configure`
+- Check that your AWS credentials have Amplify permissions
+- Verify the `amplify_outputs.json` is generated and up-to-date
+
+**Build Failures**
+- Clear node_modules: `rm -rf node_modules && pnpm install`
+- Clear Nuxt cache: `pnpm nuxt cleanup`
+- Regenerate Amplify files: `pnpm amplify:sandbox:generate-outputs`
+
+**Deployment Issues**
+- Ensure environment variables are set correctly
+- Check that the backend is deployed before the frontend
+- Verify the `amplify.yml` build configuration
+
+### Environment Variables Reference
+
+**Backend Deployment:**
+- `AWS_BRANCH` - Git branch name (e.g., 'main')
+- `AWS_APP_ID` - Amplify backend app ID
+
+**Frontend Build:**
+- `BACKEND_APP_ID` - Reference to backend app
+- `NUXT_PUBLIC_SITE_URL` - Your site URL (optional)
+
+## 📚 Learn More
+
+- [Nuxt 4 Documentation](https://nuxt.com/docs)
+- [AWS Amplify Gen2 Documentation](https://docs.amplify.aws/)
+- [Nuxt UI Pro Documentation](https://ui.nuxt.com/pro)
+- [AWS Amplify Console](https://console.aws.amazon.com/amplify/)
 
 ## 🤝 Contributing
 
-1. Follow the established patterns in each layer
-2. Ensure accessibility compliance (WCAG 2.1 AA)
-3. Test both light and dark mode implementations
-4. Run linting before committing changes
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-[Add your license information here]
+MIT License - see the LICENSE file for details.
