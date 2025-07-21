@@ -1,19 +1,23 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'auth'
+  layout: 'auth',
+  middleware: 'guest'
 })
 
 useSeoMeta({
   title: 'Login'
 })
 
+const route = useRoute()
 const state = ref('signin')
+
 const onStateChange = (newState: string) => {
   state.value = newState
 }
 
 const onSignedIn = () => {
-  navigateTo('/')
+  const redirectTo = getRedirectUrl(route.query)
+  navigateTo(redirectTo)
 }
 </script>
 

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
+definePageMeta({
+  middleware: 'auth'
+})
+
 const links = [[{
   label: 'General',
   icon: 'i-lucide-user',

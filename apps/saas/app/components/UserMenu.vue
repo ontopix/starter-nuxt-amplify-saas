@@ -7,15 +7,30 @@ defineProps<{
 
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
+const { signOut, user: authUser, displayName, email } = useUser()
 
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
-const user = ref({
-  name: 'Benjamin Canac',
-  avatar: {
-    src: 'https://github.com/benjamincanac.png',
-    alt: 'Benjamin Canac'
+const user = computed(() => {
+  if (authUser.value && displayName.value) {
+    return {
+      name: displayName.value,
+      avatar: {
+        src: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&background=random`,
+        alt: displayName.value
+      },
+      email: email.value
+    }
+  }
+  
+  // Fallback to hardcoded data if no authenticated user
+  return {
+    name: 'Benjamin Canac',
+    avatar: {
+      src: 'https://github.com/benjamincanac.png',
+      alt: 'Benjamin Canac'
+    }
   }
 })
 
@@ -145,7 +160,10 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   target: '_blank'
 }], [{
   label: 'Log out',
-  icon: 'i-lucide-log-out'
+  icon: 'i-lucide-log-out',
+  onSelect: async () => {
+    await signOut()
+  }
 }]]))
 </script>
 
