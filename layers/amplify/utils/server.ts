@@ -1,7 +1,8 @@
 import type { H3Event, EventHandlerRequest } from 'h3'
 import type {
   AmplifyServer,
-  CookieStorage } from 'aws-amplify/adapter-core'
+  CookieStorage,
+  LibraryOptions } from 'aws-amplify/adapter-core'
 import {
   createKeyValueStorageFromCookieStorageAdapter,
   createUserPoolsTokenProvider,
@@ -12,7 +13,7 @@ import { parseAmplifyConfig } from 'aws-amplify/utils'
 import { Amplify } from 'aws-amplify'
 import { generateClient } from 'aws-amplify/data'
 import { parseCookies, setCookie, deleteCookie } from 'h3'
-import outputs from '@/amplify_outputs.json'
+import outputs from '../amplify_outputs.json'
 
 const amplifyConfig = parseAmplifyConfig(outputs)
 Amplify.configure(amplifyConfig)

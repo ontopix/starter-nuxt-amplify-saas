@@ -15,6 +15,9 @@
     "generate-outputs": "ampx generate outputs --branch $AWS_BRANCH --app-id $BACKEND_APP_ID",
     "generate-graphql-client-code": "ampx generate graphql-client-code --branch $AWS_BRANCH --app-id $BACKEND_APP_ID --out utils/graphql"
   },
+  "dependencies": {
+    "aws-amplify": "^6.8.4"
+  },
   "devDependencies": {
     "@nuxt/eslint": "latest",
     "eslint": "^9.31.0",

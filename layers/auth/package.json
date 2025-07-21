@@ -1,5 +1,5 @@
 {
-  "name": "@starter-nuxt-amplify-saas/uix",
+  "name": "@starter-nuxt-amplify-saas/auth",
   "type": "module",
   "version": "0.0.1",
   "main": "./nuxt.config.ts",
@@ -15,11 +15,7 @@
     "@nuxt/eslint": "latest",
     "eslint": "^9.31.0",
     "nuxt": "^4.0.0",
-    "tailwindcss": "latest",
     "typescript": "^5.8.3",
     "vue": "latest"
-  },
-  "dependencies": {
-    "@nuxt/ui-pro": "^3.2.0"
   }
 }
