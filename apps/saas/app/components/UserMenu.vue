@@ -13,24 +13,15 @@ const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = computed(() => {
-  if (authUser.value && displayName.value) {
-    return {
-      name: displayName.value,
-      avatar: {
-        src: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&background=random`,
-        alt: displayName.value
-      },
-      email: email.value
-    }
-  }
-  
-  // Fallback to hardcoded data if no authenticated user
+  const userName = displayName.value || email.value || 'User'
+
   return {
-    name: 'Benjamin Canac',
+    name: userName,
     avatar: {
-      src: 'https://github.com/benjamincanac.png',
-      alt: 'Benjamin Canac'
-    }
+      src: `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`,
+      alt: userName
+    },
+    email: email.value
   }
 })
 

@@ -151,10 +151,15 @@ async function onSignUpSubmit(event: FormSubmitEvent<z.infer<typeof signUpSchema
   loading.value = true
   try {
     const { Auth } = useNuxtApp().$Amplify
-    console.log('onSignUpSubmit', event.data.email, event.data.password)
+    console.log('onSignUpSubmit', event.data.email, event.data.password, event.data.name)
     const { isSignUpComplete, nextStep } = await Auth.signUp({
       username: event.data.email,
-      password: event.data.password
+      password: event.data.password,
+      options: {
+        userAttributes: {
+          'custom:display_name': event.data.name
+        }
+      }
     })
 
     if (!isSignUpComplete && nextStep.signUpStep === 'CONFIRM_SIGN_UP') {

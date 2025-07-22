@@ -23,6 +23,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "aws-amplify": "^6.15.3"
+    "aws-amplify": "^6.15.3",
+    "zod": "3.25.17"
   }
 }
