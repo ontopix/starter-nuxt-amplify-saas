@@ -1,0 +1,71 @@
+[
+  {
+    "id": "free",
+    "name": "Free",
+    "description": "Perfect for getting started",
+    "price": 0,
+    "interval": "month",
+    "stripePriceId": "price_1S4grNEUWFhX2zZSWeGxNd96",
+    "features": [
+      "1 project",
+      "1 team member",
+      "1GB storage",
+      "Basic support",
+      "1,000 API requests/month"
+    ],
+    "limits": {
+      "projects": 1,
+      "users": 1,
+      "storage": "1GB",
+      "apiRequests": 1000
+    }
+  },
+  {
+    "id": "pro",
+    "name": "Pro",
+    "description": "For growing teams and businesses",
+    "price": 2900,
+    "interval": "month",
+    "stripePriceId": "price_1S4grOEUWFhX2zZS6ykHiUyQ",
+    "popular": true,
+    "features": [
+      "Unlimited projects",
+      "10 team members",
+      "100GB storage",
+      "Priority support",
+      "100,000 API requests/month",
+      "Advanced analytics",
+      "Custom integrations"
+    ],
+    "limits": {
+      "projects": -1,
+      "users": 10,
+      "storage": "100GB",
+      "apiRequests": 100000
+    }
+  },
+  {
+    "id": "enterprise",
+    "name": "Enterprise",
+    "description": "For large organizations",
+    "price": 9900,
+    "interval": "month",
+    "stripePriceId": "price_1S4grOEUWFhX2zZSJKVv45Rg",
+    "features": [
+      "Unlimited projects",
+      "Unlimited team members",
+      "1TB storage",
+      "Dedicated support",
+      "Unlimited API requests",
+      "Advanced security",
+      "SSO integration",
+      "Custom SLA"
+    ],
+    "limits": {
+      "projects": -1,
+      "users": -1,
+      "storage": "1TB",
+      "apiRequests": -1
+    }
+  }
+]

@@ -12,6 +12,50 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.guest()]),
+    
+  UserSubscription: a
+    .model({
+      userId: a.string().required(),
+      stripeSubscriptionId: a.string(),
+      stripeCustomerId: a.string(),
+      planId: a.string().required().default('free'),
+      status: a.string().required().default('active'),
+      currentPeriodStart: a.timestamp(),
+      currentPeriodEnd: a.timestamp(),
+      cancelAtPeriodEnd: a.boolean().default(false),
+      createdAt: a.timestamp(),
+      updatedAt: a.timestamp(),
+    })
+    .authorization((allow) => [
+      allow.owner().to(['create', 'read', 'update', 'delete']).identityClaim('sub')
+    ]),
+    
+  StripeCustomer: a
+    .model({
+      userId: a.string().required(),
+      stripeCustomerId: a.string().required(),
+      email: a.string(),
+      name: a.string(),
+      createdAt: a.timestamp(),
+    })
+    .authorization((allow) => [
+      allow.owner().to(['create', 'read', 'update', 'delete']).identityClaim('sub')
+    ]),
+    
+  BillingUsage: a
+    .model({
+      userId: a.string().required(),
+      period: a.string().required(), // YYYY-MM format
+      projects: a.integer().default(0),
+      users: a.integer().default(0),
+      storageBytes: a.integer().default(0),
+      apiRequests: a.integer().default(0),
+      createdAt: a.timestamp(),
+      updatedAt: a.timestamp(),
+    })
+    .authorization((allow) => [
+      allow.owner().to(['create', 'read', 'update', 'delete']).identityClaim('sub')
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

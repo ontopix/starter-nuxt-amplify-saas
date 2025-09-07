@@ -10,13 +10,39 @@ export interface DashboardMenuItem {
   defaultOpen?: boolean
 }
 
+export interface SubscriptionPlan {
+  id: string
+  name: string
+  description: string
+  price: number
+  interval: 'month' | 'year'
+  stripePriceId: string
+  features: string[]
+  popular?: boolean
+  limits: {
+    projects?: number
+    users?: number
+    storage?: string
+    apiRequests?: number
+  }
+}
+
+export interface BillingConfig {
+  plans: SubscriptionPlan[]
+}
+
 export interface DashboardConfig {
   navigation: {
     main: DashboardMenuItem[][]
   }
 }
 
+import billingPlans from './billing-plans.json'
+
 export default defineAppConfig({
+  billing: {
+    plans: billingPlans
+  },
   dashboard: {
     navigation: {
       main: [[{
@@ -51,6 +77,9 @@ export default defineAppConfig({
         }, {
           label: 'Security',
           to: '/settings/security'
+        }, {
+          label: 'Billing',
+          to: '/settings/billing'
         }]
       }], [{
         label: 'Feedback',

@@ -15,10 +15,12 @@ This is a **monorepo** containing:
 - **`layers/uix/`** - UI foundation layer (Nuxt UI Pro + Tailwind)
 - **`layers/amplify/`** - AWS Amplify integration layer
 - **`layers/auth/`** - Authentication components and logic
+- **`layers/billing/`** - Stripe billing integration and subscription management
 
 ## ✨ Features
 
 - **🔐 Authentication**: Complete auth flow (signup, signin, password reset) with AWS Cognito
+- **💳 Billing & Subscriptions**: Stripe integration with subscription management
 - **📊 Dashboard**: Professional dashboard interface with collapsible sidebar
 - **🎨 UI Components**: Built with Nuxt UI Pro for consistent, beautiful design
 - **📱 Responsive**: Mobile-first design that works on all devices
@@ -34,6 +36,7 @@ Before you begin, ensure you have:
 - **pnpm** 10.13.1 (will be installed automatically via corepack)
 - **AWS CLI** configured with appropriate credentials
 - **AWS Account** with Amplify access
+- **Stripe Account** for billing integration (optional)
 
 ## 🚀 Local Development Setup
 
@@ -94,6 +97,64 @@ Your applications will be available at:
 2. Click "Sign Up" to create a test account
 3. Complete the email verification process
 4. Sign in and explore the dashboard
+
+### Step 6: Configure Stripe Integration (Optional)
+
+If you want to test billing functionality:
+
+#### A. Setup Stripe Account
+
+1. Create a [Stripe account](https://stripe.com) if you don't have one
+2. Install [Stripe CLI](https://stripe.com/docs/stripe-cli):
+   ```bash
+   # macOS
+   brew install stripe/stripe-cli/stripe
+   
+   # Or download from https://github.com/stripe/stripe-cli/releases
+   ```
+3. Login to your Stripe account:
+   ```bash
+   stripe login
+   ```
+
+#### B. Configure Environment Variables
+
+Create a `.env` file in `apps/saas/`:
+
+```bash
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+
+# Optional: Stripe Webhook Endpoint Secret (for webhooks)
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+```
+
+#### C. Sync Billing Plans to Stripe
+
+The application includes predefined billing plans that need to be synchronized with your Stripe account:
+
+```bash
+# Dry run to see what will be created
+pnpm billing:stripe:dry-run
+
+# Actually create products and prices in Stripe
+pnpm billing:stripe:sync
+```
+
+This will:
+- Create products in Stripe for each plan (Free, Pro, Enterprise)
+- Generate price objects for subscriptions
+- Update `apps/saas/app/billing-plans.json` with the new Stripe price IDs
+
+#### D. Test Billing (Optional)
+
+1. Start webhook listener in a separate terminal:
+   ```bash
+   pnpm billing:stripe:listen
+   ```
+2. Access the debug page at http://localhost:3000/debug
+3. Use the Billing section to test subscription flows
 
 ### 🧹 Cleanup Sandbox
 
@@ -223,6 +284,40 @@ export default defineAppConfig({
 })
 ```
 
+### Billing Plans Configuration
+
+Billing plans are defined in `apps/saas/app/billing-plans.json`:
+
+```json
+[
+  {
+    "id": "free",
+    "name": "Free",
+    "description": "Perfect for getting started",
+    "price": 0,
+    "interval": "month",
+    "stripePriceId": "",
+    "features": [
+      "1 project",
+      "1 team member",
+      "1GB storage",
+      "Basic support"
+    ],
+    "limits": {
+      "projects": 1,
+      "users": 1,
+      "storage": "1GB",
+      "apiRequests": 1000
+    }
+  }
+]
+```
+
+To add or modify plans:
+1. Edit `apps/saas/app/billing-plans.json`
+2. Run `pnpm billing:stripe:sync` to update Stripe
+3. Restart your development server
+
 ### AWS Backend Configuration
 
 Backend resources are defined in:
@@ -248,6 +343,11 @@ pnpm amplify:generate-graphql-client-code       # Generate GraphQL types for pro
 # Frontend development
 pnpm saas:dev                    # Start SaaS app development
 pnpm landing:dev                 # Start landing page development
+
+# Billing & Stripe integration
+pnpm billing:stripe:sync         # Sync billing plans to Stripe
+pnpm billing:stripe:dry-run      # Preview what will be synced (no changes)
+pnpm billing:stripe:listen       # Listen for Stripe webhooks
 ```
 
 From individual apps:
@@ -286,6 +386,13 @@ pnpm deploy                      # Deploy to production
 - Check that the backend is deployed before the frontend
 - Verify the `amplify.yml` build configuration
 
+**Stripe Integration Issues**
+- Verify Stripe API keys are correctly set in `.env`
+- Check that you're using test keys for development
+- Ensure products exist in Stripe: `pnpm billing:stripe:sync`
+- For webhooks: Check that webhook listener is running: `pnpm billing:stripe:listen`
+- Verify Stripe CLI is installed and logged in: `stripe login`
+
 ### Environment Variables Reference
 
 **Backend Deployment:**
@@ -295,6 +402,11 @@ pnpm deploy                      # Deploy to production
 **Frontend Build:**
 - `BACKEND_APP_ID` - Reference to backend app
 - `NUXT_PUBLIC_SITE_URL` - Your site URL (optional)
+
+**Stripe Integration:**
+- `STRIPE_SECRET_KEY` - Stripe secret key (server-side)
+- `NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key (client-side)
+- `STRIPE_WEBHOOK_SECRET` - Webhook endpoint secret (optional)
 
 ## 📚 Learn More
 

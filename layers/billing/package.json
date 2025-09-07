@@ -1,0 +1,29 @@
+{
+  "name": "@starter-nuxt-amplify-saas/billing",
+  "type": "module",
+  "version": "0.0.1",
+  "main": "./nuxt.config.ts",
+  "scripts": {
+    "dev": "nuxi dev .playground",
+    "dev:prepare": "nuxt prepare .playground",
+    "build": "nuxt build .playground",
+    "generate": "nuxt generate .playground",
+    "preview": "nuxt preview .playground",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@starter-nuxt-amplify-saas/auth": "workspace:*",
+    "@stripe/stripe-js": "^4.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "stripe": "^17.1.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "latest",
+    "@types/jsonwebtoken": "^9.0.5",
+    "eslint": "^9.31.0",
+    "nuxt": "^4.0.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vue": "latest"
+  }
+}
