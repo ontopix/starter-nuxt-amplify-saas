@@ -369,6 +369,24 @@ export const useUser = () => {
     }
   }
 
+  /**
+   * Get raw session information
+   * 
+   * Returns the raw session object from AWS Amplify fetchAuthSession.
+   * 
+   * @returns {Promise<Object|null>} Raw session or null if not authenticated
+   */
+  const getSessionInfo = async () => {
+    try {
+      const { Auth } = nuxtApp.$Amplify
+      const session = await Auth.fetchAuthSession()
+      return session
+    } catch (error) {
+      console.error('Error fetching session info:', error)
+      return null
+    }
+  }
+
 
   return {
     // State (computed refs from the reactive state)
@@ -388,6 +406,7 @@ export const useUser = () => {
     fetchUserAttributes,
     updateUserAttributes,
     checkAuthSession,
+    getSessionInfo,
     signIn,
     signUp,
     signOut,
