@@ -7,7 +7,8 @@ export default defineNuxtConfig({
   extends: [
     '@starter-nuxt-amplify-saas/uix',
     '@starter-nuxt-amplify-saas/amplify',
-    '@starter-nuxt-amplify-saas/auth'
+    '@starter-nuxt-amplify-saas/auth',
+    '@starter-nuxt-amplify-saas/debug'
   ],
   alias: {
     '@': path.resolve(__dirname)
