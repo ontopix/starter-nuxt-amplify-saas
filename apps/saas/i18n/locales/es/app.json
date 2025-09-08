@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "SaaS Starter",
+    "tagline": "Tu solución SaaS completa",
+    "welcome": "Bienvenido a tu panel"
+  },
+  "pages": {
+    "customers": {
+      "title": "Clientes",
+      "subtitle": "Gestiona tu base de clientes",
+      "addCustomer": "Agregar Cliente",
+      "noCustomers": "No se encontraron clientes"
+    },
+    "inbox": {
+      "title": "Bandeja de Entrada",
+      "subtitle": "Gestiona tus mensajes",
+      "noMessages": "No hay mensajes"
+    },
+    "dashboard": {
+      "title": "Panel",
+      "subtitle": "Resumen de las métricas de tu negocio"
+    }
+  },
+  "components": {
+    "userMenu": {
+      "profile": "Perfil",
+      "account": "Cuenta",
+      "logout": "Cerrar sesión"
+    },
+    "teamsMenu": {
+      "switchTeam": "Cambiar equipo", 
+      "manageTeams": "Gestionar equipos"
+    }
+  }
+}

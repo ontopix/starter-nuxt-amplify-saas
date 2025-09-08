@@ -14,6 +14,7 @@ This is a **monorepo** containing:
 ### Nuxt Layers
 - **`layers/uix/`** - UI foundation layer (Nuxt UI Pro + Tailwind)
 - **`layers/amplify/`** - AWS Amplify integration layer
+- **`layers/i18n/`** - Internationalization layer with @nuxtjs/i18n (modular translations)
 - **`layers/auth/`** - Authentication components and logic
 - **`layers/billing/`** - Stripe billing integration and subscription management
 
@@ -21,11 +22,13 @@ This is a **monorepo** containing:
 
 - **🔐 Authentication**: Complete auth flow (signup, signin, password reset) with AWS Cognito
 - **💳 Billing & Subscriptions**: Stripe integration with subscription management
+- **🌐 Internationalization**: Modular i18n with @nuxtjs/i18n - multiple languages, auto-merge translations
 - **📊 Dashboard**: Professional dashboard interface with collapsible sidebar
 - **🎨 UI Components**: Built with Nuxt UI Pro for consistent, beautiful design
 - **📱 Responsive**: Mobile-first design that works on all devices
 - **⚡ Performance**: Optimized with Nuxt 4's latest performance improvements
 - **🔧 Configurable**: Easy-to-customize navigation and theming
+- **🏗️ Modular Architecture**: Layer-based system for scalable, maintainable code
 - **☁️ AWS Ready**: Full AWS Amplify integration with DynamoDB and GraphQL API
 
 ## 📋 Prerequisites

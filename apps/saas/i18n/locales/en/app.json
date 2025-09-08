@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "SaaS Starter",
+    "tagline": "Your complete SaaS solution",
+    "welcome": "Welcome to your dashboard"
+  },
+  "pages": {
+    "customers": {
+      "title": "Customers",
+      "subtitle": "Manage your customer base",
+      "addCustomer": "Add Customer",
+      "noCustomers": "No customers found"
+    },
+    "inbox": {
+      "title": "Inbox", 
+      "subtitle": "Manage your messages",
+      "noMessages": "No messages"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your business metrics"
+    }
+  },
+  "components": {
+    "userMenu": {
+      "profile": "Profile",
+      "account": "Account", 
+      "logout": "Sign out"
+    },
+    "teamsMenu": {
+      "switchTeam": "Switch team",
+      "manageTeams": "Manage teams"
+    }
+  }
+}

@@ -15,6 +15,7 @@
   "dependencies": {
     "@starter-nuxt-amplify-saas/uix": "workspace:*",
     "@starter-nuxt-amplify-saas/amplify": "workspace:*",
+    "@starter-nuxt-amplify-saas/i18n": "workspace:*",
     "@starter-nuxt-amplify-saas/auth": "workspace:*",
     "@starter-nuxt-amplify-saas/debug": "workspace:*",
     "@starter-nuxt-amplify-saas/billing": "workspace:*",

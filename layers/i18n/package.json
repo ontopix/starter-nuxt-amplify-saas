@@ -1,0 +1,10 @@
+{
+  "name": "@starter-nuxt-amplify-saas/i18n",
+  "version": "1.0.0",
+  "description": "Internationalization layer with common i18n configuration",
+  "type": "module",
+  "main": "./nuxt.config.ts",
+  "dependencies": {
+    "@nuxtjs/i18n": "^10.0.6"
+  }
+}
