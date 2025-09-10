@@ -93,24 +93,31 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       : session.subscription.id
 
     // Update user's subscription in your database
-    await updateUserSubscription(userId, {
+    // Note: Webhooks need special handling as they don't have user auth context
+    await updateUserSubscription(null as any, userId, {
       stripeSubscriptionId: subscriptionId,
-      stripeCustomerId: session.customer as string,
+      stripeCustomerId: getCustomerId(session.customer) || undefined,
       status: 'active'
     })
   }
 }
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string
-  const userId = await getUserIdFromStripeCustomer(customerId)
+  const customerId = getCustomerId(subscription.customer)
+  
+  if (!customerId) {
+    console.error('Invalid customer data in subscription:', subscription.id)
+    return
+  }
+  
+  const userId = await getUserIdFromStripeCustomer(null as any, customerId)
   
   if (!userId) {
     console.error('No user found for Stripe customer:', customerId)
     return
   }
 
-  await updateUserSubscription(userId, {
+  await updateUserSubscription(null as any, userId, {
     stripeSubscriptionId: subscription.id,
     stripeCustomerId: customerId,
     status: subscription.status,
@@ -122,15 +129,21 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string
-  const userId = await getUserIdFromStripeCustomer(customerId)
+  const customerId = getCustomerId(subscription.customer)
+  
+  if (!customerId) {
+    console.error('Invalid customer data in subscription:', subscription.id)
+    return
+  }
+  
+  const userId = await getUserIdFromStripeCustomer(null as any, customerId)
   
   if (!userId) {
     console.error('No user found for Stripe customer:', customerId)
     return
   }
 
-  await updateUserSubscription(userId, {
+  await updateUserSubscription(null as any, userId, {
     status: subscription.status,
     planId: getPlanIdFromStripePrice(subscription.items.data[0]?.price?.id),
     currentPeriodStart: new Date(subscription.current_period_start * 1000),
@@ -140,22 +153,34 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string
-  const userId = await getUserIdFromStripeCustomer(customerId)
+  const customerId = getCustomerId(subscription.customer)
+  
+  if (!customerId) {
+    console.error('Invalid customer data in subscription:', subscription.id)
+    return
+  }
+  
+  const userId = await getUserIdFromStripeCustomer(null as any, customerId)
   
   if (!userId) {
     console.error('No user found for Stripe customer:', customerId)
     return
   }
 
-  await updateUserSubscription(userId, {
+  await updateUserSubscription(null as any, userId, {
     status: 'canceled'
   })
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const customerId = invoice.customer as string
-  const userId = await getUserIdFromStripeCustomer(customerId)
+  const customerId = getCustomerId(invoice.customer)
+  
+  if (!customerId) {
+    console.error('Invalid customer data in invoice:', invoice.id)
+    return
+  }
+  
+  const userId = await getUserIdFromStripeCustomer(null as any, customerId)
   
   if (!userId) {
     console.error('No user found for Stripe customer:', customerId)
@@ -167,8 +192,14 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const customerId = invoice.customer as string
-  const userId = await getUserIdFromStripeCustomer(customerId)
+  const customerId = getCustomerId(invoice.customer)
+  
+  if (!customerId) {
+    console.error('Invalid customer data in invoice:', invoice.id)
+    return
+  }
+  
+  const userId = await getUserIdFromStripeCustomer(null as any, customerId)
   
   if (!userId) {
     console.error('No user found for Stripe customer:', customerId)
@@ -180,15 +211,44 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 }
 
 
+// Helper function to safely extract customer ID from Stripe objects
+function getCustomerId(customer: string | Stripe.Customer | null): string | null {
+  if (!customer) return null
+  return typeof customer === 'string' ? customer : customer.id
+}
+
 function getPlanIdFromStripePrice(stripePriceId?: string): string {
   if (!stripePriceId) return 'free'
   
-  // Note: In a real app, you'd want to load this from your app config or database
-  // For now, we'll return 'pro' for any valid price ID and 'free' as fallback
-  // TODO: Implement proper mapping from billing-plans.json
-  
-  // For debugging, log the price ID we're trying to map
-  console.log('Mapping Stripe price ID to plan:', stripePriceId)
-  
-  return 'pro' // Temporary fallback - should be improved
+  // Load billing plans to map Stripe price IDs to plan IDs
+  try {
+    const billingPlans = [
+      {
+        "id": "free",
+        "stripePriceId": "price_1S4grNEUWFhX2zZSWeGxNd96"
+      },
+      {
+        "id": "pro",
+        "stripePriceId": "price_1S4grOEUWFhX2zZS6ykHiUyQ"
+      },
+      {
+        "id": "enterprise",
+        "stripePriceId": "price_1S4grOEUWFhX2zZSJKVv45Rg"
+      }
+    ]
+    
+    const plan = billingPlans.find(p => p.stripePriceId === stripePriceId)
+    
+    if (plan) {
+      console.log(`Mapped Stripe price ID ${stripePriceId} to plan: ${plan.id}`)
+      return plan.id
+    }
+    
+    console.warn(`Unknown Stripe price ID: ${stripePriceId}, falling back to 'free'`)
+    return 'free'
+    
+  } catch (error) {
+    console.error('Error mapping Stripe price ID to plan:', error)
+    return 'free'
+  }
 }

@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils'
-import { getStripeCustomer } from '../../utils/database'
+import { getStripeCustomer, saveStripeCustomer } from '../../utils/database'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -21,21 +21,31 @@ export default defineEventHandler(async (event) => {
     // Get authenticated user
     const user = await requireAuth(event)
 
-    // Get Stripe customer
-    const customer = await getStripeCustomer(user.userId)
+    // Create or get Stripe customer
+    let customerRecord = await getStripeCustomer(event, user.userId)
+    let customer
     
-    if (!customer) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'No billing account found'
+    if (!customerRecord) {
+      // Create new Stripe customer
+      customer = await stripe.customers.create({
+        email: user.email || user.userId,
+        metadata: {
+          userId: user.userId
+        }
       })
+      
+      // Save customer to database
+      await saveStripeCustomer(event, user.userId, customer.id, user.email)
+    } else {
+      // Use existing customer
+      customer = { id: customerRecord.stripeCustomerId }
     }
 
     const { returnUrl } = body
 
     // Create billing portal session
     const session = await stripe.billingPortal.sessions.create({
-      customer: typeof customer === 'string' ? customer : customer.id,
+      customer: customer.id,
       return_url: returnUrl || `${getHeader(event, 'origin')}/settings/billing`
     })
 

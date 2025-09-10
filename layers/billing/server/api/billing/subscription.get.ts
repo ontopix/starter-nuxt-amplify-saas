@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     const user = await requireAuth(event)
 
     // Get user subscription from database
-    const subscription = await getUserSubscription(user.userId)
+    const subscription = await getUserSubscription(event, user.userId)
 
     return {
       success: true,

@@ -101,9 +101,20 @@ export const useBilling = () => {
     }
   }
 
-  const createPortalSession = async (returnUrl?: string): Promise<BillingResponse> => {
+  const createPortalSession = async (returnUrl?: string, options?: { skipSubscriptionCheck?: boolean }): Promise<BillingResponse> => {
     if (!isAuthenticated.value) {
       return { success: false, error: 'User not authenticated' }
+    }
+
+    // Check subscription status unless explicitly skipped
+    if (!options?.skipSubscriptionCheck && !subscription.value) {
+      // Try to fetch subscription first
+      await fetchSubscription()
+    }
+
+    // Warn if no active subscription (but don't block)
+    if (!options?.skipSubscriptionCheck && (!subscription.value || !isActive.value)) {
+      console.warn('Opening Customer Portal without active subscription. Plan catalog may not be visible.')
     }
 
     try {
@@ -234,6 +245,23 @@ export const useBilling = () => {
     billingState.value.error = null
   }
 
+  const isPortalReady = computed(() => {
+    return isAuthenticated.value && subscription.value && isActive.value
+  })
+
+  const getPortalStatus = () => {
+    if (!isAuthenticated.value) {
+      return { ready: false, reason: 'User not authenticated' }
+    }
+    if (!subscription.value) {
+      return { ready: false, reason: 'No subscription found' }
+    }
+    if (!isActive.value) {
+      return { ready: false, reason: 'Subscription not active' }
+    }
+    return { ready: true, reason: 'Portal ready - plan catalog will be visible' }
+  }
+
   return {
     // State
     subscription: computed(() => billingState.value.subscription),
@@ -246,6 +274,7 @@ export const useBilling = () => {
     currentPlan,
     isActive,
     status,
+    isPortalReady,
     
     // Actions
     fetchSubscription,
@@ -257,6 +286,7 @@ export const useBilling = () => {
     fetchUsageMetrics,
     upgradeSubscription,
     canAccess,
-    clearError
+    clearError,
+    getPortalStatus
   }
 }

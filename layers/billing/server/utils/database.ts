@@ -1,47 +1,274 @@
-// TODO: Replace with proper server-side database calls
-// For now using mock implementations to test Stripe integration
+import { runAmplifyApi } from '@starter-nuxt-amplify-saas/amplify/utils/server'
+import { generateClient } from 'aws-amplify/data/server'
+import type { H3Event } from 'h3'
 
-export async function getUserSubscription(userId: string) {
-  console.log('Mock getUserSubscription called for userId:', userId)
-  return null
+// Type definitions matching the Amplify schema
+export interface UserSubscription {
+  id: string
+  userId: string
+  stripeSubscriptionId?: string
+  stripeCustomerId?: string
+  planId: string
+  status: string
+  currentPeriodStart?: Date
+  currentPeriodEnd?: Date
+  cancelAtPeriodEnd: boolean
+  createdAt?: Date
+  updatedAt?: Date
 }
 
-export async function createUserSubscription(userId: string, subscriptionData: any) {
-  console.log('Mock createUserSubscription called for userId:', userId, subscriptionData)
-  return { id: 'mock-id', userId, ...subscriptionData }
+export interface StripeCustomer {
+  id: string
+  userId: string
+  stripeCustomerId: string
+  email?: string
+  name?: string
+  createdAt?: Date
 }
 
-export async function updateUserSubscription(userId: string, updates: any) {
-  console.log('Mock updateUserSubscription called for userId:', userId, updates)
-  return { id: 'mock-id', userId, ...updates }
+export interface BillingUsage {
+  id: string
+  userId: string
+  period: string
+  projects: number
+  users: number
+  storageBytes: number
+  apiRequests: number
+  createdAt?: Date
+  updatedAt?: Date
 }
 
-export async function getStripeCustomer(userId: string) {
-  console.log('Mock getStripeCustomer called for userId:', userId)
-  return null
-}
+export async function getUserSubscription(event: H3Event, userId: string): Promise<UserSubscription | null> {
+  try {
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      const { data, errors } = await client.models.UserSubscription.list(contextSpec, {
+        filter: { userId: { eq: userId } }
+      })
 
-export async function saveStripeCustomer(userId: string, stripeCustomerId: string, email?: string, name?: string) {
-  console.log('Mock saveStripeCustomer called:', { userId, stripeCustomerId, email, name })
-  return { id: 'mock-id', userId, stripeCustomerId, email, name }
-}
+      if (errors) {
+        console.error('Error fetching user subscription:', errors)
+        return null
+      }
 
-export async function getUserIdFromStripeCustomer(stripeCustomerId: string) {
-  console.log('Mock getUserIdFromStripeCustomer called for stripeCustomerId:', stripeCustomerId)
-  return null
-}
-
-export async function getBillingUsage(userId: string, period?: string) {
-  console.log('Mock getBillingUsage called for userId:', userId, period)
-  return {
-    projects: 0,
-    users: 0,
-    storageBytes: 0,
-    apiRequests: 0
+      return data[0] || null
+    })
+  } catch (error) {
+    console.error('Error in getUserSubscription:', error)
+    return null
   }
 }
 
-export async function updateBillingUsage(userId: string, period: string, usage: any) {
-  console.log('Mock updateBillingUsage called:', { userId, period, usage })
-  return { id: 'mock-id', userId, period, ...usage }
+export async function createUserSubscription(event: H3Event, userId: string, subscriptionData: Partial<UserSubscription>): Promise<UserSubscription | null> {
+  try {
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      const { data, errors } = await client.models.UserSubscription.create(contextSpec, {
+        userId,
+        planId: subscriptionData.planId || 'free',
+        status: subscriptionData.status || 'active',
+        stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
+        stripeCustomerId: subscriptionData.stripeCustomerId,
+        currentPeriodStart: subscriptionData.currentPeriodStart,
+        currentPeriodEnd: subscriptionData.currentPeriodEnd,
+        cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd || false
+      })
+
+      if (errors) {
+        console.error('Error creating user subscription:', errors)
+        return null
+      }
+
+      return data
+    })
+  } catch (error) {
+    console.error('Error in createUserSubscription:', error)
+    return null
+  }
+}
+
+export async function updateUserSubscription(event: H3Event, userId: string, updates: Partial<UserSubscription>): Promise<UserSubscription | null> {
+  try {
+    // First find the existing subscription
+    const existing = await getUserSubscription(event, userId)
+    if (!existing) {
+      // Create new subscription if none exists
+      return createUserSubscription(event, userId, updates)
+    }
+
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      const { data, errors } = await client.models.UserSubscription.update(contextSpec, {
+        id: existing.id,
+        ...updates
+      })
+
+      if (errors) {
+        console.error('Error updating user subscription:', errors)
+        return null
+      }
+
+      return data
+    })
+  } catch (error) {
+    console.error('Error in updateUserSubscription:', error)
+    return null
+  }
+}
+
+export async function getStripeCustomer(event: H3Event, userId: string): Promise<StripeCustomer | null> {
+  try {
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      const { data, errors } = await client.models.StripeCustomer.list(contextSpec, {
+        filter: { userId: { eq: userId } }
+      })
+
+      if (errors) {
+        console.error('Error fetching Stripe customer:', errors)
+        return null
+      }
+
+      return data[0] || null
+    })
+  } catch (error) {
+    console.error('Error in getStripeCustomer:', error)
+    return null
+  }
+}
+
+export async function saveStripeCustomer(event: H3Event, userId: string, stripeCustomerId: string, email?: string, name?: string): Promise<StripeCustomer | null> {
+  try {
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      const { data, errors } = await client.models.StripeCustomer.create(contextSpec, {
+        userId,
+        stripeCustomerId,
+        email,
+        name
+      })
+
+      if (errors) {
+        console.error('Error saving Stripe customer:', errors)
+        return null
+      }
+
+      return data
+    })
+  } catch (error) {
+    console.error('Error in saveStripeCustomer:', error)
+    return null
+  }
+}
+
+export async function getUserIdFromStripeCustomer(event: H3Event, stripeCustomerId: string): Promise<string | null> {
+  try {
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      const { data, errors } = await client.models.StripeCustomer.list(contextSpec, {
+        filter: { stripeCustomerId: { eq: stripeCustomerId } }
+      })
+
+      if (errors) {
+        console.error('Error finding user from Stripe customer:', errors)
+        return null
+      }
+
+      return data[0]?.userId || null
+    })
+  } catch (error) {
+    console.error('Error in getUserIdFromStripeCustomer:', error)
+    return null
+  }
+}
+
+export async function getBillingUsage(event: H3Event, userId: string, period?: string): Promise<BillingUsage | null> {
+  try {
+    // If no period specified, use current month
+    const targetPeriod = period || new Date().toISOString().slice(0, 7) // YYYY-MM format
+
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      const { data, errors } = await client.models.BillingUsage.list(contextSpec, {
+        filter: { 
+          userId: { eq: userId },
+          period: { eq: targetPeriod }
+        }
+      })
+
+      if (errors) {
+        console.error('Error fetching billing usage:', errors)
+        return null
+      }
+
+      return data[0] || {
+        id: '',
+        userId,
+        period: targetPeriod,
+        projects: 0,
+        users: 0,
+        storageBytes: 0,
+        apiRequests: 0
+      }
+    })
+  } catch (error) {
+    console.error('Error in getBillingUsage:', error)
+    return null
+  }
+}
+
+export async function updateBillingUsage(event: H3Event, userId: string, period: string, usage: Partial<BillingUsage>): Promise<BillingUsage | null> {
+  try {
+    return await runAmplifyApi(event, async (contextSpec) => {
+      const client = generateClient({ authMode: 'userPool' })
+      
+      // First try to find existing usage record
+      const { data: existing, errors: fetchErrors } = await client.models.BillingUsage.list(contextSpec, {
+        filter: { 
+          userId: { eq: userId },
+          period: { eq: period }
+        }
+      })
+
+      if (fetchErrors) {
+        console.error('Error fetching existing billing usage:', fetchErrors)
+        return null
+      }
+
+      if (existing[0]) {
+        // Update existing record
+        const { data, errors } = await client.models.BillingUsage.update(contextSpec, {
+          id: existing[0].id,
+          ...usage
+        })
+
+        if (errors) {
+          console.error('Error updating billing usage:', errors)
+          return null
+        }
+
+        return data
+      } else {
+        // Create new record
+        const { data, errors } = await client.models.BillingUsage.create(contextSpec, {
+          userId,
+          period,
+          projects: usage.projects || 0,
+          users: usage.users || 0,
+          storageBytes: usage.storageBytes || 0,
+          apiRequests: usage.apiRequests || 0
+        })
+
+        if (errors) {
+          console.error('Error creating billing usage:', errors)
+          return null
+        }
+
+        return data
+      }
+    })
+  } catch (error) {
+    console.error('Error in updateBillingUsage:', error)
+    return null
+  }
 }

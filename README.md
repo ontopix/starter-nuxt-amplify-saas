@@ -127,7 +127,7 @@ Create a `.env` file in `apps/saas/`:
 ```bash
 # Stripe Configuration
 STRIPE_SECRET_KEY=sk_test_your_secret_key_here
-NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
 
 # Optional: Stripe Webhook Endpoint Secret (for webhooks)
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
@@ -408,7 +408,7 @@ pnpm deploy                      # Deploy to production
 
 **Stripe Integration:**
 - `STRIPE_SECRET_KEY` - Stripe secret key (server-side)
-- `NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key (client-side)
+- `STRIPE_PUBLISHABLE_KEY` - Stripe publishable key (client-side)
 - `STRIPE_WEBHOOK_SECRET` - Webhook endpoint secret (optional)
 
 ## 📚 Learn More

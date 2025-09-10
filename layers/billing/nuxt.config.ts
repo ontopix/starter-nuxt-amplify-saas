@@ -6,8 +6,16 @@ export default defineNuxtConfig({
     },
     public: {
       stripe: {
-        publishableKey: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
       }
     }
+  },
+  
+  // Configuración i18n específica de billing - se auto-merge con la layer base
+  i18n: {
+    locales: [
+      { code: 'en', file: 'en/billing.json' },
+      { code: 'es', file: 'es/billing.json' }
+    ]
   }
 })

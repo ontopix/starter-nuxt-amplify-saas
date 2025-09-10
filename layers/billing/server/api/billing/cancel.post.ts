@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     const user = await requireAuth(event)
 
     // Get user subscription
-    const subscription = await getUserSubscription(user.userId)
+    const subscription = await getUserSubscription(event, user.userId)
     
     if (!subscription || !subscription.stripeSubscriptionId) {
       throw createError({
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
     )
 
     // Update subscription in database
-    const updatedUserSubscription = await updateUserSubscription(user.userId, {
+    const updatedUserSubscription = await updateUserSubscription(event, user.userId, {
       cancelAtPeriodEnd: true,
       status: updatedSubscription.status
     })

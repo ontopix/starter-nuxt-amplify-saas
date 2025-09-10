@@ -1,16 +1,47 @@
 import type { SubscriptionPlan, UserSubscription } from '../types'
 
+/**
+ * Format price using i18n-aware formatting
+ * @param amount - Amount in cents
+ * @param currency - Currency code (legacy parameter, now uses i18n config)
+ * @returns Formatted price string
+ */
 export const formatPrice = (amount: number, currency: string = 'usd'): string => {
-  return new Intl.NumberFormat('en-US', {
+  // Try to use i18n formatting if available
+  if (process.client && window.nuxtApp?.$n) {
+    try {
+      return window.nuxtApp.$n(amount / 100, 'currency')
+    } catch (error) {
+      // Fall through to fallback
+    }
+  }
+  
+  // Fallback for SSR or when i18n is not available  
+  return new Intl.NumberFormat(undefined, {
     style: 'currency',
     currency: currency.toUpperCase(),
   }).format(amount / 100)
 }
 
+/**
+ * Format date using i18n-aware formatting
+ * @param date - Date to format
+ * @returns Formatted date string
+ */
 export const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat('en-US', {
+  // Try to use i18n formatting if available
+  if (process.client && window.nuxtApp?.$d) {
+    try {
+      return window.nuxtApp.$d(date, 'short')
+    } catch (error) {
+      // Fall through to fallback
+    }
+  }
+  
+  // Fallback for SSR or when i18n is not available
+  return new Intl.DateTimeFormat(undefined, {
     year: 'numeric',
-    month: 'long',
+    month: 'long', 
     day: 'numeric',
   }).format(date)
 }
