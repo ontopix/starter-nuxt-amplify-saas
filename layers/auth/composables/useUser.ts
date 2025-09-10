@@ -387,6 +387,79 @@ export const useUser = () => {
     }
   }
 
+  /**
+   * Initiate password reset process
+   * 
+   * Sends a password reset code to the user's email address.
+   * 
+   * @param {string} username - User's email address
+   * @returns {Promise<{success: boolean, error?: string}>} Reset initiation result
+   * 
+   * @example
+   * ```ts
+   * const { resetPassword } = useUser()
+   * 
+   * const result = await resetPassword('user@example.com')
+   * if (result.success) {
+   *   console.log('Reset code sent to email')
+   * }
+   * ```
+   */
+  const resetPassword = async (username: string) => {
+    try {
+      userState.value.isLoading = true
+      userState.value.error = null
+
+      const { Auth } = nuxtApp.$Amplify
+      await Auth.resetPassword({ username })
+
+      return { success: true }
+    } catch (error: any) {
+      userState.value.error = handleAuthError(error)
+      return { success: false, error: userState.value.error }
+    } finally {
+      userState.value.isLoading = false
+    }
+  }
+
+  /**
+   * Confirm password reset with code and new password
+   * 
+   * Completes the password reset process using the confirmation code
+   * sent to the user's email and their new password.
+   * 
+   * @param {string} username - User's email address
+   * @param {string} confirmationCode - Code received via email
+   * @param {string} newPassword - New password
+   * @returns {Promise<{success: boolean, error?: string}>} Reset confirmation result
+   * 
+   * @example
+   * ```ts
+   * const { confirmResetPassword } = useUser()
+   * 
+   * const result = await confirmResetPassword('user@example.com', '123456', 'newPassword123!')
+   * if (result.success) {
+   *   console.log('Password reset successfully')
+   * }
+   * ```
+   */
+  const confirmResetPassword = async (username: string, confirmationCode: string, newPassword: string) => {
+    try {
+      userState.value.isLoading = true
+      userState.value.error = null
+
+      const { Auth } = nuxtApp.$Amplify
+      await Auth.confirmResetPassword({ username, confirmationCode, newPassword })
+
+      return { success: true }
+    } catch (error: any) {
+      userState.value.error = handleAuthError(error)
+      return { success: false, error: userState.value.error }
+    } finally {
+      userState.value.isLoading = false
+    }
+  }
+
 
   return {
     // State (computed refs from the reactive state)
@@ -411,6 +484,8 @@ export const useUser = () => {
     signUp,
     signOut,
     confirmSignUp,
-    resendConfirmationCode
+    resendConfirmationCode,
+    resetPassword,
+    confirmResetPassword
   }
 }

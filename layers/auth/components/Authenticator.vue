@@ -249,7 +249,7 @@ async function resendCode() {
 
     <template #password-hint>
       <ULink
-        to="/"
+        to="/auth/forgot-password"
         class="text-primary-500 font-medium"
       >Forgot password?</ULink>
     </template>
