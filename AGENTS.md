@@ -178,7 +178,146 @@ definePageMeta({ middleware: 'auth' })
 const { user, isAuthenticated } = useUser()
 ```
 
-### 6. Commit Message Convention
+### 6. Amplify Layer Usage Patterns
+
+**Core principle: Use Amplify layer for all AWS operations following established patterns**
+
+#### Client-Side Operations
+Access Amplify APIs through the global plugin in components and composables:
+
+```typescript
+// Basic access pattern
+const { $Amplify } = useNuxtApp()
+
+// Authentication
+const { Auth } = $Amplify
+await Auth.signIn({ username: email, password })
+await Auth.signUp({ username: email, password, options: { userAttributes: { 'custom:display_name': name } } })
+await Auth.confirmSignUp({ username: email, confirmationCode: code })
+
+// GraphQL Client
+const client = $Amplify.GraphQL.client
+const result = await client.graphql({
+  query: listUserSubscriptions,
+  variables: { filter: { userId: { eq: 'user-123' } } }
+})
+
+// Storage Operations
+await $Amplify.Storage.uploadData({
+  path: `uploads/${file.name}`,
+  data: file,
+  options: { contentType: file.type }
+})
+
+const url = await $Amplify.Storage.getUrl({
+  path: 'uploads/file.pdf',
+  options: { expiresIn: 3600 }
+})
+```
+
+#### Server-Side Operations
+Use `runAmplifyApi` utility for server contexts (API routes, server functions):
+
+```typescript
+// Import the server utilities
+import { runAmplifyApi } from '@starter-nuxt-amplify-saas/amplify/utils/server'
+import { generateClient } from 'aws-amplify/data/server'
+
+// API route pattern
+export default defineEventHandler(async (event) => {
+  return await runAmplifyApi(event, async (contextSpec) => {
+    const client = generateClient({ authMode: 'userPool' })
+    const { data, errors } = await client.models.UserSubscription.list(contextSpec, {
+      filter: { userId: { eq: userId } }
+    })
+    
+    if (errors) {
+      throw createError({ statusCode: 500, statusMessage: 'Database query failed' })
+    }
+    
+    return { subscriptions: data }
+  })
+})
+```
+
+#### GraphQL Operations
+Use auto-generated operations with full type safety:
+
+```typescript
+// Import operations from generated files
+import { 
+  listUserSubscriptions, 
+  getUserSubscription, 
+  createUserSubscription 
+} from '~/layers/amplify/utils/graphql/queries'
+import type { Schema } from '@starter-nuxt-amplify-saas/backend/amplify/data/resource'
+
+// Type-safe operations
+const client = $Amplify.GraphQL.client
+const result = await client.graphql({
+  query: createUserSubscription,
+  variables: {
+    input: {
+      userId: 'user-123',
+      planId: 'pro',
+      status: 'active'
+    }
+  }
+})
+
+// Access typed data
+const subscription = result.data?.createUserSubscription
+console.log(subscription?.planId) // TypeScript knows this is string
+```
+
+#### Composable Integration Pattern
+Create reusable composables that wrap Amplify operations:
+
+```typescript
+// composables/useSubscriptions.ts
+export const useSubscriptions = () => {
+  const { $Amplify } = useNuxtApp()
+  const client = $Amplify.GraphQL.client
+  
+  const subscriptions = ref<Schema['UserSubscription']['type'][]>([])
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
+
+  const fetchUserSubscriptions = async (userId: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const result = await client.graphql({
+        query: listUserSubscriptions,
+        variables: { filter: { userId: { eq: userId } } }
+      })
+
+      subscriptions.value = result.data?.listUserSubscriptions?.items || []
+    } catch (err) {
+      error.value = 'Failed to fetch subscriptions'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  return {
+    subscriptions: readonly(subscriptions),
+    isLoading: readonly(isLoading),
+    error: readonly(error),
+    fetchUserSubscriptions
+  }
+}
+```
+
+#### Best Practices
+- **Client vs Server**: Use `$Amplify` in components/composables, `runAmplifyApi` in server routes
+- **Error Handling**: Always check for GraphQL `errors` array in responses
+- **Type Safety**: Import and use generated types from schema
+- **Authentication Context**: Server operations automatically use authenticated user context
+- **Storage Paths**: Use consistent path patterns (`uploads/`, `public/`, etc.)
+
+### 7. Commit Message Convention
 
 **Follow Conventional Commits specification for consistent git history**
 
