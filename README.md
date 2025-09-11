@@ -111,7 +111,7 @@ aws sts get-caller-identity
 ```json
 {
     "UserId": "AIDACKCEVSQ6C2EXAMPLE",
-    "Account": "123456789012", 
+    "Account": "123456789012",
     "Arn": "arn:aws:iam::123456789012:user/your-username"
 }
 ```
@@ -225,7 +225,7 @@ If you want to test billing functionality:
    ```bash
    # macOS
    brew install stripe/stripe-cli/stripe
-   
+
    # Or download from https://github.com/stripe/stripe-cli/releases
    ```
 3. Login to your Stripe account:
@@ -251,9 +251,6 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 The application includes predefined billing plans that need to be synchronized with your Stripe account:
 
 ```bash
-# Dry run to see what will be created
-pnpm billing:stripe:dry-run
-
 # Actually create products and prices in Stripe
 pnpm billing:stripe:sync
 ```
@@ -291,61 +288,334 @@ pnpm backend:sandbox:delete
 
 ## 🌐 Production Deployment
 
-### Method 1: AWS Amplify Console (Recommended)
+This section covers deploying the entire stack to AWS production environment. The architecture consists of three applications that deploy from the same Git repository:
 
-#### Step 1: Create Amplify App for Backend
+- **Backend**: AWS Amplify Gen2 (Lambda, Cognito, DynamoDB, AppSync)
+- **SaaS Dashboard**: Nuxt 4 SSR application
+- **Landing Page**: Nuxt 4 SSG marketing site
+
+### Prerequisites
+
+Before deploying to production:
+
+- ✅ AWS account with Amplify permissions configured
+- ✅ Git repository pushed to GitHub, GitLab, or Bitbucket
+- ✅ Stripe production account with API keys
+- ✅ Domain names ready (optional)
+- ✅ All development testing completed
+
+### Deployment Overview
+
+Each application uses its own `amplify.yml` configuration file to build the correct part of the monorepo from the same Git repository.
+
+### Step 1: Deploy Backend (AWS Amplify Gen2)
+
+#### Create Backend Amplify App
 
 1. Go to [AWS Amplify Console](https://console.aws.amazon.com/amplify/)
-2. Click "Create new app" → "Deploy without Git provider"
-3. Give it a name like `your-project-backend`
-4. Note the **App ID** (you'll need it later)
+2. Click **"Create new app"** → **"Deploy from Git"**
+3. **Connect Repository**:
+   - Choose your Git provider (GitHub/GitLab/Bitbucket)
+   - Select your repository
+   - Authorize AWS Amplify access (if needed)
+4. **Configure Build**:
+   - **Branch**: `main` (or your production branch)
+   - **Check "My app is a monorepo"** (root directory is `apps/backend`)
+   - **App name**: `your-project-backend`
+   - **Build settings**: Amplify will auto-detect `apps/backend/amplify.yml`
+   - **Check "My monorepo uses Amplify Gen2 Backend"**
+   - **Create and use a new service role**
 
-#### Step 2: Deploy Backend
+#### Configure Backend Secrets
 
-```bash
-# Set environment variables
-export AWS_BRANCH=main  # or your deployment branch
-export AWS_APP_ID=your-amplify-backend-app-id
-
-# Deploy backend to production
-cd apps/backend
-pnpm run deploy
-```
-
-#### Step 3: Create Amplify App for Frontend
-
-1. In AWS Amplify Console, click "Create new app" → "Deploy from Git"
-2. Connect your Git repository
-3. Select your main branch
-4. **Build settings**: Amplify will auto-detect the `amplify.yml` in `apps/saas/`
-5. **Environment variables**: Set any required variables (see below)
-6. Deploy the app
-
-#### Step 4: Configure Environment Variables
-
-In your Amplify frontend app settings, add:
+In the Amplify Console, go to **App Settings** → **Secrets** and add:
 
 ```bash
-# Required for build process
-AWS_BRANCH=main
-BACKEND_APP_ID=your-amplify-backend-app-id
-
-# Optional: Custom domain settings
-NUXT_PUBLIC_SITE_URL=https://your-domain.com
+STRIPE_SECRET_KEY=sk_live_...    # Your Stripe production secret key
 ```
 
-### Method 2: Manual Build & Deploy
+#### Deploy Backend
 
-If you prefer manual deployment:
+Click **"Save and deploy"**. The backend will deploy automatically using the configuration in `apps/backend/amplify.yml`.
+
+**Deployment Process**:
+- AWS resources (Cognito, DynamoDB, AppSync, Lambda) are created
+- Post-confirmation trigger is deployed with billing integration
+- GraphQL API and authentication are configured
+
+### Step 2: Deploy SaaS Dashboard Application
+
+#### Create SaaS Amplify App
+
+1. In AWS Amplify Console, click **"Create new app"** → **"Deploy from Git"**
+2. **Connect Repository**: Select the **same repository** as the backend
+3. **Configure Build**:
+   - **Branch**: `main` (same as backend)
+   - **Check "My app is a monorepo"** (root directory is `apps/saas`)
+   - **App name**: `your-project-saas`
+   - **Build settings**: Amplify will auto-detect `apps/saas/amplify.yml`
+   - **Check "My monorepo uses Amplify Gen2 Backend"**
+   - **Select "Use an existing service role"** (the one created for backend)
+
+#### Configure SaaS Secrets and Environment Variables
+
+**In App Settings → Secrets, add:**
 
 ```bash
-# Build the application
-cd apps/saas
-pnpm run build
-
-# Deploy the .amplify-hosting directory to your hosting provider
-# The build output will be in .amplify-hosting/
+# Sensitive Stripe credentials
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+
+**In App Settings → Environment Variables, add:**
+
+```bash
+# Public Stripe configuration
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+
+# Site Configuration
+NUXT_PUBLIC_SITE_URL=https://your-saas-domain.com
+
+# Backend Reference (if needed)
+BACKEND_APP_ID=your-backend-app-id
+```
+
+#### Deploy SaaS App
+
+Click **"Save and deploy"**. The SaaS application will build and deploy automatically.
+
+### Step 3: Deploy Landing Page
+
+#### Create Landing Amplify App
+
+1. In AWS Amplify Console, click **"Create new app"** → **"Deploy from Git"**
+2. **Connect Repository**: Select the **same repository** again
+3. **Configure Build**:
+   - **Branch**: `main` (same branch)
+   - **Check "My app is a monorepo"** (root directory is `apps/landing`)
+   - **App name**: `your-project-landing`
+   - **Build settings**: Amplify will auto-detect `apps/landing/amplify.yml`
+   - **Check "My monorepo uses Amplify Gen2 Backend"**
+   - **Select "Use an existing service role"** (the one created for backend)
+
+#### Configure Landing Environment Variables
+
+In **App Settings** → **Environment Variables**, add:
+
+```bash
+# Site Configuration
+NUXT_PUBLIC_SITE_URL=https://your-landing-domain.com
+
+# Backend Reference (if needed)
+BACKEND_APP_ID=your-backend-app-id
+```
+
+#### Deploy Landing App
+
+Click **"Save and deploy"**. The landing page will build and deploy as a static site.
+
+### Step 4: Post-Deployment Configuration
+
+#### Configure Stripe Webhooks
+
+1. Go to [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
+2. Click **"Add endpoint"**
+3. **Endpoint URL**: `https://your-saas-domain.com/api/billing/webhook`
+4. **Events to send**:
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.payment_succeeded`
+   - `invoice.payment_failed`
+5. **Copy webhook secret** and update `STRIPE_WEBHOOK_SECRET` environment variable
+
+#### Setup Custom Domains (Optional)
+
+For each Amplify app:
+
+1. Go to **Domain Management** in the app settings
+2. Click **"Add domain"**
+3. **Configure DNS**:
+   - **AWS Route 53**: Automatic configuration
+   - **External DNS**: Add provided CNAME records
+4. **SSL Certificate**: Automatically provisioned by AWS
+
+**Recommended domains**:
+- Backend: Not needed (API access only)
+- SaaS: `app.yourdomain.com` or `dashboard.yourdomain.com`
+- Landing: `yourdomain.com` or `www.yourdomain.com`
+
+### Step 5: Verification & Testing
+
+#### Backend Verification
+
+```bash
+# Check backend deployment status
+aws amplify get-app --app-id your-backend-app-id --region your-region
+
+# Test GraphQL API (replace with your API endpoint)
+curl -X POST https://your-api-id.appsync-api.region.amazonaws.com/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ __typename }"}'
+```
+
+#### SaaS App Verification
+
+1. **Authentication Flow**:
+   - Navigate to your SaaS domain
+   - Test user registration and email verification
+   - Confirm post-confirmation trigger creates free plan
+   - Test login and dashboard access
+
+2. **Billing Integration**:
+   - Test Stripe Customer Portal access
+   - Verify plan switching functionality
+   - Confirm webhook delivery in Stripe Dashboard
+
+#### Landing Page Verification
+
+1. Navigate to landing domain
+2. Verify static site generation and performance
+3. Test any contact forms or lead capture
+
+### Secrets and Environment Variables Reference
+
+#### Backend App Configuration
+
+**Secrets:**
+```bash
+STRIPE_SECRET_KEY=sk_live_...           # Required for billing
+```
+
+#### SaaS App Configuration
+
+**Secrets:**
+```bash
+STRIPE_SECRET_KEY=sk_live_...           # Server-side billing operations
+STRIPE_WEBHOOK_SECRET=whsec_...         # Webhook signature verification
+```
+
+**Environment Variables:**
+```bash
+STRIPE_PUBLISHABLE_KEY=pk_live_...      # Client-side Stripe integration (public)
+NUXT_PUBLIC_SITE_URL=https://app.yourdomain.com  # Public site URL
+```
+
+#### Landing App Environment Variables
+```bash
+NUXT_PUBLIC_SITE_URL=https://yourdomain.com  # Public site URL
+```
+
+### Deployment Troubleshooting
+
+#### Common Issues
+
+**Build Failures**:
+- Check build logs in Amplify Console
+- Verify all environment variables are set
+- Ensure monorepo dependencies are correctly configured
+
+**Backend Connection Issues**:
+- Verify backend has deployed successfully first
+- Check that `apps/saas/amplify.yml` generates outputs correctly
+- Confirm GraphQL client code is generated
+
+**Billing Integration Issues**:
+- Verify all Stripe environment variables are production keys
+- Check webhook endpoint is accessible
+- Confirm webhook secret matches Stripe dashboard
+
+**Performance Issues**:
+- Landing page: Consider enabling caching in CloudFront
+- SaaS app: Monitor performance with AWS X-Ray integration
+- Database: Review DynamoDB capacity settings
+
+### Continuous Deployment
+
+Once configured, deployments happen automatically:
+
+1. **Push to Git** → All three apps rebuild automatically
+2. **Backend Changes** → Only backend redeploys (optimized)
+3. **Frontend Changes** → Frontend apps rebuild with latest backend config
+4. **Environment Variables** → Can be updated without redeployment
+
+This setup provides a fully automated, scalable, and maintainable production deployment for your SaaS application.
+
+## ⚡ AWS Amplify Gen2 Deployment Configuration
+
+**Important**: These are critical configuration steps to ensure successful deployment with this monorepo structure and Nuxt 4.0.0.
+
+### Backend Deployment Configuration
+
+When deploying the **Backend** application (`apps/backend/`):
+
+1. **✅ Enable "My monorepo uses Amplify Gen2 Backend"** checkbox
+2. **✅ Select "Create and use a new service role"**
+   - This creates the necessary IAM role with proper permissions
+   - The role will be used for backend resource management
+   - Grant permissions for CloudFormation, Cognito, DynamoDB, AppSync
+
+### Frontend Deployment Configuration
+
+When deploying **SaaS** (`apps/saas/`) or **Landing** (`apps/landing/`) applications:
+
+1. **✅ Enable "My monorepo uses Amplify Gen2 Backend"** checkbox
+2. **✅ Select "Use an existing service role"**
+   - Choose the service role created during backend deployment
+   - This ensures consistent permissions across all apps
+   - Allows frontend apps to access backend configuration
+
+### Node.js Version Override (Required)
+
+**Critical**: Both SaaS and Landing apps require Node.js 22 to resolve native module binding issues.
+
+In each frontend app's build configuration:
+
+1. Go to **App Settings** → **Build settings** → **Advanced settings**
+2. Under **Package version overrides**, add:
+   ```
+   Package: Node
+   Version: 22
+   ```
+
+**Why Node.js 22 is required**:
+- Nuxt 4.0.0 uses `oxc-parser` for JavaScript/TypeScript parsing
+- `oxc-parser` requires Node.js 20+ for proper native binding support
+- Node.js 22 provides the most stable native module compatibility
+- Resolves `Cannot find module '@oxc-parser/binding-linux-x64-gnu'` errors
+
+### Service Role Sharing
+
+The same service role created for the backend should be used across all apps in the monorepo:
+
+```
+Backend App:     Create new service role (e.g., "AmplifyServiceRole-MyProject")
+SaaS App:        Use existing role → "AmplifyServiceRole-MyProject"
+Landing App:     Use existing role → "AmplifyServiceRole-MyProject"
+```
+
+This ensures:
+- Consistent permissions across the entire stack
+- Proper access to CloudFormation resources
+- Successful `amplify:generate-outputs` command execution
+- Seamless integration between backend and frontend apps
+
+### Troubleshooting Deployment Issues
+
+**CloudFormation Permission Errors**:
+- Verify the service role has `cloudformation:GetTemplateSummary` permissions
+- Ensure all apps use the same service role created for the backend
+- Check that "My monorepo uses Amplify Gen2 Backend" is enabled
+
+**oxc-parser Native Binding Errors**:
+- Confirm Node.js version override is set to 22
+- Clear build cache and retry deployment
+- Verify the override is applied to the correct app (SaaS/Landing)
+
+**Backend Association Issues**:
+- Ensure backend deploys successfully before frontend apps
+- Verify `BACKEND_APP_ID` environment variable is set correctly
+- Check that the service role has access to the backend resources
 
 ## 📚 Documentation
 
@@ -504,7 +774,7 @@ pnpm amplify:generate-graphql-client-code       # Generate GraphQL types for pro
 
 # Frontend development
 pnpm saas:dev                    # Start SaaS app development
-pnpm saas:build                  # Build SaaS app for production  
+pnpm saas:build                  # Build SaaS app for production
 pnpm saas:typecheck              # Run TypeScript type checking
 pnpm landing:dev                 # Start landing page development
 
