@@ -15,8 +15,7 @@
     "landing:dev": "pnpm --filter @starter-nuxt-amplify-saas/landing run dev",
     "amplify:generate-graphql-client-code": "pnpm --filter @starter-nuxt-amplify-saas/amplify run generate-graphql-client-code",
     "amplify:generate-outputs": "pnpm --filter @starter-nuxt-amplify-saas/amplify run generate-outputs",
-    "billing:stripe:sync": "tsx scripts/billing-stripe-sync.js",
-    "billing:stripe:dry-run": "tsx scripts/billing-stripe-sync.js --dry-run",
+    "billing:stripe:sync": "tsx scripts/billing-stripe-sync.js apps/saas/app/billing-plans.json",
     "billing:stripe:login": "stripe login",
     "billing:stripe:listen": "stripe listen --forward-to localhost: 3000/api/billing/webhooks/stripe"
   },
