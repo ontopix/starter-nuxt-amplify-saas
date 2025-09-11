@@ -45,6 +45,115 @@ Before you begin, ensure you have:
 - **AWS Account** with Amplify access
 - **Stripe Account** for billing integration (optional)
 
+## 🔧 Setting up AWS Connection
+
+Before you can deploy and run the backend, you need to connect your project to your AWS account.
+
+### Step 1: AWS Account Setup
+
+1. **Create an AWS Account** if you don't have one: https://aws.amazon.com/
+2. **Ensure you have permissions** for the following AWS services:
+   - AWS Amplify
+   - Amazon Cognito
+   - Amazon DynamoDB
+   - AWS AppSync (GraphQL)
+   - AWS Lambda
+
+### Step 2: Install AWS CLI
+
+Install the AWS Command Line Interface:
+
+```bash
+# macOS (using Homebrew)
+brew install awscli
+
+# macOS/Linux (using pip)
+pip3 install awscli
+
+# Windows (using MSI installer)
+# Download from: https://aws.amazon.com/cli/
+```
+
+### Step 3: Configure AWS CLI
+
+Configure your AWS credentials:
+
+```bash
+# Run the configuration command
+aws configure
+
+# You'll be prompted for:
+# AWS Access Key ID: [Enter your access key]
+# AWS Secret Access Key: [Enter your secret key]
+# Default region name: [Enter your preferred region, e.g., us-east-1, eu-west-1]
+# Default output format: [Press enter for default, or type 'json']
+```
+
+**To get your AWS credentials:**
+
+1. Go to [AWS Console](https://console.aws.amazon.com/)
+2. Navigate to **IAM** → **Users** → **Your Username**
+3. Go to **Security credentials** tab
+4. Click **Create access key**
+5. Choose **Command Line Interface (CLI)**
+6. Copy the **Access Key ID** and **Secret Access Key**
+
+### Step 4: Verify Connection
+
+Test your AWS connection:
+
+```bash
+# This should return your account information
+aws sts get-caller-identity
+```
+
+**Expected output:**
+```json
+{
+    "UserId": "AIDACKCEVSQ6C2EXAMPLE",
+    "Account": "123456789012", 
+    "Arn": "arn:aws:iam::123456789012:user/your-username"
+}
+```
+
+### Step 5: Optional - Project-Specific Configuration
+
+For better organization, you can use AWS profiles:
+
+```bash
+# Configure a profile for this project
+aws configure --profile my-saas-project
+
+# Use the profile in commands
+AWS_PROFILE=my-saas-project pnpm backend:sandbox:init
+```
+
+Or create a `.env.local` file in your project root:
+
+```bash
+# .env.local
+AWS_PROFILE=my-saas-project
+AWS_REGION=us-east-1
+```
+
+### Troubleshooting
+
+**"Unable to locate credentials" error:**
+- Make sure you ran `aws configure` and entered valid credentials
+- Check that your access key has the necessary permissions
+
+**"Access Denied" errors:**
+- Your AWS user needs permissions for Amplify, Cognito, DynamoDB, and AppSync
+- Contact your AWS administrator if working in an organization
+
+**Region mismatch issues:**
+- Ensure you're using the same region consistently
+- Check your default region with: `aws configure get region`
+
+**Invalid credentials:**
+- Verify your access keys are correct and active
+- You can regenerate keys in the AWS Console under IAM → Users
+
 ## 🚀 Local Development Setup
 
 ### Step 1: Clone and Install
