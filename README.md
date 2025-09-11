@@ -12,31 +12,35 @@ This is a **monorepo** containing:
 - **`apps/landing/`** - Marketing landing page (Nuxt 4 SSG)
 
 ### Nuxt Layers
-- **`layers/uix/`** - UI foundation layer (Nuxt UI Pro + Tailwind)
-- **`layers/amplify/`** - AWS Amplify integration layer
-- **`layers/i18n/`** - Internationalization layer with @nuxtjs/i18n (modular translations)
-- **`layers/auth/`** - Authentication components and logic
-- **`layers/billing/`** - Stripe billing integration and subscription management
+- **`layers/uix/`** - UI foundation layer (Nuxt UI Pro + Tailwind + design system)
+- **`layers/amplify/`** - AWS Amplify integration layer (GraphQL client + storage)
+- **`layers/auth/`** - Authentication layer (AWS Cognito + middleware + components)
+- **`layers/billing/`** - Stripe billing integration (subscriptions + webhooks + API)
+- **`layers/i18n/`** - Internationalization layer (multi-language support + formatting)
+- **`layers/debug/`** - Development debugging tools and utilities
+
+**Layer Dependencies**: `uix` → `amplify` → `auth` → `billing` → `debug` → `i18n`
 
 ## ✨ Features
 
 - **🔐 Authentication**: Complete auth flow (signup, signin, password reset) with AWS Cognito
-- **💳 Billing & Subscriptions**: Stripe integration with subscription management
-- **🌐 Internationalization**: Modular i18n with @nuxtjs/i18n - multiple languages, auto-merge translations
-- **📊 Dashboard**: Professional dashboard interface with collapsible sidebar
+- **💳 Billing & Subscriptions**: Stripe integration with subscription management and customer portal
+- **🌐 Internationalization**: Multi-language support with auto-formatting for dates/currency
+- **📊 Dashboard**: Professional dashboard interface with collapsible sidebar and dark mode
 - **🎨 UI Components**: Built with Nuxt UI Pro for consistent, beautiful design
 - **📱 Responsive**: Mobile-first design that works on all devices
 - **⚡ Performance**: Optimized with Nuxt 4's latest performance improvements
-- **🔧 Configurable**: Easy-to-customize navigation and theming
+- **🔧 Configurable**: Easy-to-customize navigation, theming, and billing plans
 - **🏗️ Modular Architecture**: Layer-based system for scalable, maintainable code
 - **☁️ AWS Ready**: Full AWS Amplify integration with DynamoDB and GraphQL API
+- **🛠️ Debug Tools**: Comprehensive development and debugging utilities
 
 ## 📋 Prerequisites
 
 Before you begin, ensure you have:
 
-- **Node.js** >= 20.19.0
-- **pnpm** 10.13.1 (will be installed automatically via corepack)
+- **Node.js** >= 18.0.0 (recommended: 18+ for Nuxt 4 compatibility)
+- **pnpm** 10.13.1+ (installed automatically via corepack)
 - **AWS CLI** configured with appropriate credentials
 - **AWS Account** with Amplify access
 - **Stripe Account** for billing integration (optional)
@@ -159,6 +163,15 @@ This will:
 2. Access the debug page at http://localhost:3000/debug
 3. Use the Billing section to test subscription flows
 
+### 🛠️ Development and Debug Tools
+
+Access comprehensive debugging tools at http://localhost:3000/debug:
+
+- **Authentication Debug**: View user state, session info, and test auth flows
+- **Billing Debug**: Test subscription creation, portal access, and payment flows
+- **API Testing**: Test backend endpoints and GraphQL operations
+- **Environment Inspection**: View configuration and runtime information
+
 ### 🧹 Cleanup Sandbox
 
 When you're done developing:
@@ -225,6 +238,32 @@ pnpm run build
 # The build output will be in .amplify-hosting/
 ```
 
+## 📚 Documentation
+
+This project includes comprehensive documentation for developers and AI agents:
+
+### Core Documentation
+- **[AGENTS.md](AGENTS.md)** - Complete guide for AI agents and developers working with this repository
+- **Project README** - This file, for project overview and setup
+
+### Layer-Specific Documentation
+Each layer includes detailed documentation with specific implementation details:
+
+| Layer | Documentation | Purpose |
+|-------|--------------|---------|
+| **UIX** | [layers/uix/README.md](layers/uix/README.md) | UI foundation, design system, Nuxt UI Pro integration |
+| **Amplify** | [layers/amplify/README.md](layers/amplify/README.md) | AWS integration, GraphQL client, storage utilities |
+| **Auth** | [layers/auth/README.md](layers/auth/README.md) | Authentication system, AWS Cognito, middleware |
+| **Billing** | [layers/billing/README.md](layers/billing/README.md) | Stripe integration, subscriptions, payment processing |
+| **I18n** | [layers/i18n/README.md](layers/i18n/README.md) | Internationalization, translations, formatting |
+| **Debug** | [layers/debug/README.md](layers/debug/README.md) | Development tools, debugging utilities |
+
+### When to Use Each Documentation
+- **Quick Reference**: Use this README for setup and overview
+- **Development Guidance**: Use AGENTS.md for architectural decisions and patterns
+- **Implementation Details**: Use layer READMEs for specific component usage and API details
+- **Troubleshooting**: Check layer-specific READMEs for detailed troubleshooting
+
 ## ⚙️ Configuration
 
 ### Dashboard Menu Configuration
@@ -233,33 +272,37 @@ Customize the navigation menu in `apps/saas/app/app.config.ts`:
 
 ```typescript
 export default defineAppConfig({
-  dashboard: {
-    navigation: {
+  ui: {
+    sidebar: {
       main: [
         // Main navigation group
         [{
-          label: 'Home',
-          icon: 'i-lucide-house',
-          to: '/'
+          label: 'Dashboard',
+          icon: 'i-lucide-home',
+          to: '/dashboard'
         }, {
           label: 'Analytics',
           icon: 'i-lucide-bar-chart',
           to: '/analytics',
           badge: 'New'
-        }, {
+        }],
+        // Settings group with children
+        [{
           label: 'Settings',
           icon: 'i-lucide-settings',
-          type: 'trigger',
-          defaultOpen: true,
           children: [{
-            label: 'General',
-            to: '/settings'
+            label: 'Profile',
+            to: '/settings/profile'
+          }, {
+            label: 'Billing',
+            to: '/settings/billing',
+            badge: 'Pro'
           }, {
             label: 'Team',
             to: '/settings/team'
           }]
         }],
-        // Secondary navigation group
+        // External links
         [{
           label: 'Help & Support',
           icon: 'i-lucide-help-circle',
@@ -271,6 +314,13 @@ export default defineAppConfig({
   }
 })
 ```
+
+**Navigation Features**:
+- **Icons**: Use Lucide icons with `i-lucide-[name]` format
+- **Badges**: Add badges to highlight new features or plan requirements
+- **Groups**: Separate navigation items into logical groups (arrays within main array)
+- **Children**: Create expandable submenus with nested navigation
+- **External Links**: Link to external resources with `target: '_blank'`
 
 ### Theme Configuration
 
@@ -345,6 +395,8 @@ pnpm amplify:generate-graphql-client-code       # Generate GraphQL types for pro
 
 # Frontend development
 pnpm saas:dev                    # Start SaaS app development
+pnpm saas:build                  # Build SaaS app for production  
+pnpm saas:typecheck              # Run TypeScript type checking
 pnpm landing:dev                 # Start landing page development
 
 # Billing & Stripe integration
@@ -373,21 +425,26 @@ pnpm deploy                      # Deploy to production
 **"Cannot read properties of undefined (reading 'navigation')"**
 - Make sure `app.config.ts` is in the correct location: `apps/saas/app/app.config.ts`
 - Restart your development server after config changes
+- Check the navigation structure follows the correct format (see Configuration section)
 
 **AWS Authentication Errors**
 - Ensure your AWS CLI is configured: `aws configure`
 - Check that your AWS credentials have Amplify permissions
 - Verify the `amplify_outputs.json` is generated and up-to-date
+- For detailed auth troubleshooting, see [layers/auth/README.md](layers/auth/README.md)
 
 **Build Failures**
 - Clear node_modules: `rm -rf node_modules && pnpm install`
 - Clear Nuxt cache: `pnpm nuxt cleanup`
 - Regenerate Amplify files: `pnpm amplify:sandbox:generate-outputs`
+- Run type checking: `pnpm saas:typecheck`
+- For layer-specific build issues, check respective layer README
 
 **Deployment Issues**
 - Ensure environment variables are set correctly
 - Check that the backend is deployed before the frontend
 - Verify the `amplify.yml` build configuration
+- For AWS deployment specifics, see [layers/amplify/README.md](layers/amplify/README.md)
 
 **Stripe Integration Issues**
 - Verify Stripe API keys are correctly set in `.env`
@@ -395,6 +452,18 @@ pnpm deploy                      # Deploy to production
 - Ensure products exist in Stripe: `pnpm billing:stripe:sync`
 - For webhooks: Check that webhook listener is running: `pnpm billing:stripe:listen`
 - Verify Stripe CLI is installed and logged in: `stripe login`
+- For detailed billing troubleshooting, see [layers/billing/README.md](layers/billing/README.md)
+
+**UI/Component Issues**
+- Check Nuxt UI Pro documentation: https://ui.nuxt.com/pro
+- For design system issues, see [layers/uix/README.md](layers/uix/README.md)
+- Use debug tools at `/debug` for component state inspection
+
+### Debug Tools and Resources
+
+- **Debug Page**: Access http://localhost:3000/debug for comprehensive debugging tools
+- **Layer Documentation**: Check specific layer README files for detailed troubleshooting
+- **AGENTS.md**: Reference for architectural decisions and development patterns
 
 ### Environment Variables Reference
 

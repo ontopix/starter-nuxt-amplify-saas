@@ -1,0 +1,37 @@
+# Cursor AI Rules
+
+## Primary Instructions Source
+
+**All development instructions, patterns, and architectural decisions are maintained in [AGENTS.md](../AGENTS.md).**
+
+Please read and follow the comprehensive development guide in `AGENTS.md` which contains:
+
+- Document management principles and contradiction protocols
+- Essential commands, paths, and tech stack information
+- Architectural patterns and development workflows
+- Layer-specific documentation references
+- Troubleshooting guidelines
+
+## Cursor-Specific Guidelines
+
+1. **Reference AGENTS.md First**: Always consult AGENTS.md for architectural decisions and development patterns
+2. **Layer Documentation**: Use layer-specific README.md files for implementation details
+3. **Consistency**: Follow the same meta-principles defined in AGENTS.md
+4. **Updates**: When making architectural changes, update AGENTS.md accordingly
+
+## Quick Navigation
+
+- **Main Agent Guide**: [AGENTS.md](../AGENTS.md) - Complete development instructions
+- **Project Setup**: [README.md](../README.md) - Quick start and overview  
+- **Layer Docs**: [layers/*/README.md](../layers/) - Specific implementation details
+
+## Development Workflow
+
+1. Consult AGENTS.md for patterns and architectural guidance
+2. Reference layer READMEs for specific component/API usage
+3. Follow the contradiction protocol if instructions conflict
+4. Use debug tools at `/debug` for development and testing
+
+---
+
+*This rules file ensures Cursor AI follows the same development standards as other AI agents working on this repository.*
