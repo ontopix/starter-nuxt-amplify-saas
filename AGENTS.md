@@ -178,6 +178,54 @@ definePageMeta({ middleware: 'auth' })
 const { user, isAuthenticated } = useUser()
 ```
 
+### 6. Commit Message Convention
+
+**Follow Conventional Commits specification for consistent git history**
+
+#### Format
+```
+<type>(<scope>): <description>
+```
+
+#### Commit Types
+- **`feat`**: New features or functionality
+- **`fix`**: Bug fixes
+- **`refactor`**: Code improvements without behavior changes
+- **`chore`**: Maintenance, dependencies, build tasks
+- **`doc`**: Documentation updates
+- **`test`**: Testing related changes
+- **`style`**: Code formatting, linting fixes
+
+#### Common Scopes
+- **`billing`**: Stripe billing/subscription features
+- **`auth`**: Authentication and authorization
+- **`i18n`**: Internationalization
+- **`saas`**: SaaS app specific changes
+- **`amplify`**: AWS Amplify backend
+- **`uix`**: UI/design system changes
+- **`debug`**: Development/debugging tools
+- **`deps`**: Dependencies
+- **`docs`**: Documentation files
+
+#### Examples (from project history)
+```bash
+feat(billing): integrate Stripe billing system with subscription management and webhooks
+feat(auth): implement forgot password
+feat(i18n): add internationalization support
+chore(deps): bump packages
+refactor(billing): improve billing sync script
+doc(readme): update readme with last updates
+feat(debug): add debug layer
+```
+
+#### Rules
+- Use present tense: "add" not "added"
+- Start description with lowercase
+- No period at the end
+- Keep total message under 72 characters
+- Be descriptive but concise
+- Focus on **what** and **why**, not **how**
+
 ---
 
 ## Critical Configuration
