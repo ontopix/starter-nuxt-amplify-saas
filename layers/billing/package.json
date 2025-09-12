@@ -3,6 +3,10 @@
   "type": "module",
   "version": "0.0.1",
   "main": "./nuxt.config.ts",
+  "exports": {
+    ".": "./nuxt.config.ts",
+    "./billing-plans.json": "./billing-plans.json"
+  },
   "scripts": {
     "dev": "nuxi dev .playground",
     "dev:prepare": "nuxt prepare .playground",

@@ -26,20 +26,37 @@ export interface BillingState {
 
 export interface UserSubscription {
   id: string
-  status: Stripe.Subscription.Status
+  userId: string
+  stripeSubscriptionId?: string
+  stripeCustomerId?: string
   planId: string
-  currentPeriodStart: Date
-  currentPeriodEnd: Date
+  status: string
+  currentPeriodStart?: Date
+  currentPeriodEnd?: Date
   cancelAtPeriodEnd: boolean
-  stripeSubscriptionId: string
-  stripeCustomerId: string
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 export interface StripeCustomer {
   id: string
-  email: string
-  name?: string
+  userId: string
   stripeCustomerId: string
+  email?: string
+  name?: string
+  createdAt?: Date
+}
+
+export interface BillingUsage {
+  id: string
+  userId: string
+  period: string
+  projects: number
+  users: number
+  storageBytes: number
+  apiRequests: number
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 export interface CheckoutSession {

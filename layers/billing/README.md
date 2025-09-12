@@ -17,12 +17,14 @@ Comprehensive Stripe billing integration layer for Nuxt 3 applications. This lay
 The Billing layer integrates Stripe with Nuxt 3, providing:
 
 - 💳 **Stripe Integration** - Complete payment processing
-- 📋 **Subscription Management** - Plan creation, upgrades, cancellations
-- 🎫 **Customer Portal** - Self-service billing management
+- 🎫 **Customer Portal** - Stripe-managed subscription management (primary interface)
+- 📋 **Subscription Tracking** - Read subscription status and plan details
 - 📊 **Usage Tracking** - Monitor usage metrics and limits
 - 🔒 **Secure Webhooks** - Real-time subscription updates
 - 📱 **Type Safety** - Full TypeScript support throughout
 - 🎨 **Pre-built Components** - Ready-to-use billing UI (see apps/saas)
+
+> **Portal-First Approach**: This layer prioritizes Stripe's Customer Portal for all subscription management operations (cancellations, plan changes, payment method updates). This ensures consistency, reliability, and compliance while reducing maintenance overhead.
 
 ## Architecture
 
@@ -73,9 +75,7 @@ interface BillingState {
 
 - `fetchSubscription()` - Load current subscription
 - `createCheckoutSession(planId)` - Create Stripe checkout
-- `createPortalSession(returnUrl?)` - Open customer portal
-- `cancelSubscription()` - Cancel subscription
-- `resumeSubscription()` - Resume canceled subscription
+- `createPortalSession(returnUrl?)` - Open customer portal (handles all subscription management)
 - `fetchUsage(period?)` - Get usage metrics
 
 #### Basic Usage
@@ -106,7 +106,7 @@ const upgradeToPro = async () => {
   }
 }
 
-// Open customer portal
+// Open customer portal for all subscription management
 const openPortal = async () => {
   const result = await createPortalSession('/settings/billing')
   if (result.success) {
@@ -121,7 +121,7 @@ const openPortal = async () => {
   <div v-else-if="isActive" class="subscription-active">
     <h3>{{ currentPlan?.name }} Plan</h3>
     <p>Status: {{ subscription?.status }}</p>
-    <button @click="openPortal">Manage Billing</button>
+    <button @click="openPortal">Manage Subscription</button>
   </div>
   
   <div v-else class="no-subscription">
@@ -220,31 +220,6 @@ Get current user's subscription details.
 }
 ```
 
-### `POST /api/billing/cancel`
-
-Cancel current subscription (at period end).
-
-**Response:**
-```typescript
-{
-  success: boolean
-  data?: UserSubscription
-  error?: string
-}
-```
-
-### `POST /api/billing/resume`
-
-Resume a canceled subscription.
-
-**Response:**
-```typescript
-{
-  success: boolean
-  data?: UserSubscription
-  error?: string
-}
-```
 
 ### `POST /api/billing/webhook`
 
@@ -390,8 +365,6 @@ const {
   currentPlan, 
   isActive,
   createPortalSession,
-  cancelSubscription,
-  resumeSubscription,
   fetchSubscription,
   isLoading 
 } = useBilling()
@@ -403,20 +376,9 @@ onMounted(() => {
 const openPortal = async () => {
   const result = await createPortalSession()
   if (result.success) {
-    window.open(result.data.url, '_blank')
+    // Open in same window for better UX
+    window.location.href = result.data.url
   }
-}
-
-const handleCancel = async () => {
-  if (confirm('Are you sure you want to cancel your subscription?')) {
-    await cancelSubscription()
-    await fetchSubscription() // Refresh data
-  }
-}
-
-const handleResume = async () => {
-  await resumeSubscription()
-  await fetchSubscription()
 }
 </script>
 
@@ -445,22 +407,9 @@ const handleResume = async () => {
         <button @click="openPortal" class="btn-primary">
           Manage Subscription
         </button>
-        
-        <button 
-          v-if="!subscription?.cancelAtPeriodEnd"
-          @click="handleCancel" 
-          class="btn-secondary"
-        >
-          Cancel Subscription
-        </button>
-        
-        <button 
-          v-else
-          @click="handleResume" 
-          class="btn-primary"
-        >
-          Resume Subscription
-        </button>
+        <p class="portal-info">
+          Use the Stripe portal to update payment methods, change plans, cancel, or resume your subscription.
+        </p>
       </div>
     </div>
     
@@ -558,9 +507,7 @@ export default defineEventHandler(async (event) => {
 #### Methods
 - `fetchSubscription(): Promise<BillingResponse>` - Load current subscription
 - `createCheckoutSession(planId: string): Promise<BillingResponse>` - Create checkout
-- `createPortalSession(returnUrl?: string): Promise<BillingResponse>` - Open portal
-- `cancelSubscription(): Promise<BillingResponse>` - Cancel subscription
-- `resumeSubscription(): Promise<BillingResponse>` - Resume subscription
+- `createPortalSession(returnUrl?: string): Promise<BillingResponse>` - Open portal (handles all subscription management)
 - `fetchUsage(period?: string): Promise<BillingResponse>` - Get usage data
 
 ### Error Handling

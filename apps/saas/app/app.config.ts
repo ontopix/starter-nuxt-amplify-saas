@@ -37,7 +37,7 @@ export interface DashboardConfig {
   }
 }
 
-import billingPlans from './billing-plans.json'
+import billingPlans from '@starter-nuxt-amplify-saas/billing/billing-plans.json'
 
 export default defineAppConfig({
   billing: {

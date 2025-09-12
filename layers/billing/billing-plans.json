@@ -5,7 +5,7 @@
     "description": "Perfect for getting started",
     "price": 0,
     "interval": "month",
-    "stripePriceId": "price_1S4grNEUWFhX2zZSWeGxNd96",
+    "stripePriceId": null,
     "features": [
       "1 project",
       "1 team member",
@@ -26,7 +26,7 @@
     "description": "For growing teams and businesses",
     "price": 2900,
     "interval": "month",
-    "stripePriceId": "price_1S4grOEUWFhX2zZS6ykHiUyQ",
+    "stripePriceId": null,
     "popular": true,
     "features": [
       "Unlimited projects",
@@ -50,7 +50,7 @@
     "description": "For large organizations",
     "price": 9900,
     "interval": "month",
-    "stripePriceId": "price_1S4grOEUWFhX2zZSJKVv45Rg",
+    "stripePriceId": null,
     "features": [
       "Unlimited projects",
       "Unlimited team members",

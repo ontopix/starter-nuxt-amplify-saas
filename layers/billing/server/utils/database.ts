@@ -1,42 +1,7 @@
 import { runAmplifyApi } from '@starter-nuxt-amplify-saas/amplify/utils/server'
 import { generateClient } from 'aws-amplify/data/server'
 import type { H3Event } from 'h3'
-
-// Type definitions matching the Amplify schema
-export interface UserSubscription {
-  id: string
-  userId: string
-  stripeSubscriptionId?: string
-  stripeCustomerId?: string
-  planId: string
-  status: string
-  currentPeriodStart?: Date
-  currentPeriodEnd?: Date
-  cancelAtPeriodEnd: boolean
-  createdAt?: Date
-  updatedAt?: Date
-}
-
-export interface StripeCustomer {
-  id: string
-  userId: string
-  stripeCustomerId: string
-  email?: string
-  name?: string
-  createdAt?: Date
-}
-
-export interface BillingUsage {
-  id: string
-  userId: string
-  period: string
-  projects: number
-  users: number
-  storageBytes: number
-  apiRequests: number
-  createdAt?: Date
-  updatedAt?: Date
-}
+import type { UserSubscription, StripeCustomer, BillingUsage } from '../../types'
 
 export async function getUserSubscription(event: H3Event, userId: string): Promise<UserSubscription | null> {
   try {
