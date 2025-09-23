@@ -6,6 +6,7 @@ const schema = a
     UserProfile: a
       .model({
         userId: a.string().required(),
+        stripeCustomerId: a.string(),
       })
       .authorization((allow) => [
         allow.ownerDefinedIn("userId"),
