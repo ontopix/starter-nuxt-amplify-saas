@@ -1,491 +1,480 @@
-import type { AuthUser } from 'aws-amplify/auth'
-import { getUserDisplayName, getUserEmail, handleAuthError } from '../utils'
+import { ref, computed, onMounted } from 'vue'
+import { createSharedComposable } from '@vueuse/core'
+import { getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth/server'
+import * as queries from '../../amplify/utils/graphql/queries'
+import * as mutations from '../../amplify/utils/graphql/mutations'
+import { runAmplifyApi, generateServerClient } from '../../amplify/utils/server'
+import { handleAuthError } from '../utils'
 
-export interface UserState {
-  user: AuthUser | null
-  userAttributes: Record<string, string> | null
-  isAuthenticated: boolean
-  authStep: string
-  isLoading: boolean
-  error: string | null
+// Create state factory function
+const useUserState = () => {
+  const isAuthenticated = ref(false)
+  const authStep = ref('initial')
+  const authSession = ref(null)
+  const tokens = ref(null)
+  const currentUser = ref(null)
+  const userAttributes = ref(null)
+  const userData = ref(null)
+  const loading = ref(false)
+  const error = ref(null)
+
+  return {
+    isAuthenticated,
+    authStep,
+    authSession,
+    tokens,
+    currentUser,
+    userAttributes,
+    userData,
+    loading,
+    error
+  }
 }
 
 /**
  * Composable for managing user authentication and profile data using AWS Amplify
- * 
- * Provides reactive state and methods for handling user authentication flows and data.
- * This composable handles complete user lifecycle including authentication, profile management,
- * and multi-step auth flows with proper SSR support.
- * 
- * @example Basic Authentication
+ *
+ * Provides reactive state and methods for handling user authentication flows and data:
+ *
+ * @example Basic Usage
  * ```ts
- * const { signIn, isAuthenticated, displayName, email } = useUser()
- * 
- * // Sign in user
- * const result = await signIn('user@example.com', 'password123')
- * if (result.success) {
- *   console.log(`Welcome ${displayName.value}!`) // 'Welcome John Doe!'
- * }
- * ```
- * 
- * @example Profile Management  
- * ```ts
- * const { updateUserAttributes, userAttributes } = useUser()
- * 
- * // Update user profile
- * await updateUserAttributes({
- *   'given_name': 'John',
- *   'family_name': 'Smith',
- *   'custom:display_name': 'John Smith'
+ * const { signIn, isAuthenticated, userAttributes } = useUser()
+ *
+ * // Sign in
+ * await signIn({
+ *   username: 'user@example.com',
+ *   password: 'password123'
  * })
+ *
+ * // Access user data
+ * console.log(userAttributes.value.email)
  * ```
- * 
- * @example Multi-step Authentication
+ *
+ * @example Multi-Step Auth Flow
  * ```ts
- * const { signIn, authStep } = useUser()
- * 
- * const result = await signIn(credentials)
+ * const { signIn, confirmOTP, authStep } = useUser()
+ *
+ * await signIn(credentials)
+ *
  * if (authStep.value === 'challengeOTP') {
- *   // Handle OTP challenge
- *   console.log('Please enter your OTP code')
+ *   await confirmOTP('123456')
+ * }
+ *
+ * @example Basic Server Usage
+ * ```ts
+ * const { fetchUser, isAuthenticated, userData } = useUserServer()
+ *
+ * await fetchUser(event)
+ *
+ * if (isAuthenticated.value) {
+ *   ...
  * }
  * ```
- * 
+ *
  * @returns {Object} User authentication state and methods
- * @property {ComputedRef<AuthUser|null>} user - Current authenticated user object
- * @property {ComputedRef<Record<string,string>|null>} userAttributes - Cognito user attributes
  * @property {ComputedRef<boolean>} isAuthenticated - Whether user is authenticated
- * @property {ComputedRef<string>} authStep - Current auth step ('initial', 'authenticated', 'challengeOTP', etc.)
- * @property {ComputedRef<boolean>} isLoading - Loading state for async operations
+ * @property {ComputedRef<string>} authStep - Current auth step ('initial', 'challengeOTP', 'challengeTOTPSetup', 'authenticated')
+ * @property {ComputedRef<Object|null>} userAttributes - Cognito user attributes (email, name, etc)
+ * @property {ComputedRef<Object|null>} authSession - Current authentication session
+ * @property {ComputedRef<Object|null>} tokens - JWT tokens (access, ID, refresh)
+ * @property {ComputedRef<Object|null>} currentUser - Current authenticated user object
+ * @property {ComputedRef<boolean>} loading - Loading state for async operations
  * @property {ComputedRef<string|null>} error - Error message if operation fails
- * @property {ComputedRef<string>} displayName - User's display name (computed from attributes)
- * @property {ComputedRef<string>} email - User's email address (computed from attributes)
+ * @method signUp - Register a new user and handle multi-step flow (client-side only)
+ * @method signIn - Sign in user and handle auth challenges (client-side only)
+ * @method confirmOTP - Complete OTP/TOTP challenge during sign in (client-side only)
+ * @method signOut - Sign out the current user (client-side only)
+ * @method updateAttributes - Update Cognito user attributes
+ * @method fetchUser - Fetch latest user data information (client-side fetches full auth data, server-side fetches basic data)
  */
-export const useUser = () => {
-  const nuxtApp = useNuxtApp()
 
-  // Use global state to ensure consistency across components
-  const userState = useState<UserState>('user.state', () => ({
-    user: null,
-    userAttributes: null,
-    isAuthenticated: false,
-    authStep: 'initial',
-    isLoading: false,
-    error: null
-  }))
+const _useUser = () => {
+  // Create new state instance for this composable instance
+  const userState = useUserState()
 
   /**
-   * Check if user is authenticated by validating session tokens
-   * 
-   * Uses AWS Amplify's fetchAuthSession to check if valid tokens exist.
-   * This method is SSR-compatible and works on both server and client.
-   * 
-   * @returns {Promise<boolean>} True if user has valid session tokens
-   * 
-   * @example
-   * ```ts
-   * const { checkAuthSession } = useUser()
-   * 
-   * const isAuth = await checkAuthSession()
-   * if (isAuth) {
-   *   console.log('User is authenticated')
-   * }
-   * ```
+   * Sign up a new user and handle multi-step flow
    */
-  const checkAuthSession = async (): Promise<boolean> => {
-    try {
-      const { Auth } = nuxtApp.$Amplify
-      const session = await Auth.fetchAuthSession()
-      return !!session.tokens
-    } catch (error) {
-      return false
+  const signUp = async (data) => {
+    if (import.meta.server) {
+      throw new Error('signUp can only be called on the client side')
     }
-  }
 
-  // Get current authenticated user
-  // Fetch user attributes from Cognito
-  const fetchUserAttributes = async () => {
-    try {
-      const { Auth } = nuxtApp.$Amplify
-      const attributes = await Auth.fetchUserAttributes()
-      userState.value.userAttributes = attributes
-      return attributes
-    } catch (error) {
-      console.error('Error fetching user attributes:', error)
-      return null
-    }
-  }
+    userState.loading.value = true
+    userState.error.value = null
 
-  const getCurrentUser = async (): Promise<AuthUser | null> => {
     try {
-      userState.value.isLoading = true
-      userState.value.error = null
-      
-      const { Auth } = nuxtApp.$Amplify
-      
-      // First check if there's a valid session
-      const hasValidSession = await checkAuthSession()
-      if (!hasValidSession) {
-        userState.value.user = null
-        userState.value.userAttributes = null
-        userState.value.isAuthenticated = false
-        userState.value.authStep = 'initial'
-        return null
-      }
-      
-      // Get user details if session is valid
-      const user = await Auth.getCurrentUser()
-      userState.value.user = user
-      userState.value.isAuthenticated = true
-      userState.value.authStep = 'authenticated'
-      
-      // Fetch user attributes
-      await fetchUserAttributes()
-      
-      return user
-      
-    } catch (error) {
-      // Any error from getCurrentUser means user is not authenticated
-      // This is the correct and expected behavior from AWS Amplify
-      userState.value.user = null
-      userState.value.userAttributes = null
-      userState.value.isAuthenticated = false
-      userState.value.authStep = 'initial'
-      userState.value.error = null // Clear any previous errors
-      
-      return null
+      const result = await useNuxtApp().$Amplify.Auth.signUp(data)
+      userState.authStep.value = result.nextStep?.signUpStep || 'authenticated'
+      return result
+    } catch (err) {
+      console.error('Error signing up:', err)
+      userState.error.value = handleAuthError(err)
+      throw err
     } finally {
-      userState.value.isLoading = false
+      userState.loading.value = false
     }
   }
 
   /**
-   * Sign in user with email/username and password
-   * 
-   * Handles basic sign-in and multi-step auth challenges like OTP/MFA.
-   * Updates authStep state based on the sign-in response to handle challenges.
-   * 
-   * @param {string} username - User's email address or username
-   * @param {string} password - User's password
-   * @returns {Promise<{success: boolean, nextStep?: any, error?: string}>} Sign-in result
-   * 
-   * @example Basic Sign In
-   * ```ts
-   * const { signIn } = useUser()
-   * 
-   * const result = await signIn('user@example.com', 'password123')
-   * if (result.success) {
-   *   console.log('Successfully signed in!')
-   * } else {
-   *   console.error('Sign in failed:', result.error)
-   * }
-   * ```
-   * 
-   * @example Handling MFA Challenge
-   * ```ts
-   * const { signIn, authStep } = useUser()
-   * 
-   * const result = await signIn(username, password)
-   * if (authStep.value === 'challengeOTP') {
-   *   // User needs to provide OTP code
-   *   showOTPInput()
-   * }
-   * ```
+   * Sign in user and handle auth challenges
    */
-  const signIn = async (username: string, password: string) => {
+  const signIn = async (credentials) => {
+    if (import.meta.server) {
+      throw new Error('signIn can only be called on the client side')
+    }
+
+    userState.loading.value = true
+    userState.error.value = null
+
     try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      const { isSignedIn, nextStep } = await Auth.signIn({ username, password })
-
-      if (isSignedIn) {
-        await getCurrentUser()
-        userState.value.authStep = 'authenticated'
-        return { success: true, nextStep }
-      }
+      const result = await useNuxtApp().$Amplify.Auth.signIn(credentials)
+      userState.currentUser.value = result.user
 
       // Handle auth challenges
-      if (nextStep) {
-        switch (nextStep.signInStep) {
-          case 'CONFIRM_SIGN_IN_WITH_SMS_CODE':
-          case 'CONFIRM_SIGN_IN_WITH_TOTP_CODE':
-            userState.value.authStep = 'challengeOTP'
+      if (result.challengeName) {
+        switch (result.challengeName) {
+          case 'SMS_MFA':
+          case 'SOFTWARE_TOKEN_MFA':
+            userState.authStep.value = 'challengeOTP'
             break
-          case 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED':
-            userState.value.authStep = 'newPasswordRequired'
+          case 'MFA_SETUP':
+            userState.authStep.value = 'challengeTOTPSetup'
             break
           default:
-            userState.value.authStep = 'initial'
+            userState.authStep.value = 'authenticated'
         }
+      } else {
+        userState.authStep.value = 'authenticated'
+        await fetchUser()
       }
 
-      return { success: false, nextStep }
-    } catch (error: any) {
-      const errorMessage = handleAuthError(error)
-      userState.value.error = errorMessage
-      return { success: false, error: errorMessage }
+      return result
+    } catch (err) {
+      console.error('Error signing in:', err)
+      userState.error.value = handleAuthError(err)
+      throw err
     } finally {
-      userState.value.isLoading = false
-    }
-  }
-
-  // Sign up user
-  const signUp = async (username: string, password: string, attributes?: Record<string, string>) => {
-    try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      const result = await Auth.signUp({ 
-        username, 
-        password,
-        options: attributes ? { userAttributes: attributes } : undefined
-      })
-
-      return { success: true, result }
-    } catch (error: any) {
-      userState.value.error = handleAuthError(error)
-      return { success: false, error: userState.value.error }
-    } finally {
-      userState.value.isLoading = false
-    }
-  }
-
-  // Sign out user
-  const signOut = async (redirectTo: string = '/auth/login') => {
-    try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      await Auth.signOut()
-
-      // Reset user state
-      userState.value.user = null
-      userState.value.userAttributes = null
-      userState.value.isAuthenticated = false
-      userState.value.authStep = 'initial'
-
-      // Redirect to login page
-      await navigateTo(redirectTo, { replace: true })
-
-      return { success: true }
-    } catch (error: any) {
-      userState.value.error = handleAuthError(error)
-      return { success: false, error: userState.value.error }
-    } finally {
-      userState.value.isLoading = false
-    }
-  }
-
-  // Confirm sign up with verification code
-  const confirmSignUp = async (username: string, confirmationCode: string) => {
-    try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      await Auth.confirmSignUp({ username, confirmationCode })
-
-      return { success: true }
-    } catch (error: any) {
-      userState.value.error = handleAuthError(error)
-      return { success: false, error: userState.value.error }
-    } finally {
-      userState.value.isLoading = false
-    }
-  }
-
-  // Resend confirmation code
-  const resendConfirmationCode = async (username: string) => {
-    try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      await Auth.resendSignUpCode({ username })
-
-      return { success: true }
-    } catch (error: any) {
-      userState.value.error = handleAuthError(error)
-      return { success: false, error: userState.value.error }
-    } finally {
-      userState.value.isLoading = false
+      userState.loading.value = false
     }
   }
 
   /**
-   * Update user attributes in Amazon Cognito
-   * 
-   * Updates user profile information stored in Cognito User Pool.
-   * Automatically refreshes userAttributes after successful update.
-   * 
-   * @param {Record<string, string>} attributes - Key-value pairs of attributes to update
-   * @returns {Promise<{success: boolean, error?: string}>} Update result
-   * 
-   * @example Update Basic Profile
-   * ```ts
-   * const { updateUserAttributes } = useUser()
-   * 
-   * const result = await updateUserAttributes({
-   *   'given_name': 'John',
-   *   'family_name': 'Smith',
-   *   'phone_number': '+1234567890'
-   * })
-   * 
-   * if (result.success) {
-   *   console.log('Profile updated successfully')
-   * }
-   * ```
-   * 
-   * @example Update Custom Attributes
-   * ```ts
-   * await updateUserAttributes({
-   *   'custom:display_name': 'John Smith',
-   *   'custom:company': 'Acme Corp',
-   *   'custom:role': 'Admin'
-   * })
-   * ```
+   * Confirm OTP/TOTP challenge
    */
-  const updateUserAttributes = async (attributes: Record<string, string>) => {
+  const confirmOTP = async (code) => {
+    if (import.meta.server) {
+      throw new Error('confirmOTP can only be called on the client side')
+    }
+
+    userState.loading.value = true
+    userState.error.value = null
+
     try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      await Auth.updateUserAttributes({ userAttributes: attributes })
-
-      // Refresh user attributes after update
-      await fetchUserAttributes()
-
-      return { success: true }
-    } catch (error: any) {
-      userState.value.error = handleAuthError(error)
-      return { success: false, error: userState.value.error }
+      const result = await useNuxtApp().$Amplify.Auth.confirmSignIn(code)
+      userState.authStep.value = 'authenticated'
+      await fetchUser()
+      return result
+    } catch (err) {
+      console.error('Error confirming OTP:', err)
+      userState.error.value = handleAuthError(err)
+      throw err
     } finally {
-      userState.value.isLoading = false
+      userState.loading.value = false
     }
   }
 
   /**
-   * Get raw session information
-   * 
-   * Returns the raw session object from AWS Amplify fetchAuthSession.
-   * 
-   * @returns {Promise<Object|null>} Raw session or null if not authenticated
-   */
-  const getSessionInfo = async () => {
-    try {
-      const { Auth } = nuxtApp.$Amplify
-      const session = await Auth.fetchAuthSession()
-      return session
-    } catch (error) {
-      console.error('Error fetching session info:', error)
-      return null
-    }
-  }
-
-  /**
-   * Initiate password reset process
-   * 
-   * Sends a password reset code to the user's email address.
-   * 
-   * @param {string} username - User's email address
-   * @returns {Promise<{success: boolean, error?: string}>} Reset initiation result
-   * 
-   * @example
-   * ```ts
-   * const { resetPassword } = useUser()
-   * 
-   * const result = await resetPassword('user@example.com')
-   * if (result.success) {
-   *   console.log('Reset code sent to email')
-   * }
-   * ```
+   * Reset password - send reset code to email
    */
   const resetPassword = async (username: string) => {
+    if (import.meta.server) {
+      throw new Error('resetPassword can only be called on the client side')
+    }
+
+    userState.loading.value = true
+    userState.error.value = null
+
     try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      await Auth.resetPassword({ username })
-
-      return { success: true }
-    } catch (error: any) {
-      userState.value.error = handleAuthError(error)
-      return { success: false, error: userState.value.error }
+      const result = await useNuxtApp().$Amplify.Auth.resetPassword({ username })
+      return { success: true, nextStep: result.nextStep }
+    } catch (err) {
+      console.error('Error resetting password:', err)
+      userState.error.value = handleAuthError(err)
+      return { success: false, error: handleAuthError(err) }
     } finally {
-      userState.value.isLoading = false
+      userState.loading.value = false
     }
   }
 
   /**
-   * Confirm password reset with code and new password
-   * 
-   * Completes the password reset process using the confirmation code
-   * sent to the user's email and their new password.
-   * 
-   * @param {string} username - User's email address
-   * @param {string} confirmationCode - Code received via email
-   * @param {string} newPassword - New password
-   * @returns {Promise<{success: boolean, error?: string}>} Reset confirmation result
-   * 
-   * @example
-   * ```ts
-   * const { confirmResetPassword } = useUser()
-   * 
-   * const result = await confirmResetPassword('user@example.com', '123456', 'newPassword123!')
-   * if (result.success) {
-   *   console.log('Password reset successfully')
-   * }
-   * ```
+   * Confirm password reset with code
    */
   const confirmResetPassword = async (username: string, confirmationCode: string, newPassword: string) => {
+    if (import.meta.server) {
+      throw new Error('confirmResetPassword can only be called on the client side')
+    }
+
+    userState.loading.value = true
+    userState.error.value = null
+
     try {
-      userState.value.isLoading = true
-      userState.value.error = null
-
-      const { Auth } = nuxtApp.$Amplify
-      await Auth.confirmResetPassword({ username, confirmationCode, newPassword })
-
+      const result = await useNuxtApp().$Amplify.Auth.confirmResetPassword({
+        username,
+        confirmationCode,
+        newPassword
+      })
       return { success: true }
-    } catch (error: any) {
-      userState.value.error = handleAuthError(error)
-      return { success: false, error: userState.value.error }
+    } catch (err) {
+      console.error('Error confirming password reset:', err)
+      userState.error.value = handleAuthError(err)
+      return { success: false, error: handleAuthError(err) }
     } finally {
-      userState.value.isLoading = false
+      userState.loading.value = false
     }
   }
 
+  /**
+   * Sign out current user
+   */
+  const signOut = async () => {
+    if (import.meta.server) {
+      throw new Error('signOut can only be called on the client side')
+    }
+
+    userState.loading.value = true
+    userState.error.value = null
+
+    try {
+      await useNuxtApp().$Amplify.Auth.signOut()
+      userState.isAuthenticated.value = false
+      userState.authStep.value = 'initial'
+      userState.userAttributes.value = null
+      userState.userData.value = null
+      userState.authSession.value = null
+      userState.tokens.value = null
+      userState.currentUser.value = null
+    } catch (err) {
+      console.error('Error signing out:', err)
+      userState.error.value = handleAuthError(err)
+      throw err
+    } finally {
+      userState.loading.value = false
+    }
+  }
+
+  /**
+   * Update Cognito user attributes
+   */
+  const updateAttributes = async (attributes) => {
+    userState.loading.value = true
+    userState.error.value = null
+
+    try {
+      if (import.meta.client) {
+        await useNuxtApp().$Amplify.Auth.updateUserAttributes(attributes)
+        await fetchUser()
+      }
+      if (import.meta.server) {
+        console.log('TODO: update attributes on server')
+      }
+    } catch (err) {
+      console.error('Error updating attributes:', err)
+      userState.error.value = handleAuthError(err)
+      throw err
+    } finally {
+      userState.loading.value = false
+    }
+  }
+
+  /**
+   * Fetch user profile data from GraphQL
+   */
+  const fetchUserData = async (event?: H3Event<EventHandlerRequest>) => {
+    if (!userState.isAuthenticated.value || !userState.userAttributes.value?.sub) {
+      return
+    }
+
+    try {
+      const userId = userState.userAttributes.value.sub
+
+      if (import.meta.client) {
+        const result = await useNuxtApp().$Amplify.GraphQL.client.graphql({
+          query: queries.getUserProfile,
+          variables: { id: userId }
+        })
+        userState.userData.value = result.data?.getUserProfile || null
+      }
+
+      if (import.meta.server) {
+        const result = await runAmplifyApi(event, contextSpec =>
+          contextSpec.client.graphql({
+            query: queries.getUserProfile,
+            variables: { id: userId }
+          })
+        )
+        userState.userData.value = result.data?.getUserProfile || null
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err)
+      userState.userData.value = null
+    }
+  }
+
+  /**
+   * Update user profile data via GraphQL
+   */
+  const updateUserData = async (profileData: any) => {
+    if (!userState.isAuthenticated.value || !userState.userAttributes.value?.sub) {
+      throw new Error('User not authenticated')
+    }
+
+    userState.loading.value = true
+    userState.error.value = null
+
+    try {
+      const userId = userState.userAttributes.value.sub
+
+      if (import.meta.client) {
+        const result = await useNuxtApp().$Amplify.GraphQL.client.graphql({
+          query: mutations.updateUserProfile,
+          variables: {
+            input: {
+              id: userId,
+              ...profileData
+            }
+          }
+        })
+        userState.userData.value = result.data?.updateUserProfile || null
+      }
+
+      if (import.meta.server) {
+        const result = await runAmplifyApi(undefined, contextSpec =>
+          contextSpec.client.graphql({
+            query: mutations.updateUserProfile,
+            variables: {
+              input: {
+                id: userId,
+                ...profileData
+              }
+            }
+          })
+        )
+        userState.userData.value = result.data?.updateUserProfile || null
+      }
+    } catch (err) {
+      console.error('Error updating user data:', err)
+      userState.error.value = handleAuthError(err)
+      throw err
+    } finally {
+      userState.loading.value = false
+    }
+  }
+
+  /**
+   * Fetch all user data including session, tokens, and attributes
+   */
+  const fetchUser = async (event?: H3Event<EventHandlerRequest>) => {
+    userState.loading.value = true
+    userState.error.value = null
+
+    try {
+      if (import.meta.client) {
+        // Get current auth session
+        const authSession = await useNuxtApp().$Amplify.Auth.fetchAuthSession()
+        userState.authSession.value = authSession
+        userState.isAuthenticated.value = authSession.tokens !== undefined
+
+        if (userState.isAuthenticated.value) {
+          userState.tokens.value = authSession.tokens
+
+          // Get current user
+          const currentUser = await useNuxtApp().$Amplify.Auth.getCurrentUser()
+          userState.currentUser.value = currentUser
+
+          // Get user attributes
+          const userAttributes = await useNuxtApp().$Amplify.Auth.fetchUserAttributes()
+          userState.userAttributes.value = userAttributes
+
+          // Get user data from GraphQL
+          await fetchUserData(event)
+        }
+      }
+      if (import.meta.server) {
+        const authSession = await runAmplifyApi(event, contextSpec =>
+          fetchAuthSession(contextSpec)
+        )
+        userState.authSession.value = authSession
+        userState.isAuthenticated.value = authSession.tokens !== undefined
+
+        if (userState.isAuthenticated.value) {
+          userState.tokens.value = authSession.tokens
+          userState.currentUser.value = await runAmplifyApi(event, contextSpec =>
+            getCurrentUser(contextSpec)
+          )
+          userState.userAttributes.value = await runAmplifyApi(event, contextSpec =>
+            fetchUserAttributes(contextSpec)
+          )
+
+          // Get user data from GraphQL
+          await fetchUserData(event)
+        }
+
+        return {
+          isAuthenticated: userState.isAuthenticated.value,
+          authSession: userState.authSession.value,
+          tokens: userState.tokens.value,
+          currentUser: userState.currentUser.value,
+          userAttributes: userState.userAttributes.value,
+          userData: userState.userData.value
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err)
+      userState.error.value = handleAuthError(err)
+    } finally {
+      userState.loading.value = false
+    }
+  }
+
+  // Check auth state on mount
+  if (import.meta.client) {
+    onMounted(() => {
+      fetchUser()
+    })
+  }
 
   return {
-    // State (computed refs from the reactive state)
-    user: computed(() => userState.value.user),
-    userAttributes: computed(() => userState.value.userAttributes),
-    isAuthenticated: computed(() => userState.value.isAuthenticated),
-    authStep: computed(() => userState.value.authStep),
-    isLoading: computed(() => userState.value.isLoading),
-    error: computed(() => userState.value.error),
-    
-    // Computed user display properties
-    displayName: computed(() => userState.value.user ? getUserDisplayName(userState.value.user) : ''),
-    email: computed(() => userState.value.user ? getUserEmail(userState.value.user) : ''),
-    
-    // Actions
-    getCurrentUser,
-    fetchUserAttributes,
-    updateUserAttributes,
-    checkAuthSession,
-    getSessionInfo,
-    signIn,
+    // Readonly refs
+    isAuthenticated: import.meta.client ? computed(() => userState.isAuthenticated.value) : userState.isAuthenticated,
+    authStep: import.meta.client ? computed(() => userState.authStep.value) : userState.authStep,
+    userAttributes: import.meta.client ? computed(() => userState.userAttributes.value) : userState.userAttributes,
+    userData: import.meta.client ? computed(() => userState.userData.value) : userState.userData,
+    authSession: import.meta.client ? computed(() => userState.authSession.value) : userState.authSession,
+    tokens: import.meta.client ? computed(() => userState.tokens.value) : userState.tokens,
+    currentUser: import.meta.client ? computed(() => userState.currentUser.value) : userState.currentUser,
+    loading: import.meta.client ? computed(() => userState.loading.value) : userState.loading,
+    error: import.meta.client ? computed(() => userState.error.value) : userState.error,
+    // Methods
     signUp,
+    signIn,
+    confirmOTP,
     signOut,
-    confirmSignUp,
-    resendConfirmationCode,
     resetPassword,
-    confirmResetPassword
+    confirmResetPassword,
+    updateAttributes,
+    updateUserData,
+    fetchUser,
+    fetchUserData
   }
+}
+
+export const useUser = createSharedComposable(_useUser)
+
+export const useUserServer = () => {
+  if (import.meta.client) {
+    throw new Error('useUserServer() should only be used on the server')
+  }
+
+  return _useUser()
 }

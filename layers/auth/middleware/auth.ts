@@ -1,14 +1,18 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-  const { checkAuthSession } = useUser()
+  // Use appropriate composable based on context
+  const { fetchUser, isAuthenticated } = process.server ? useUserServer() : useUser()
+
+  // Get the current event from Nuxt context for server-side execution
+  const event = process.server ? useRequestEvent() : undefined
 
   // Check authentication session using proper SSR-compatible method
-  const isAuthenticated = await checkAuthSession()
+  await fetchUser(event)
 
   // If not authenticated, redirect to login page
-  if (!isAuthenticated) {
+  if (!isAuthenticated.value) {
     // Only add redirect parameter if not going to root page
     const redirectQuery = to.fullPath !== '/' ? { redirect: to.fullPath } : {}
-    
+
     return navigateTo({
       path: '/auth/login',
       query: redirectQuery

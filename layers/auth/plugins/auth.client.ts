@@ -4,17 +4,17 @@
  * and loads the user data if authenticated
  */
 export default defineNuxtPlugin(async () => {
-  const { getCurrentUser, isAuthenticated } = useUser()
-  
+  const { fetchUser, isAuthenticated } = useUser()
+
   // Initialize user session on app start
   // This will check for existing auth tokens and load user data
-  await getCurrentUser()
-  
+  await fetchUser()
+
   // Set up periodic session refresh for authenticated users
   if (isAuthenticated.value) {
     // Refresh session every 30 minutes to keep tokens valid
     setInterval(async () => {
-      await getCurrentUser()
+      await fetchUser()
     }, 30 * 60 * 1000)
   }
 })

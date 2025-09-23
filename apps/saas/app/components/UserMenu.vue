@@ -7,7 +7,10 @@ defineProps<{
 
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
-const { signOut, user: authUser, displayName, email } = useUser()
+const { signOut, userAttributes } = useUser()
+
+const displayName = computed(() => userAttributes.value?.name || userAttributes.value?.preferred_username || userAttributes.value?.email || '')
+const email = computed(() => userAttributes.value?.email || '')
 
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
