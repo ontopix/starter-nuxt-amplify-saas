@@ -13,7 +13,6 @@ Amplify.configure(resourceConfig, libraryOptions);
 
 const client = generateClient<Schema>();
 
-// Initialize Stripe client
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-02-24.acacia'
 });
@@ -25,7 +24,6 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
   const name = userAttributes['custom:display_name'];
 
   try {
-    // Create Stripe customer
     console.log(`Creating Stripe customer for user: ${email}`);
     const stripeCustomer = await stripe.customers.create({
       email: email,
@@ -36,16 +34,18 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
     });
     console.log(`Stripe customer created: ${stripeCustomer.id}`);
 
-    // Create UserProfile with Stripe customer ID
-    await client.models.UserProfile.create({
-      id: userId,
-      userId: userId,
-      stripeCustomerId: stripeCustomer.id
-    });
-    console.log(`UserProfile created for user: ${userId}`);
-
+    // Get free plan details
     const freePlan = getFreePlan();
     console.log('Free plan loaded:', freePlan?.name);
+
+    // Create UserProfile with Stripe customer ID and free plan details
+    await client.models.UserProfile.create({
+      userId: userId,
+      stripeCustomerId: stripeCustomer.id,
+      stripeProductId: freePlan?.stripeProductId || null,
+      stripePriceId: freePlan?.prices?.[0]?.stripePriceId || null
+    });
+    console.log(`UserProfile created for user: ${userId}`);
 
   } catch (error) {
     console.error('Error in post-confirmation handler:', error);

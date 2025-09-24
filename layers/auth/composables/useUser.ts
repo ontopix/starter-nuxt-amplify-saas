@@ -1,6 +1,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { createSharedComposable } from '@vueuse/core'
 import { getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth/server'
+import { generateClient } from 'aws-amplify/data/server'
 import * as queries from '../../amplify/utils/graphql/queries'
 import * as mutations from '../../amplify/utils/graphql/mutations'
 import { runAmplifyApi, generateServerClient } from '../../amplify/utils/server'
@@ -14,7 +15,7 @@ const useUserState = () => {
   const tokens = ref(null)
   const currentUser = ref(null)
   const userAttributes = ref(null)
-  const userData = ref(null)
+  const userProfile = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
@@ -25,7 +26,7 @@ const useUserState = () => {
     tokens,
     currentUser,
     userAttributes,
-    userData,
+    userProfile,
     loading,
     error
   }
@@ -62,7 +63,7 @@ const useUserState = () => {
  *
  * @example Basic Server Usage
  * ```ts
- * const { fetchUser, isAuthenticated, userData } = useUserServer()
+ * const { fetchUser, isAuthenticated, userProfile } = useUserServer()
  *
  * await fetchUser(event)
  *
@@ -75,6 +76,7 @@ const useUserState = () => {
  * @property {ComputedRef<boolean>} isAuthenticated - Whether user is authenticated
  * @property {ComputedRef<string>} authStep - Current auth step ('initial', 'challengeOTP', 'challengeTOTPSetup', 'authenticated')
  * @property {ComputedRef<Object|null>} userAttributes - Cognito user attributes (email, name, etc)
+ * @property {ComputedRef<Object|null>} userProfile - User profile data from GraphQL
  * @property {ComputedRef<Object|null>} authSession - Current authentication session
  * @property {ComputedRef<Object|null>} tokens - JWT tokens (access, ID, refresh)
  * @property {ComputedRef<Object|null>} currentUser - Current authenticated user object
@@ -250,7 +252,7 @@ const _useUser = () => {
       userState.isAuthenticated.value = false
       userState.authStep.value = 'initial'
       userState.userAttributes.value = null
-      userState.userData.value = null
+      userState.userProfile.value = null
       userState.authSession.value = null
       userState.tokens.value = null
       userState.currentUser.value = null
@@ -290,7 +292,7 @@ const _useUser = () => {
   /**
    * Fetch user profile data from GraphQL
    */
-  const fetchUserData = async (event?: H3Event<EventHandlerRequest>) => {
+  const fetchUserProfile = async (event?: H3Event<EventHandlerRequest>) => {
     if (!userState.isAuthenticated.value || !userState.userAttributes.value?.sub) {
       return
     }
@@ -301,30 +303,31 @@ const _useUser = () => {
       if (import.meta.client) {
         const result = await useNuxtApp().$Amplify.GraphQL.client.graphql({
           query: queries.getUserProfile,
-          variables: { id: userId }
+          variables: { userId: userId }
         })
-        userState.userData.value = result.data?.getUserProfile || null
+        userState.userProfile.value = result.data?.getUserProfile || null
       }
 
       if (import.meta.server) {
-        const result = await runAmplifyApi(event, contextSpec =>
-          contextSpec.client.graphql({
+        const result = await runAmplifyApi(event, async (contextSpec) => {
+          const client = generateClient({ authMode: 'userPool' })
+          return await client.graphql(contextSpec, {
             query: queries.getUserProfile,
-            variables: { id: userId }
+            variables: { userId: userId }
           })
-        )
-        userState.userData.value = result.data?.getUserProfile || null
+        })
+        userState.userProfile.value = result.data?.getUserProfile || null
       }
     } catch (err) {
       console.error('Error fetching user data:', err)
-      userState.userData.value = null
+      userState.userProfile.value = null
     }
   }
 
   /**
    * Update user profile data via GraphQL
    */
-  const updateUserData = async (profileData: any) => {
+  const updateUserProfile = async (profileData: any) => {
     if (!userState.isAuthenticated.value || !userState.userAttributes.value?.sub) {
       throw new Error('User not authenticated')
     }
@@ -345,12 +348,13 @@ const _useUser = () => {
             }
           }
         })
-        userState.userData.value = result.data?.updateUserProfile || null
+        userState.userProfile.value = result.data?.updateUserProfile || null
       }
 
       if (import.meta.server) {
-        const result = await runAmplifyApi(undefined, contextSpec =>
-          contextSpec.client.graphql({
+        const result = await runAmplifyApi(undefined, async (contextSpec) => {
+          const client = generateClient({ authMode: 'userPool' })
+          return await client.graphql(contextSpec, {
             query: mutations.updateUserProfile,
             variables: {
               input: {
@@ -359,8 +363,8 @@ const _useUser = () => {
               }
             }
           })
-        )
-        userState.userData.value = result.data?.updateUserProfile || null
+        })
+        userState.userProfile.value = result.data?.updateUserProfile || null
       }
     } catch (err) {
       console.error('Error updating user data:', err)
@@ -397,7 +401,7 @@ const _useUser = () => {
           userState.userAttributes.value = userAttributes
 
           // Get user data from GraphQL
-          await fetchUserData(event)
+          await fetchUserProfile(event)
         }
       }
       if (import.meta.server) {
@@ -417,7 +421,7 @@ const _useUser = () => {
           )
 
           // Get user data from GraphQL
-          await fetchUserData(event)
+          await fetchUserProfile(event)
         }
 
         return {
@@ -426,7 +430,7 @@ const _useUser = () => {
           tokens: userState.tokens.value,
           currentUser: userState.currentUser.value,
           userAttributes: userState.userAttributes.value,
-          userData: userState.userData.value
+          userProfile: userState.userProfile.value
         }
       }
     } catch (err) {
@@ -449,7 +453,7 @@ const _useUser = () => {
     isAuthenticated: import.meta.client ? computed(() => userState.isAuthenticated.value) : userState.isAuthenticated,
     authStep: import.meta.client ? computed(() => userState.authStep.value) : userState.authStep,
     userAttributes: import.meta.client ? computed(() => userState.userAttributes.value) : userState.userAttributes,
-    userData: import.meta.client ? computed(() => userState.userData.value) : userState.userData,
+    userProfile: import.meta.client ? computed(() => userState.userProfile.value) : userState.userProfile,
     authSession: import.meta.client ? computed(() => userState.authSession.value) : userState.authSession,
     tokens: import.meta.client ? computed(() => userState.tokens.value) : userState.tokens,
     currentUser: import.meta.client ? computed(() => userState.currentUser.value) : userState.currentUser,
@@ -463,9 +467,9 @@ const _useUser = () => {
     resetPassword,
     confirmResetPassword,
     updateAttributes,
-    updateUserData,
+    updateUserProfile,
     fetchUser,
-    fetchUserData
+    fetchUserProfile
   }
 }
 

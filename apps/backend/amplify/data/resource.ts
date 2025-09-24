@@ -7,9 +7,13 @@ const schema = a
       .model({
         userId: a.string().required(),
         stripeCustomerId: a.string(),
+        stripeProductId: a.string(),
+        stripePriceId: a.string(),
       })
+      .identifier(['userId'])
       .authorization((allow) => [
-        allow.ownerDefinedIn("userId"),
+        allow.publicApiKey(),
+        allow.ownerDefinedIn("userId").to(["read"]),
       ]),
   })
   .authorization((allow) => [allow.resource(postConfirmation)]);

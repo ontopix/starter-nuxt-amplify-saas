@@ -1,5 +1,4 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-  // Use appropriate composable based on context
   const { fetchUser, isAuthenticated } = process.server ? useUserServer() : useUser()
 
   // Get the current event from Nuxt context for server-side execution
