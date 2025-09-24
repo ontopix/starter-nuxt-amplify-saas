@@ -22,10 +22,10 @@ export function getPlanById(planId: string): SubscriptionPlan | undefined {
  */
 export function getPlanPriceId(planId: string): string {
   const plan = getPlanById(planId)
-  if (!plan?.stripePriceId) {
+  if (!plan?.prices?.[0]?.stripePriceId) {
     throw new Error(`Plan '${planId}' not found or missing stripePriceId`)
   }
-  return plan.stripePriceId
+  return plan.prices[0].stripePriceId
 }
 
 /**
@@ -39,7 +39,9 @@ export function getFreePlan(): SubscriptionPlan | undefined {
  * Find plan by Stripe price ID (reverse lookup)
  */
 export function getPlanByPriceId(priceId: string): SubscriptionPlan | undefined {
-  return billingPlans.find(plan => plan.stripePriceId === priceId) as SubscriptionPlan | undefined
+  return billingPlans.find(plan =>
+    plan.prices?.some(price => price.stripePriceId === priceId)
+  ) as SubscriptionPlan | undefined
 }
 
 /**
@@ -58,11 +60,11 @@ export function getPlanFeatures(planId: string): string[] {
 }
 
 /**
- * Get plan limits
+ * Get plan entitlements
  */
-export function getPlanLimits(planId: string): Record<string, any> {
+export function getPlanEntitlements(planId: string): Record<string, number | boolean | string> {
   const plan = getPlanById(planId)
-  return plan?.limits || {}
+  return plan?.entitlements || {}
 }
 
 /**
@@ -71,15 +73,19 @@ export function getPlanLimits(planId: string): Record<string, any> {
 export function comparePlans(planAId: string, planBId: string) {
   const planA = getPlanById(planAId)
   const planB = getPlanById(planBId)
-  
+
   if (!planA || !planB) return null
-  
+
+  // Use first price for comparison
+  const priceA = planA.prices?.[0]?.unitAmount || 0
+  const priceB = planB.prices?.[0]?.unitAmount || 0
+
   return {
-    priceA: planA.price,
-    priceB: planB.price,
-    isUpgrade: planB.price > planA.price,
-    isDowngrade: planB.price < planA.price,
-    priceDifference: planB.price - planA.price
+    priceA,
+    priceB,
+    isUpgrade: priceB > priceA,
+    isDowngrade: priceB < priceA,
+    priceDifference: priceB - priceA
   }
 }
 

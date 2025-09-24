@@ -1,4 +1,4 @@
-import type { SubscriptionPlan, UserSubscription } from '../types'
+import type { SubscriptionPlan, UserProfile } from '../types'
 
 /**
  * Format price using i18n-aware formatting
@@ -46,30 +46,18 @@ export const formatDate = (date: Date): string => {
   }).format(date)
 }
 
-export const isSubscriptionActive = (subscription: UserSubscription | null): boolean => {
-  if (!subscription) return false
-  
-  return ['active', 'trialing'].includes(subscription.status)
+export const isSubscriptionActive = (userProfile: UserProfile | null): boolean => {
+  if (!userProfile || !userProfile.system) return false
+
+  return ['active', 'trialing'].includes(userProfile.system.billingStatus)
 }
 
-export const isSubscriptionCanceled = (subscription: UserSubscription | null): boolean => {
-  if (!subscription) return false
-  
-  return subscription.status === 'canceled'
-}
+export const getSubscriptionStatus = (userProfile: UserProfile | null): string => {
+  if (!userProfile || !userProfile.system) return 'none'
 
-export const isSubscriptionPastDue = (subscription: UserSubscription | null): boolean => {
-  if (!subscription) return false
-  
-  return subscription.status === 'past_due'
-}
-
-export const getSubscriptionStatus = (subscription: UserSubscription | null): string => {
-  if (!subscription) return 'none'
-  
-  switch (subscription.status) {
+  switch (userProfile.system.billingStatus) {
     case 'active':
-      return subscription.cancelAtPeriodEnd ? 'canceling' : 'active'
+      return 'active'
     case 'trialing':
       return 'trial'
     case 'past_due':
@@ -89,59 +77,12 @@ export const getSubscriptionStatus = (subscription: UserSubscription | null): st
   }
 }
 
-export const getSubscriptionStatusColor = (subscription: UserSubscription | null): string => {
-  const status = getSubscriptionStatus(subscription)
-  
-  switch (status) {
-    case 'active':
-      return 'green'
-    case 'trial':
-      return 'blue'
-    case 'canceling':
-      return 'yellow'
-    case 'past_due':
-    case 'unpaid':
-      return 'red'
-    case 'canceled':
-    case 'incomplete':
-    case 'incomplete_expired':
-      return 'gray'
-    default:
-      return 'gray'
-  }
-}
+export const canAccessFeature = (userProfile: UserProfile | null, plan: SubscriptionPlan): boolean => {
+  if (!userProfile || !userProfile.system) return plan.id === 'free'
 
-export const canAccessFeature = (subscription: UserSubscription | null, plan: SubscriptionPlan): boolean => {
-  if (!subscription) return plan.id === 'free'
-  
-  if (!isSubscriptionActive(subscription)) return false
-  
-  return subscription.planId === plan.id
-}
+  if (!isSubscriptionActive(userProfile)) return false
 
-export const getDaysUntilRenewal = (subscription: UserSubscription | null): number => {
-  if (!subscription) return 0
-  
-  const now = new Date()
-  const endDate = new Date(subscription.currentPeriodEnd)
-  const timeDiff = endDate.getTime() - now.getTime()
-  
-  return Math.ceil(timeDiff / (1000 * 3600 * 24))
-}
-
-export const getTrialDaysRemaining = (subscription: UserSubscription | null): number => {
-  if (!subscription || subscription.status !== 'trialing') return 0
-  
-  return getDaysUntilRenewal(subscription)
-}
-
-export const isFeatureLimitReached = (current: number, limit: number): boolean => {
-  return current >= limit
-}
-
-export const getUsagePercentage = (current: number, limit: number): number => {
-  if (limit === 0) return 0
-  return Math.min((current / limit) * 100, 100)
+  return userProfile.system.planId === plan.id
 }
 
 export const handleBillingError = (error: any): string => {

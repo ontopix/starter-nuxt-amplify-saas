@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   alias: {
     '@': path.resolve(__dirname)
   },
-  
+
   // Configuración i18n específica de la app SaaS (opcional)
   i18n: {
     locales: [

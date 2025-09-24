@@ -3,9 +3,7 @@
     "id": "free",
     "name": "Free",
     "description": "Perfect for getting started",
-    "price": 0,
-    "interval": "month",
-    "stripePriceId": null,
+    "badge": "best_value",
     "features": [
       "1 project",
       "1 team member",
@@ -13,21 +11,31 @@
       "Basic support",
       "1,000 API requests/month"
     ],
-    "limits": {
-      "projects": 1,
-      "users": 1,
-      "storage": "1GB",
-      "apiRequests": 1000
-    }
+    "entitlements": {
+      "limit.projects": 1,
+      "limit.users": 1,
+      "limit.storage.gb": 1,
+      "limit.apiRequests": 1000,
+      "feature.basicSupport": true,
+      "feature.analytics": false,
+      "feature.customIntegrations": false
+    },
+    "prices": [
+      {
+        "id": "free-eur-monthly",
+        "stripePriceId": "",
+        "currency": "EUR",
+        "unitAmount": 0,
+        "type": "recurring",
+        "interval": "month"
+      }
+    ]
   },
   {
     "id": "pro",
     "name": "Pro",
     "description": "For growing teams and businesses",
-    "price": 2900,
-    "interval": "month",
-    "stripePriceId": null,
-    "popular": true,
+    "badge": "popular",
     "features": [
       "Unlimited projects",
       "10 team members",
@@ -37,20 +45,40 @@
       "Advanced analytics",
       "Custom integrations"
     ],
-    "limits": {
-      "projects": -1,
-      "users": 10,
-      "storage": "100GB",
-      "apiRequests": 100000
-    }
+    "entitlements": {
+      "limit.projects": -1,
+      "limit.users": 10,
+      "limit.storage.gb": 100,
+      "limit.apiRequests": 100000,
+      "feature.basicSupport": true,
+      "feature.prioritySupport": true,
+      "feature.analytics": true,
+      "feature.customIntegrations": true
+    },
+    "prices": [
+      {
+        "id": "pro-eur-monthly",
+        "stripePriceId": "",
+        "currency": "EUR",
+        "unitAmount": 2900,
+        "type": "recurring",
+        "interval": "month"
+      },
+      {
+        "id": "pro-eur-yearly",
+        "stripePriceId": "",
+        "currency": "EUR",
+        "unitAmount": 29000,
+        "type": "recurring",
+        "interval": "year"
+      }
+    ]
   },
   {
     "id": "enterprise",
     "name": "Enterprise",
     "description": "For large organizations",
-    "price": 9900,
-    "interval": "month",
-    "stripePriceId": null,
+    "requiresContact": true,
     "features": [
       "Unlimited projects",
       "Unlimited team members",
@@ -61,11 +89,42 @@
       "SSO integration",
       "Custom SLA"
     ],
-    "limits": {
-      "projects": -1,
-      "users": -1,
-      "storage": "1TB",
-      "apiRequests": -1
+    "entitlements": {
+      "limit.projects": -1,
+      "limit.users": -1,
+      "limit.storage.gb": 1000,
+      "limit.apiRequests": -1,
+      "feature.basicSupport": true,
+      "feature.prioritySupport": true,
+      "feature.dedicatedSupport": true,
+      "feature.analytics": true,
+      "feature.customIntegrations": true,
+      "feature.advancedSecurity": true,
+      "feature.sso": true,
+      "feature.customSla": true
+    },
+    "prices": [
+      {
+        "id": "enterprise-eur-monthly",
+        "stripePriceId": "",
+        "currency": "EUR",
+        "unitAmount": 9900,
+        "type": "recurring",
+        "interval": "month"
+      },
+      {
+        "id": "enterprise-eur-yearly",
+        "stripePriceId": "",
+        "currency": "EUR",
+        "unitAmount": 99000,
+        "type": "recurring",
+        "interval": "year"
+      }
+    ],
+    "metadata": {
+      "customSlaAvailable": true,
+      "onboardingIncluded": true,
+      "dedicatedManager": true
     }
   }
 ]

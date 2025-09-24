@@ -5,7 +5,9 @@
   "main": "./nuxt.config.ts",
   "exports": {
     ".": "./nuxt.config.ts",
-    "./billing-plans.json": "./billing-plans.json"
+    "./billing-plans.json": "./billing-plans.json",
+    "./utils/billing": "./utils/billing.ts",
+    "./types": "./types/index.ts"
   },
   "scripts": {
     "dev": "nuxi dev .playground",
