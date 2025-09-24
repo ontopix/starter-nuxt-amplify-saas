@@ -1,0 +1,51 @@
+home: "/"
+header:
+  - &start
+    label: "Get started"
+    to: "/start"
+    icon: "heroicons:play-circle"
+  - &solutions
+    label: "Solutions"
+    to: "/solutions"
+    icon: "heroicons:light-bulb"
+    collection: "solutions"
+  - &usecases
+    label: "Use cases"
+    to: "/cases"
+    icon: "heroicons:list-bullet"
+    collection: "cases"
+  - &blog
+    label: "Blog"
+    to: "/blog"
+    icon: "heroicons:newspaper"
+  - &about
+    label: "About"
+    to: "/about"
+    icon: "heroicons:user-group"
+
+footer:
+  - label: "Solutions"
+    children:
+      - *start
+      - *solutions
+  - label: "Company"
+    children:
+      - *blog
+      - *usecases
+      - *about
+  - label: "Legal"
+    children:
+      - label: "Terms of Service"
+        to: "/legal/terms"
+        icon: "heroicons:document-text"
+      - label: "Privacy Policy"
+        to: "/legal/privacy"
+        icon: "heroicons:document-text"
+  - label: "Social media"
+    children:
+      - label: "LinkedIn"
+        to: "https://www.linkedin.com/company/ontopixai"
+        icon: "simple-icons:linkedin"
+      - label: "Twitter"
+        to: "https://twitter.com/ontopixai"
+        icon: "simple-icons:x"

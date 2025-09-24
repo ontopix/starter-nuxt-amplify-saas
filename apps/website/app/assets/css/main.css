@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "@nuxt/ui-pro";
+
+/* Custom animation for hero */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(90px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 1s ease-out;
+}
+
+.text-gradient-violet {
+  @apply bg-gradient-to-br from-[#8800ff] to-[#880088] bg-clip-text text-transparent;
+}
+
+.bg-gradient-violet {
+  @apply bg-gradient-to-br from-violet-50 to-violet-200 dark:from-gray-900 dark:to-violet-950
+}

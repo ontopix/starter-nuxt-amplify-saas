@@ -1,0 +1,59 @@
+footer:
+  newsletter: "Newsletter"
+  newsletterPlaceholder: "Enter your email"
+  newsletterSubscribe: "Subscribe"
+  rightsReserved: "All rights reserved."
+
+blog:
+  title: "Blog"
+  subtitle: "Explore insights, news, and in-depth perspectives on AI, virtual agents, and the future of customer experience."
+  searchPlaceholder: "Search articles..."
+  readMore: "Read more"
+  noResults: "No articles found"
+  notFound: "Article not available"
+  results: "articles found"
+  tryAdjusting: "Try adjusting your search or filter criteria."
+  shareArticle: "Share article"
+  seo:
+    title: "Blog - Ontopix"
+    ogTitle: "Blog - Ontopix"
+    description: "Discover insights, news, and deep dives into AI, virtual agents, and the future of customer experience."
+    ogDescription: "Discover insights, news, and deep dives into AI, virtual agents, and the future of customer experience."
+
+cases:
+  title: "Use cases"
+  headline: "Use case"
+  subtitle: "Discover how AI virtual agents create value across different industries and sectors."
+  readMore: "Read more"
+  noResults: "No use cases found"
+  notFound: "Use case not available"
+  shareUseCase: "Share use case"
+  seo:
+    title: "Use Cases - Ontopix"
+    ogTitle: "Use Cases - Ontopix"
+    description: "Explore real-world examples of AI virtual agents driving impact across multiple industries."
+    ogDescription: "Explore real-world examples of AI virtual agents driving impact across multiple industries."
+
+solutions:
+  title: "Solutions"
+  headline: "Solution"
+  subtitle: "Discover the solutions we offer to help you transform your customer service."
+  readMore: "Read more"
+  noResults: "No solutions found"
+  notFound: "Solution not available"
+  shareSolution: "Share solution"
+  seo:
+    title: "Solutions - Ontopix"
+    ogTitle: "Solutions - Ontopix"
+    description: "Discover the solutions we offer to help you transform your customer service."
+    ogDescription: "Discover the solutions we offer to help you transform your customer service."
+
+start:
+  title: "Get Started"
+  subtitle: "Have a real conversation with an Ontopix virtual agent and experience how they can transform your customer service. There’s no better showcase than trying it yourself."
+  disclaimer: "Our agent will be available soon."
+  seo:
+    title: "Get Started - Ontopix"
+    ogTitle: "Get Started - Ontopix"
+    description: "Have a real conversation with an Ontopix virtual agent and experience how they can transform your customer service. There’s no better showcase than trying it yourself."
+    ogDescription: "Have a real conversation with an Ontopix virtual agent and experience how they can transform your customer service. There’s no better showcase than trying it yourself."

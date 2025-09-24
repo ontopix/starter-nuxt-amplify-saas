@@ -1,0 +1,116 @@
+seo:
+  title: 'Ontopix - About Us'
+  ogTitle: 'Ontopix - About Us'
+  description: &seoDescription "Learn about Ontopix's mission to make AI-powered customer service accessible to businesses of all sizes. Meet our team and see our impact."
+  ogDescription: *seoDescription
+  ogImage: '/og.png'
+  twitterCard: 'summary_large_image'
+
+hero:
+  titleAbout: "About"
+  titleOntopix: "Ontopix"
+  description: "We're on a mission to make AI-powered customer service accessible to businesses of all sizes. Our virtual agents understand context, speak naturally, and deliver exceptional experiences 24/7."
+
+cta:
+  title: "Ready to Transform Your Customer Service?"
+  description: "Join thousands of businesses already using Ontopix virtual agents to deliver exceptional customer experiences."
+  links:
+    - label: "Get Started"
+      to: "/start"
+      icon: "heroicons:arrow-right"
+      variant: "solid"
+      color: "primary"
+    - label: "Solutions"
+      to: "/solutions"
+      variant: "outline"
+      color: "primary"
+
+mission:
+  title: "Our Mission"
+  description: | #md
+    Customer service shouldn't be a cost center—it should be a competitive advantage.
+    We believe every business deserves access to intelligent, empathetic, and scalable customer support.
+
+    That's why we built Ontopix: to democratize AI-powered customer service and help businesses of all
+    sizes deliver exceptional experiences that keep customers coming back.
+  principles:
+    - key: "customer-centric"
+      value: "Customer-Centric"
+      icon: "heroicons:heart"
+      description: "Every decision we make prioritizes the customer experience."
+
+    - key: "innovation"
+      value: "Innovation"
+      icon: "heroicons:rocket-launch"
+      description: "We push the boundaries of what's possible with AI technology."
+
+    - key: "accessibility"
+      value: "Accessibility"
+      icon: "heroicons:chat-bubble-left-right"
+      description: "Advanced AI should be accessible to businesses of all sizes."
+
+    - key: "trust"
+      value: "Trust"
+      icon: "heroicons:shield-check"
+      description: "We build secure, reliable solutions you can depend on."
+
+team:
+  title: "Meet the team"
+  description: "We're a diverse group of engineers, designers, and AI researchers united by our passion for transforming customer service through technology."
+  members:
+  - name: "Javier Granados"
+    description: "Finance & Business"
+    bio: "Expert in finance, business strategy, and fiscal management. Javier ensures Ontopix builds a solid and sustainable business foundation while driving growth opportunities."
+    avatar:
+      src: "/images/team/javier-granados.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/javier-granados-paredes-33620b340/"
+      github: "https://github.com/lkskwkr"
+
+  - name: "Jano Carrión"
+    description: "Cloud & Network"
+    bio: "Specialist in networking and relationship building. Jano leads strategic partnerships and market expansion, connecting Ontopix with key players and opportunities."
+    avatar:
+      src: "/images/team/jano-carrion.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/janocarrion/"
+      twitter: "https://x.com/jano_carrion"
+      github: "https://github.com/Stelioskokos"
+
+  - name: "Albert Puigsech"
+    description: "Product & Technology"
+    bio: "Tech leader with deep expertise in AI, DevOps, and security. Albert drives Ontopix product development, ensuring scalable, reliable, and cutting-edge technology solutions."
+    avatar:
+      src: "/images/team/albert-puigsech.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/apuigsech/"
+      twitter: "https://x.com/apuigsech"
+      github: "https://github.com/apuigsech"
+
+  - name: "Josepmaria Roca"
+    description: "Product & Technology"
+    bio: "Cybersecurity and AI enthusiast with a strong product mindset. Josepmaria shapes the Ontopix vision, aligning innovation with customer needs and technical excellence."
+    avatar:
+      src: "/images/team/josepmaria-roca.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/josepmariaroca/"
+      twitter: "https://x.com/kanutron"
+      github: "https://github.com/kanutron"
+
+impact:
+  title: "Our Impact"
+  description: "The numbers speak for themselves"
+  cards:
+  - label: "Happy Customers"
+    value: "50+"
+    icon: "heroicons:heart"
+  - label: "Conversations Handled"
+    value: "1M+"
+    icon: "heroicons:chat-bubble-left-ellipsis"
+  - label: "Uptime"
+    value: "99.9%"
+    icon: "heroicons:clock"
+  - label: "Support Available"
+    value: "24/7"
+    icon: "heroicons:hand-thumb-up"
+

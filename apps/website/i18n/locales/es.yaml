@@ -1,0 +1,59 @@
+footer:
+  newsletter: "Boletín"
+  newsletterPlaceholder: "Introduce tu correo"
+  newsletterSubscribe: "Suscribirse"
+  rightsReserved: "Todos los derechos reservados."
+
+blog:
+  title: "Blog"
+  subtitle: "Explora ideas, novedades y análisis en profundidad sobre IA, agentes virtuales y el futuro de la experiencia del cliente."
+  searchPlaceholder: "Buscar artículos..."
+  readMore: "Leer más"
+  noResults: "No se han encontrado artículos"
+  notFound: "Artículo no disponible"
+  results: "artículos encontrados"
+  tryAdjusting: "Prueba a ajustar tu búsqueda o los filtros."
+  shareArticle: "Compartir artículo"
+  seo:
+    title: "Blog - Ontopix"
+    ogTitle: "Blog - Ontopix"
+    description: "Descubre ideas, novedades y análisis sobre IA, agentes virtuales y el futuro de la experiencia del cliente."
+    ogDescription: "Descubre ideas, novedades y análisis sobre IA, agentes virtuales y el futuro de la experiencia del cliente."
+
+cases:
+  title: "Casos de uso"
+  headline: "Caso de uso"
+  subtitle: "Descubre cómo los agentes virtuales de IA generan valor en distintos sectores e industrias."
+  readMore: "Leer más"
+  noResults: "No se han encontrado casos de uso"
+  notFound: "Caso de uso no disponible"
+  shareUseCase: "Compartir caso"
+  seo:
+    title: "Casos de uso - Ontopix"
+    ogTitle: "Casos de uso - Ontopix"
+    description: "Explora ejemplos reales de agentes virtuales de IA que generan impacto en diferentes sectores."
+    ogDescription: "Explora ejemplos reales de agentes virtuales de IA que generan impacto en diferentes sectores."
+
+solutions:
+  title: "Soluciones"
+  headline: "Solución"
+  subtitle: "Descubre las soluciones que ofrecemos para ayudarte a transformar tu servicio de atención al cliente."
+  readMore: "Leer más"
+  noResults: "No se han encontrado soluciones"
+  notFound: "Solución no disponible"
+  shareSolution: "Compartir solución"
+  seo:
+    title: "Soluciones - Ontopix"
+    ogTitle: "Soluciones - Ontopix"
+    description: "Descubre las soluciones que ofrecemos para ayudarte a transformar tu servicio de atención al cliente."
+    ogDescription: "Descubre las soluciones que ofrecemos para ayudarte a transformar tu servicio de atención al cliente."
+
+start:
+  title: "Comienza"
+  subtitle: "Mantén una conversación real con un agente virtual de Ontopix y descubre cómo puede transformar tu atención al cliente. No hay mejor demostración que probarlo por ti mismo."
+  disclaimer: "Nuestro agente estará disponible próximamente."
+  seo:
+    title: "Comienza - Ontopix"
+    ogTitle: "Comienza - Ontopix"
+    description: "Mantén una conversación real con un agente virtual de Ontopix y descubre cómo puede transformar tu atención al cliente. No hay mejor demostración que probarlo por ti mismo."
+    ogDescription: "Mantén una conversación real con un agente virtual de Ontopix y descubre cómo puede transformar tu atención al cliente. No hay mejor demostración que probarlo por ti mismo."

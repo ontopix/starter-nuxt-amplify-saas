@@ -1,0 +1,315 @@
+seo:
+  title: 'Ontopix - Agentes Virtuales de IA para Atención al Cliente'
+  ogTitle: 'Ontopix - Agentes Virtuales de IA para Atención al Cliente'
+  description: 'Transforma tu atención al cliente con agentes virtuales impulsados por IA. Despliega conversaciones inteligentes que funcionan 24/7, reduce costes y mejora la satisfacción.'
+  ogDescription: 'Transforma tu atención al cliente con agentes virtuales impulsados por IA. Despliega conversaciones inteligentes que funcionan 24/7, reduce costes y mejora la satisfacción.'
+  ogImage: '/og.png'
+  twitterCard: 'summary_large_image'
+
+hero:
+  titleTransform: "Transforma tu atención al cliente con"
+  titleAgents: "Agentes Virtuales de IA"
+  description: "Despliega agentes virtuales inteligentes que hablan con naturalidad, entienden el contexto y resuelven problemas de los clientes 24/7. Reduce costes mientras mejoras la satisfacción."
+  image: "/images/hero-dashboard.png"
+  imageAlt: "Dashboard de Agentes Virtuales de Ontopix"
+  links:
+    - &start
+      label: "Empezar"
+      to: "/es/start"
+      icon: "heroicons:arrow-right"
+      variant: "solid"
+      color: "primary"
+    - &solutions
+      label: "Soluciones"
+      to: "/es/solutions"
+      variant: "outline"
+      color: "primary"
+
+cta:
+  title: "¿Listo para Transformar tu Atención al Cliente?"
+  description: "Únete a miles de empresas que ya utilizan agentes virtuales de Ontopix para ofrecer experiencias de cliente excepcionales."
+  links:
+    - *start
+    - *solutions
+
+reasons:
+  title: "¿Por qué elegir los Agentes Virtuales de Ontopix?"
+  description: "Nuestros agentes virtuales impulsados por IA ofrecen experiencias excepcionales al cliente con comprensión avanzada del lenguaje natural."
+  cards:
+    - title: "Procesamiento de Lenguaje Natural"
+      icon: "heroicons:chat-bubble-left-ellipsis"
+      description: "El NLP avanzado comprende la intención, el contexto y los matices en las conversaciones con los clientes."
+
+    - title: "Despliegue Multicanal"
+      icon: "heroicons:device-phone-mobile"
+      description: "Despliega en chat web, teléfono, correo electrónico, SMS y plataformas de redes sociales."
+
+    - title: "Escalado Inteligente"
+      icon: "heroicons:arrow-up-right"
+      description: "Transfiere sin problemas los casos complejos a agentes humanos con todo el contexto."
+
+    - title: "Analítica en Tiempo Real"
+      icon: "heroicons:chart-bar"
+      description: "Monitorea el rendimiento, mide la satisfacción y optimiza las conversaciones de forma continua."
+
+    - title: "Integraciones Personalizadas"
+      icon: "heroicons:puzzle-piece"
+      description: "Conéctate con tu CRM, mesa de ayuda y herramientas empresariales a través de APIs."
+
+    - title: "Soporte de Voz y Texto"
+      icon: "heroicons:microphone"
+      description: "Gestiona tanto llamadas de voz como conversaciones por texto con la misma inteligencia."
+
+stats:
+  title: "Resultados Probados"
+  description: "Ve el impacto que nuestros agentes virtuales tienen en empresas como la tuya."
+  cards:
+    - label: "Reducción de Costes"
+      value: "85%"
+      icon: "heroicons:chart-bar"
+
+    - label: "Disponibilidad"
+      value: "24/7"
+      icon: "heroicons:clock"
+
+    - label: "Resolución Más Rápida"
+      value: "3x"
+      icon: "heroicons:arrow-up-right"
+
+    - label: "Satisfacción del Cliente"
+      value: "95%"
+      icon: "heroicons:heart"
+
+features:
+  title: "Explora las Características Clave"
+  description: "Entiende mejor por qué nuestros agentes virtuales son excepcionales"
+  tabs:
+    - label: "Conversaciones Naturales"
+      title: "Diálogo Humano"
+      description: "Nuestros agentes virtuales no solo buscan palabras clave: comprenden el contexto, mantienen el flujo de la conversación y responden de manera natural a consultas complejas."
+      image: "/images/features/conversations.png"
+      reverse: false
+      points:
+        - "Conciencia de contexto en conversaciones de varios turnos"
+        - "Reconocimiento de intención con más del 95% de precisión"
+        - "Análisis de sentimiento y respuestas empáticas"
+        - "Soporte para más de 25 idiomas y dialectos"
+
+    - label: "Integraciones"
+      title: "Integración Perfecta de Sistemas"
+      description: "Conecta tu agente virtual a sistemas y flujos de trabajo empresariales existentes sin interrumpir tus operaciones actuales."
+      image: "/images/features/integrations.png"
+      reverse: true
+      points:
+        - "Conectores preconstruidos para sistemas CRM populares"
+        - "APIs RESTful para integraciones personalizadas"
+        - "Sincronización de datos en tiempo real"
+        - "Autenticación segura y manejo de datos"
+
+    - label: "Analítica"
+      title: "Analítica"
+      description: "La analítica integral te ayuda a entender las necesidades de los clientes, optimizar el rendimiento del agente y medir el impacto en el negocio."
+      image: "/images/features/analytics.png"
+      reverse: false
+      points:
+        - "Monitoreo de conversaciones en tiempo real"
+        - "Puntuación de satisfacción del cliente"
+        - "Métricas de rendimiento y seguimiento de KPIs"
+        - "Informes y paneles personalizados"
+
+steps:
+  title: "Cómo Funciona"
+  description: "Pon en marcha tu agente virtual en tres simples pasos."
+  items:
+  - title: "Conectar"
+    description: "Con tus sistemas empresariales"
+    icon: "heroicons:link"
+    leading: "Vincula tus sistemas existentes y ajusta la personalidad y el conocimiento de tu agente virtual."
+    points:
+        - "Nuestros agentes son expertos en los principales sistemas CRM y ERP"
+        - "Podemos ayudarte a integrarte con tus sistemas personalizados"
+        - "Las salvaguardas garantizan la privacidad y seguridad de los datos"
+        - "Flujos de trabajo antes, durante y después de las interacciones"
+
+  - title: "Probar"
+    description: "Usando nuestro marco automatizado"
+    icon: "heroicons:cog-6-tooth"
+    leading: "Utiliza nuestro marco automatizado de pruebas y validación para asegurar respuestas perfectas antes de salir en vivo."
+    points:
+        - "Define criterios para evaluar el rendimiento del agente"
+        - "Prueba escenarios e identifica puntos ciegos"
+        - "Define reglas de transferencia para escenarios complejos"
+        - "Prioriza la mejora del agente según métricas de rendimiento"
+
+  - title: "Desplegar"
+    description: "A una escala prácticamente ilimitada"
+    icon: "heroicons:rocket-launch"
+    leading: "Lanza en todos los canales y observa cómo tu agente virtual gestiona consultas de clientes 24/7 mientras te enfocas en el crecimiento."
+    points:
+        - "Puedes desplegar un número ilimitado de agentes virtuales"
+        - "Nuestros sistemas están construidos para escalar. ¡Puedes crecer sin límites!"
+        - "Monitorea el rendimiento de tus agentes en tiempo real"
+        - "Mejora tus agentes en base a métricas y evaluaciones automatizadas"
+
+testimonials:
+  headline: "Historias de Clientes"
+  title: "¿Qué opinan nuestros clientes?"
+  description: "Descubre lo que opinan los líderes del sector sobre su experiencia con los Agentes Virtuales de Ontopix"
+  items:
+    - quote: "Ontopix redujo nuestro tiempo de respuesta en soporte de horas a segundos. Nuestros índices de satisfacción nunca habían sido tan altos y nuestro equipo puede centrarse en los problemas complejos que realmente importan."
+      user:
+        name: "Jennifer Martinez"
+        description: "Directora de Éxito del Cliente, TechFlow Solutions"
+        avatar:
+          src: "/images/testimonials/jennifer-martinez.jpg"
+
+    - quote: "El retorno de inversión fue inmediato. Reducimos los costes de soporte en un 70% mientras mejorábamos la calidad del servicio. Nuestro agente virtual gestiona las consultas rutinarias a la perfección, liberando a nuestro equipo para trabajos estratégicos."
+      user:
+        name: "Robert Chen"
+        description: "CEO, GrowthLabs"
+        avatar:
+          src: "/images/testimonials/robert-chen.jpg"
+
+    - quote: "Nuestra cola de llamadas desapareció en pocas semanas. Los agentes de Ontopix ofrecen conversaciones naturales y empáticas que parecen humanas, pero escalan como nada más."
+      user:
+        name: "Sophia Anders"
+        description: "Directora de Operaciones, NovaTel"
+        avatar:
+          src: "/images/testimonials/sophia-anders.jpg"
+
+    - quote: "Integramos Ontopix con Salesforce en un solo día. Ahora nuestros clientes reciben respuestas instantáneas mientras todos los datos se sincronizan sin esfuerzo."
+      user:
+        name: "David Johnson"
+        description: "Responsable de CRM, BrightFuture Finance"
+        avatar:
+          src: "/images/testimonials/david-johnson.jpg"
+
+    - quote: "Nuestros agentes virtuales están disponibles 24/7 en varios idiomas. Ontopix nos ayuda a expandirnos globalmente sin necesidad de escalar los equipos humanos al mismo ritmo."
+      user:
+        name: "Elena Petrova"
+        description: "Responsable de Soporte Global, SkyBridge Travel"
+        avatar:
+          src: "/images/testimonials/elena-petrova.jpg"
+
+    - quote: "El estrés de los empleados ha bajado y el NPS ha subido. Ontopix absorbió un 60% de las consultas repetitivas casi de inmediato."
+      user:
+        name: "James O’Connor"
+        description: "Responsable de Experiencia de Cliente, FinWell Bank"
+        avatar:
+          src: "/images/testimonials/james-oconnor.jpg"
+
+    - quote: "Ontopix encaja perfectamente en nuestro flujo de trabajo. La IA sabe cuándo escalar y, cuando lo hace, los agentes ya tienen todo el contexto."
+      user:
+        name: "Priya Singh"
+        description: "Responsable de Operaciones de Soporte, MedicoTech"
+        avatar:
+          src: "/images/testimonials/priya-singh.jpg"
+
+    - quote: "Vimos una mejora medible en la resolución al primer contacto en solo dos semanas. Eso es inaudito en nuestro sector."
+      user:
+        name: "Lucas Brown"
+        description: "VP de Operaciones, Retailify"
+        avatar:
+          src: "/images/testimonials/lucas-brown.jpg"
+
+faqs:
+  title: "Preguntas Frecuentes"
+  description: "Todo lo que necesitas saber sobre los agentes virtuales de Ontopix"
+  categories:
+    - label: "Incorporación"
+      questions:
+        - label: "¿Con qué rapidez puedo desplegar un agente virtual?"
+          icon: "heroicons:clock"
+          content: | #md
+            La mayoría de las empresas pueden tener su agente virtual funcionando en 24-48 horas.
+            Nuestro proceso de incorporación simplificado incluye asistencia en la configuración y formación inicial.
+
+        - label: "¿Cómo funciona la tarificación?"
+          icon: "heroicons:credit-card"
+          content: | #md
+            Ofrecemos precios flexibles en función del volumen de conversaciones y de las funcionalidades necesarias.
+            Empieza con nuestro plan gratuito hasta 100 conversaciones al mes, y escala a medida que creces.
+
+        - label: "¿Qué tipo de soporte proporcionáis?"
+          icon: "heroicons:microphone"
+          content: | #md
+            Ofrecemos soporte técnico 24/7, gestores de éxito dedicados para clientes empresariales,
+            documentación completa y sesiones de formación periódicas.
+
+        - label: "¿Necesito conocimientos técnicos para empezar?"
+          icon: "heroicons:academic-cap"
+          content: | #md
+            Para nada. Nuestro equipo de incorporación se encarga de la configuración técnica por ti.
+            Solo necesitas darnos acceso a tus sistemas de negocio y nosotros nos ocupamos del resto.
+
+    - label: "Agentes"
+      questions:
+        - label: "¿Qué idiomas se soportan?"
+          icon: "heroicons:chat-bubble-left-ellipsis"
+          content: | #md
+            Nuestros agentes virtuales soportan más de 25 idiomas, incluyendo inglés, español, francés, alemán, portugués y muchos más.
+            También podemos añadir soporte para idiomas personalizados bajo petición.
+
+        - label: "¿Los agentes pueden manejar voz y chat?"
+          icon: "heroicons:phone"
+          content: | #md
+            ¡Sí! Los agentes de Ontopix están diseñados para uso omnicanal, soportando tanto llamadas de voz en directo como interacciones por chat.
+
+        - label: "¿Qué nivel de personalización ofrecen los agentes?"
+          icon: "heroicons:adjustments-horizontal"
+          content: | #md
+            Los agentes se pueden personalizar completamente para reflejar la voz, el tono y los flujos de trabajo de tu marca.
+            Puedes definir guiones de conversación, rutas de escalado e incluso integrar bases de conocimiento.
+
+    - label: "Integraciones"
+      questions:
+        - label: "¿El agente virtual puede integrarse con mis sistemas actuales?"
+          icon: "heroicons:puzzle-piece"
+          content: | #md
+            ¡Sí! Nuestra plataforma ofrece integraciones listas con los CRM más populares, sistemas de soporte y herramientas de negocio.
+            También proporcionamos APIs para integraciones personalizadas.
+
+        - label: "¿Qué plataformas están soportadas de forma nativa?"
+          icon: "heroicons:cube-transparent"
+          content: | #md
+            Ontopix se integra de manera fluida con Salesforce, Zendesk, HubSpot, Dynamics 365 y Slack.
+            Continuamente añadimos nuevas integraciones a nuestro marketplace.
+
+    - label: "Calidad"
+      questions:
+        - label: "¿Cómo garantizáis la calidad del agente virtual?"
+          icon: "heroicons:check-circle"
+          content: | #md
+            Usamos una combinación de pruebas automatizadas y revisión humana para garantizar la calidad del agente virtual.
+            Además, contamos con un equipo de expertos en aseguramiento de calidad que revisa los agentes de forma periódica.
+
+        - label: "¿Puedo monitorizar las conversaciones en tiempo real?"
+          icon: "heroicons:eye"
+          content: | #md
+            Sí. Puedes ver transcripciones en directo, escuchar llamadas y dar feedback inmediato.
+            Nuestros paneles te ofrecen visibilidad sobre el rendimiento del agente en todo momento.
+
+        - label: "¿Los agentes aprenden y mejoran con el tiempo?"
+          icon: "heroicons:sparkles"
+          content: | #md
+            Por supuesto. Nuestros agentes utilizan modelos de IA que aprenden de cada interacción,
+            mejorando la precisión y la fluidez de las conversaciones con el tiempo.
+
+    - label: "Seguridad"
+      questions:
+        - label: "¿Qué nivel de seguridad tiene la plataforma?"
+          icon: "heroicons:lock-closed"
+          content: | #md
+            La seguridad es nuestra máxima prioridad. Todos los datos están cifrados en tránsito y en reposo, y nuestra infraestructura
+            sigue las mejores prácticas del sector en control de accesos y monitorización.
+
+        - label: "¿Cumplís con el RGPD y otras normativas?"
+          icon: "heroicons:shield-check"
+          content: | #md
+            Sí, Ontopix cumple totalmente con el RGPD y también se ajusta a SOC 2 y HIPAA para clientes de sectores regulados.
+
+        - label: "¿Dónde se almacenan los datos?"
+          icon: "heroicons:server"
+          content: | #md
+            Los datos se almacenan en centros de datos seguros y específicos por región según tus necesidades de cumplimiento.
+            Puedes elegir entre alojamiento en la UE, EE. UU. o APAC dependiendo de tus requisitos regulatorios.

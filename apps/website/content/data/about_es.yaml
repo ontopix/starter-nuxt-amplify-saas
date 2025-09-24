@@ -1,0 +1,115 @@
+seo:
+  title: 'Ontopix - Sobre Nosotros'
+  ogTitle: 'Ontopix - Sobre Nosotros'
+  description: &seoDescription "Descubre la misión de Ontopix de hacer que el servicio de atención al cliente impulsado por IA sea accesible para empresas de todos los tamaños. Conoce a nuestro equipo y descubre nuestro impacto."
+  ogDescription: *seoDescription
+  ogImage: '/og.png'
+  twitterCard: 'summary_large_image'
+
+hero:
+  titleAbout: "Sobre"
+  titleOntopix: "Ontopix"
+  description: "Nuestra misión es hacer que la atención al cliente impulsada por IA sea accesible para empresas de todos los tamaños. Nuestros agentes virtuales comprenden el contexto, hablan de forma natural y ofrecen experiencias excepcionales las 24 horas del día, los 7 días de la semana."
+
+cta:
+  title: "¿Listo para Transformar tu Atención al Cliente?"
+  description: "Únete a miles de empresas que ya utilizan agentes virtuales de Ontopix para ofrecer experiencias de cliente excepcionales."
+  links:
+    - label: "Empezar"
+      to: "/es/start"
+      icon: "heroicons:arrow-right"
+      variant: "solid"
+      color: "primary"
+    - label: "Soluciones"
+      to: "/es/solutions"
+      variant: "outline"
+      color: "primary"
+
+mission:
+  title: "Nuestra Misión"
+  description: | #md
+    El servicio de atención al cliente no debería ser un centro de costes, sino una ventaja competitiva.
+    Creemos que toda empresa merece acceso a un soporte inteligente, empático y escalable.
+
+    Por eso creamos Ontopix: para democratizar la atención al cliente impulsada por IA y ayudar a empresas
+    de todos los tamaños a ofrecer experiencias excepcionales que fidelicen a sus clientes.
+  principles:
+    - key: "customer-centric"
+      value: "Centrados en el Cliente"
+      icon: "heroicons:heart"
+      description: "Cada decisión que tomamos prioriza la experiencia del cliente."
+
+    - key: "innovation"
+      value: "Innovación"
+      icon: "heroicons:rocket-launch"
+      description: "Impulsamos los límites de lo posible con la tecnología de IA."
+
+    - key: "accessibility"
+      value: "Accesibilidad"
+      icon: "heroicons:chat-bubble-left-right"
+      description: "La IA avanzada debe ser accesible para empresas de todos los tamaños."
+
+    - key: "trust"
+      value: "Confianza"
+      icon: "heroicons:shield-check"
+      description: "Creamos soluciones seguras y fiables en las que puedes confiar."
+
+team:
+  title: "Conoce al equipo"
+  description: "Somos un equipo diverso de ingenieros, diseñadores y investigadores en IA unidos por nuestra pasión por transformar el servicio al cliente a través de la tecnología."
+  members:
+  - name: "Javier Granados"
+    description: "Finanzas y Negocio"
+    bio: "Experto en finanzas, estrategia empresarial y gestión fiscal. Javier garantiza que Ontopix construya una base empresarial sólida y sostenible, impulsando oportunidades de crecimiento."
+    avatar:
+      src: "/images/team/javier-granados.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/javier-granados-paredes-33620b340/"
+      github: "https://github.com/lkskwkr"
+
+  - name: "Jano Carrión"
+    description: "Cloud y Redes"
+    bio: "Especialista en networking y creación de relaciones. Jano lidera las alianzas estratégicas y la expansión de mercado, conectando Ontopix con actores clave y nuevas oportunidades."
+    avatar:
+      src: "/images/team/jano-carrion.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/janocarrion/"
+      twitter: "https://x.com/jano_carrion"
+      github: "https://github.com/Stelioskokos"
+
+  - name: "Albert Puigsech"
+    description: "Producto y Tecnología"
+    bio: "Líder tecnológico con amplia experiencia en IA, DevOps y seguridad. Albert dirige el desarrollo de producto en Ontopix, asegurando soluciones tecnológicas escalables, fiables y de vanguardia."
+    avatar:
+      src: "/images/team/albert-puigsech.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/apuigsech/"
+      twitter: "https://x.com/apuigsech"
+      github: "https://github.com/apuigsech"
+
+  - name: "Josepmaria Roca"
+    description: "Producto y Tecnología"
+    bio: "Apasionado de la ciberseguridad y la inteligencia artificial, con una fuerte mentalidad de producto. Josepmaria define la visión de Ontopix, alineando la innovación con las necesidades del cliente y la excelencia técnica."
+    avatar:
+      src: "/images/team/josepmaria-roca.png"
+    links:
+      linkedin: "https://www.linkedin.com/in/josepmariaroca/"
+      twitter: "https://x.com/kanutron"
+      github: "https://github.com/kanutron"
+
+impact:
+  title: "Nuestro Impacto"
+  description: "Las cifras hablan por sí solas"
+  cards:
+  - label: "Clientes Satisfechos"
+    value: "50+"
+    icon: "heroicons:heart"
+  - label: "Conversaciones Gestionadas"
+    value: "1M+"
+    icon: "heroicons:chat-bubble-left-ellipsis"
+  - label: "Disponibilidad"
+    value: "99.9%"
+    icon: "heroicons:clock"
+  - label: "Soporte Disponible"
+    value: "24/7"
+    icon: "heroicons:hand-thumb-up"

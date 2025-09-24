@@ -1,0 +1,315 @@
+seo:
+  title: 'Ontopix - AI Virtual Agents for Customer Service'
+  ogTitle: 'Ontopix - AI Virtual Agents for Customer Service'
+  description: &seoDescription 'Transform your customer service with AI-powered virtual agents. Deploy intelligent conversations that work 24/7, reduce costs, and improve satisfaction.'
+  ogDescription: *seoDescription
+  ogImage: '/og.png'
+  twitterCard: 'summary_large_image'
+
+hero:
+  titleTransform: "Transform Customer Service with"
+  titleAgents: "AI Virtual Agents"
+  description: "Deploy intelligent virtual agents that understand context, speak naturally, and resolve customer issues 24/7. Reduce costs while improving satisfaction."
+  image: "/images/hero-dashboard.png"
+  imageAlt: "Ontopix Virtual Agent Dashboard"
+  links:
+    - &start
+      label: "Get Started"
+      to: "/start"
+      icon: "heroicons:arrow-right"
+      variant: "solid"
+      color: "primary"
+    - &solutions
+      label: "Solutions"
+      to: "/solutions"
+      variant: "outline"
+      color: "primary"
+
+cta:
+  title: "Ready to Transform Your Customer Service?"
+  description: "Join thousands of businesses already using Ontopix virtual agents to deliver exceptional customer experiences."
+  links:
+    - *start
+    - *solutions
+
+reasons:
+  title: "Why Choose Ontopix Virtual Agents?"
+  description: "Our AI-powered virtual agents deliver exceptional customer experiences with advanced natural language understanding."
+  cards:
+    - title: "Natural Language Processing"
+      icon: "heroicons:chat-bubble-left-ellipsis"
+      description: "Advanced NLP understands intent, context, and nuance in customer conversations."
+
+    - title: "Multi-Channel Deployment"
+      icon: "heroicons:device-phone-mobile"
+      description: "Deploy across web chat, phone, email, SMS, and social media platforms."
+
+    - title: "Smart Escalation"
+      icon: "heroicons:arrow-up-right"
+      description: "Seamlessly transfer complex issues to human agents with full context."
+
+    - title: "Real-time Analytics"
+      icon: "heroicons:chart-bar"
+      description: "Monitor performance, track satisfaction, and optimize conversations continuously."
+
+    - title: "Custom Integrations"
+      icon: "heroicons:puzzle-piece"
+      description: "Connect with your CRM, helpdesk, and business tools through APIs."
+
+    - title: "Voice & Text Support"
+      icon: "heroicons:microphone"
+      description: "Handle both voice calls and text conversations with the same intelligence."
+
+stats:
+  title: "Proven Results"
+  description: "See the impact our virtual agents have on businesses like yours."
+  cards:
+    - label: "Cost Reduction"
+      value: "85%"
+      icon: "heroicons:chart-bar"
+
+    - label: "Availability"
+      value: "24/7"
+      icon: "heroicons:clock"
+
+    - label: "Faster Resolution"
+      value: "3x"
+      icon: "heroicons:arrow-up-right"
+
+    - label: "Customer Satisfaction"
+      value: "95%"
+      icon: "heroicons:heart"
+
+features:
+  title: "Explore Key Features"
+  description: "Dive deep into what makes our virtual agents exceptional."
+  tabs:
+    - label: "Natural Conversations"
+      title: "Human-Like Dialogue"
+      description: "Our virtual agents don't just match keywords - they understand context, maintain conversation flow, and respond naturally to complex queries."
+      image: "/images/features/conversations.png"
+      reverse: false
+      points:
+        - "Context awareness across multi-turn conversations"
+        - "Intent recognition with 95%+ accuracy"
+        - "Sentiment analysis and empathetic responses"
+        - "Support for 25+ languages and dialects"
+
+    - label: "Integrations"
+      title: "Seamless System Integration"
+      description: "Connect your virtual agent to existing business systems and workflows without disrupting your current operations."
+      image: "/images/features/integrations.png"
+      reverse: true
+      points:
+        - "Pre-built connectors for popular CRM systems"
+        - "RESTful APIs for custom integrations"
+        - "Real-time data synchronization"
+        - "Secure authentication and data handling"
+
+    - label: "Analytics"
+      title: "Analytics"
+      description: "Comprehensive analytics help you understand customer needs, optimize agent performance, and measure business impact."
+      image: "/images/features/analytics.png"
+      reverse: false
+      points:
+        - "Real-time conversation monitoring"
+        - "Customer satisfaction scoring"
+        - "Performance metrics and KPI tracking"
+        - "Custom reporting and dashboards"
+
+steps:
+  title: "How It Works"
+  description: "Get your virtual agent up and running in three simple steps."
+  items:
+  - title: "Connect"
+    description: "With your enterprise systems"
+    icon: "heroicons:link"
+    leading: "Link your existing systems and customize your virtual agent's personality and knowledge."
+    points:
+        - "Our agents are proficient with major CRM and ERP systems"
+        - "We can help you integrate with your custom systems"
+        - "Safeguards ensure data privacy and security"
+        - "Workflows before, during and after interactions"
+
+  - title: "Test"
+    description: "Using our automated framework"
+    icon: "heroicons:cog-6-tooth"
+    leading: "Using our automated test and validation framwork, ensure perfect responses before going live."
+    points:
+        - "Define criteria to evaluate agent performance"
+        - "Test scenarios and identify blind spots"
+        - "Define transfer rules for complex scenarios"
+        - "Prioritize agent improvement based on performance metrics"
+
+  - title: "Deploy"
+    description: "At virtually unlimited scale"
+    icon: "heroicons:rocket-launch"
+    leading: "Launch across all channels and watch your virtual agent handle customer inquiries 24/7 while you focus on growth."
+    points:
+        - "There is an unlimited number of virtual agents you can deploy"
+        - "Our systems is built for scale, so you can grow without limits"
+        - "Monitor the performance of your agents in real-time"
+        - "Improve your agents based on metrics and automated assessments"
+
+testimonials:
+  headline: "Customer Stories"
+  title: "What our customers say"
+  description: "Hear from industry leaders about their experience with Ontopix Virtual Agents"
+  items:
+    - quote: "Ontopix reduced our support response time from hours to seconds. Our customer satisfaction scores have never been higher, and our team can focus on complex issues that really matter."
+      user:
+        name: "Jennifer Martinez"
+        description: "Head of Customer Success, TechFlow Solutions"
+        avatar:
+          src: "/images/testimonials/jennifer-martinez.jpg"
+
+    - quote: "The ROI was immediate. We cut support costs by 70% while improving service quality. Our virtual agent handles routine inquiries perfectly, freeing up our team for strategic work."
+      user:
+        name: "Robert Chen"
+        description: "CEO, GrowthLabs"
+        avatar:
+          src: "/images/testimonials/robert-chen.jpg"
+
+    - quote: "Our call center backlog vanished in weeks. Ontopix agents deliver natural, empathetic conversations that feel human, but scale like nothing else."
+      user:
+        name: "Sophia Anders"
+        description: "Operations Director, NovaTel"
+        avatar:
+          src: "/images/testimonials/sophia-anders.jpg"
+
+    - quote: "We integrated Ontopix with Salesforce in a single day. Now our clients get instant answers while all data is synced seamlessly."
+      user:
+        name: "David Johnson"
+        description: "CRM Lead, BrightFuture Finance"
+        avatar:
+          src: "/images/testimonials/david-johnson.jpg"
+
+    - quote: "Our virtual agents are available 24/7 across languages. Ontopix helps us expand globally without needing to scale human teams at the same rate."
+      user:
+        name: "Elena Petrova"
+        description: "Global Support Manager, SkyBridge Travel"
+        avatar:
+          src: "/images/testimonials/elena-petrova.jpg"
+
+    - quote: "Employee stress is down and NPS is up. Ontopix absorbed 60% of repetitive queries almost instantly."
+      user:
+        name: "James O’Connor"
+        description: "Customer Experience Lead, FinWell Bank"
+        avatar:
+          src: "/images/testimonials/james-oconnor.jpg"
+
+    - quote: "Ontopix fits right into our workflow. The AI knows when to escalate, and when it does, agents already have the full context."
+      user:
+        name: "Priya Singh"
+        description: "Support Operations Manager, MedicoTech"
+        avatar:
+          src: "/images/testimonials/priya-singh.jpg"
+
+    - quote: "We saw measurable improvement in first contact resolution within two weeks. That’s unheard of in our industry."
+      user:
+        name: "Lucas Brown"
+        description: "VP of Operations, Retailify"
+        avatar:
+          src: "/images/testimonials/lucas-brown.jpg"
+
+faqs:
+  title: "Frequently Asked Questions"
+  description: "Everything you need to know about Ontopix virtual agents"
+  categories:
+    - label: "Onboarding"
+      questions:
+        - label: "How quickly can I deploy a virtual agent?"
+          icon: "heroicons:clock"
+          content: | #md
+            Most businesses can have their virtual agent up and running within 24-48 hours.
+            Our streamlined onboarding process includes setup assistance and initial training.
+
+        - label: "How does pricing work?"
+          icon: "heroicons:credit-card"
+          content: | #md
+            We offer flexible pricing based on conversation volume and features needed.
+            Start with our free tier for up to 100 conversations per month, then scale as you grow.
+
+        - label: "What kind of support do you provide?"
+          icon: "heroicons:microphone"
+          content: | #md
+            We provide 24/7 technical support, dedicated customer success managers for enterprise clients,
+            comprehensive documentation, and regular training sessions.
+
+        - label: "Do I need technical expertise to get started?"
+          icon: "heroicons:academic-cap"
+          content: | #md
+            Not at all. Our onboarding team handles the technical setup for you.
+            You just need to provide access to your business systems and we’ll take care of the rest.
+
+    - label: "Agents"
+      questions:
+        - label: "What languages are supported?"
+          icon: "heroicons:chat-bubble-left-ellipsis"
+          content: | #md
+            Our virtual agents support 25+ languages including English, Spanish, French, German, Portuguese, and many more.
+            We can also add custom language support upon request.
+
+        - label: "Can agents handle both voice and chat?"
+          icon: "heroicons:phone"
+          content: | #md
+            Yes! Ontopix agents are designed for omnichannel use, supporting both live voice calls and chat-based interactions.
+
+        - label: "How customizable are the agents?"
+          icon: "heroicons:adjustments-horizontal"
+          content: | #md
+            Agents can be fully customized to match your brand voice, tone, and workflows.
+            You can define conversation scripts, escalation paths, and even integrate knowledge bases.
+
+    - label: "Integrations"
+      questions:
+        - label: "Can the virtual agent integrate with my existing systems?"
+          icon: "heroicons:puzzle-piece"
+          content: | #md
+            Yes! Our platform offers pre-built integrations with popular CRM systems, helpdesks, and business tools.
+            We also provide APIs for custom integrations.
+
+        - label: "Which platforms are supported out-of-the-box?"
+          icon: "heroicons:cube-transparent"
+          content: | #md
+            Ontopix integrates seamlessly with Salesforce, Zendesk, HubSpot, Dynamics 365, and Slack.
+            Additional integrations are continuously being added to our marketplace.
+
+    - label: "Quality"
+      questions:
+        - label: "How do you ensure the quality of the virtual agent?"
+          icon: "heroicons:check-circle"
+          content: | #md
+            We use a combination of automated testing and human review to ensure the quality of the virtual agent.
+            We also have a team of quality assurance experts who review the virtual agent on a regular basis.
+
+        - label: "Can I monitor conversations in real-time?"
+          icon: "heroicons:eye"
+          content: | #md
+            Yes. You can view live transcripts, listen to calls, and provide instant feedback.
+            Our dashboards give you visibility into agent performance at all times.
+
+        - label: "Do agents learn and improve over time?"
+          icon: "heroicons:sparkles"
+          content: | #md
+            Absolutely. Our agents leverage AI learning models that improve with each interaction,
+            ensuring higher accuracy and smoother conversations over time.
+
+    - label: "Security"
+      questions:
+        - label: "How secure is the platform?"
+          icon: "heroicons:lock-closed"
+          content: | #md
+            Security is our top priority. All data is encrypted in transit and at rest, and our infrastructure
+            follows industry best practices for access control and monitoring.
+
+        - label: "Do you comply with GDPR and other regulations?"
+          icon: "heroicons:shield-check"
+          content: | #md
+            Yes, Ontopix is fully GDPR-compliant and also aligns with SOC 2 and HIPAA requirements for clients in regulated industries.
+
+        - label: "Where is data stored?"
+          icon: "heroicons:server"
+          content: | #md
+            Data is stored in secure, region-specific data centers based on your compliance needs.
+            You can choose EU, US, or APAC hosting depending on your regulatory requirements.
