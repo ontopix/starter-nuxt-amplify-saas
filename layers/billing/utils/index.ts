@@ -69,6 +69,13 @@ export const formatPrice = (amount: number, currency: string = 'USD'): string =>
 }
 
 /**
+ * Get the free plan
+ */
+export const getFreePlan = (): BillingPlan | undefined => {
+  return getPlanById('free')
+}
+
+/**
  * Handle billing errors with user-friendly messages
  */
 export const handleBillingError = (error: any): string => {

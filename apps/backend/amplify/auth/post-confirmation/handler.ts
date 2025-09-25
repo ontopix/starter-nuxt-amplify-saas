@@ -4,7 +4,7 @@ import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/data";
 import { getAmplifyDataClientConfig } from '@aws-amplify/backend/function/runtime';
 import { env } from "$amplify/env/post-confirmation";
-import { getFreePlan } from "@starter-nuxt-amplify-saas/billing/utils/billing";
+import { getFreePlan } from "@starter-nuxt-amplify-saas/billing/utils";
 import Stripe from 'stripe';
 
 const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);
@@ -42,8 +42,8 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
     await client.models.UserProfile.create({
       userId: userId,
       stripeCustomerId: stripeCustomer.id,
-      stripeProductId: freePlan?.stripeProductId || null,
-      stripePriceId: freePlan?.prices?.[0]?.stripePriceId || null
+      stripeProductId: null, // Free plan doesn't have a Stripe product ID
+      stripePriceId: freePlan?.stripePriceId || null
     });
     console.log(`UserProfile created for user: ${userId}`);
 
