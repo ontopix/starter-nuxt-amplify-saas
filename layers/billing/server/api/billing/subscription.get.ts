@@ -1,22 +1,22 @@
-import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils'
-import { getUserSubscription } from '../../utils/database'
+import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/middleware'
+import { useUserServer } from '@starter-nuxt-amplify-saas/auth/composables/useUser'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Get authenticated user
-    const user = await requireAuth(event)
+    // Authenticate user
+    await requireAuth(event)
 
-    // Get user subscription from database
-    const subscription = await getUserSubscription(event, user.userId)
+    // Get user data after authentication
+    const { userProfile } = useUserServer()
 
     return {
       success: true,
-      data: subscription
+      data: userProfile.value
     }
 
   } catch (error: any) {
     console.error('Subscription fetch error:', error)
-    
+
     throw createError({
       statusCode: 500,
       statusMessage: error.message || 'Failed to fetch subscription'
