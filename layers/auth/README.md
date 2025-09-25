@@ -1,15 +1,16 @@
 # Auth Layer
 
-A comprehensive authentication layer for Nuxt 3 applications using AWS Amplify and Cognito. This layer provides complete user authentication functionality including sign-in, sign-up, email verification, session management, and route protection.
+A comprehensive authentication layer for Nuxt 3 applications using AWS Amplify and Cognito. This layer provides complete user authentication functionality including sign-in, sign-up, email verification, session management, route protection, and user profile management with GraphQL integration.
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Architecture](#architecture)
-- [Components](#components)
 - [Composables](#composables)
-- [Middleware](#middleware)
-- [Types & Utils](#types--utils)
+- [Server Middleware](#server-middleware)
+- [Route Middleware](#route-middleware)
+- [Components](#components)
+- [Utils](#utils)
 - [Usage Examples](#usage-examples)
 - [API Reference](#api-reference)
 
@@ -17,12 +18,13 @@ A comprehensive authentication layer for Nuxt 3 applications using AWS Amplify a
 
 The Auth layer integrates AWS Amplify Auth with Nuxt 3, providing:
 
-- 🔐 Complete authentication flow (sign-in, sign-up, verification)
-- 🛡️ Route protection via middleware  
-- 🎨 Pre-built UI components with Nuxt UI
+- 🔐 Complete authentication flow (sign-in, sign-up, verification, password reset)
+- 🛡️ Route protection via middleware
+- 🎨 Pre-built UI components
 - 📱 SSR-compatible session management
-- 🔄 Reactive user state management
-- 📧 Email verification and password reset
+- 🔄 Reactive user state management with GraphQL profile data
+- 📧 Email verification and password reset flows
+- 🚀 Server-side API authentication utilities
 - 🎯 TypeScript support throughout
 
 ## Architecture
@@ -32,183 +34,100 @@ layers/auth/
 ├── components/           # Pre-built auth UI components
 │   └── Authenticator.vue # Multi-step auth form component
 ├── composables/          # Reactive auth state management
-│   └── useUser.ts       # Main auth composable
-├── middleware/          # Route protection
+│   └── useUser.ts       # Main auth composable with GraphQL integration
+├── server/              # Server-side authentication utilities
+│   └── utils/
+│       └── middleware.ts # Server API authentication helpers
+├── middleware/          # Route protection middleware
 │   ├── auth.ts         # Protect authenticated routes
 │   └── guest.ts        # Redirect authenticated users
-├── types/              # TypeScript definitions
-│   └── index.ts        # Auth interfaces and types
 ├── utils/              # Helper functions
 │   └── index.ts        # Auth utilities and error handling
 └── nuxt.config.ts      # Layer configuration
 ```
 
-## Components
-
-### `<Authenticator>`
-
-A complete authentication component that handles sign-in, sign-up, and email verification flows.
-
-#### Props
-
-- `providers` - External auth providers (optional)
-- `signInFields` - Custom sign-in form fields
-- `signUpFields` - Custom sign-up form fields  
-- `verifyFields` - Custom verification form fields
-- `state` - Initial state: `'signin' | 'signup' | 'verify'`
-
-#### Events
-
-- `@signedIn` - Emitted when user successfully authenticates
-- `@stateChange` - Emitted when auth flow state changes
-
-#### Basic Usage
-
-```vue
-<template>
-  <Authenticator 
-    @signed-in="handleSignIn"
-    :state="authState"
-  />
-</template>
-
-<script setup>
-const authState = ref('signin')
-
-const handleSignIn = () => {
-  // User is now authenticated
-  navigateTo('/dashboard')
-}
-</script>
-```
-
-#### Custom Fields
-
-```vue
-<template>
-  <Authenticator 
-    :sign-in-fields="customSignInFields"
-    :sign-up-fields="customSignUpFields"
-  />
-</template>
-
-<script setup>
-const customSignInFields = [
-  {
-    name: 'email',
-    type: 'email',
-    label: 'Email Address',
-    placeholder: 'you@company.com',
-    required: true
-  },
-  {
-    name: 'password',
-    type: 'password',
-    label: 'Password',
-    required: true
-  }
-]
-
-const customSignUpFields = [
-  {
-    name: 'name',
-    type: 'text',
-    label: 'Full Name',
-    required: true
-  },
-  {
-    name: 'email',
-    type: 'email', 
-    label: 'Email Address',
-    required: true
-  },
-  {
-    name: 'password',
-    type: 'password',
-    label: 'Password',
-    required: true
-  }
-]
-</script>
-```
-
 ## Composables
 
-### `useUser()`
+### `useUser()` / `useUserServer()`
 
-The main authentication composable providing reactive user state and auth methods.
+The main authentication composable providing reactive user state and auth methods. Use `useUser()` for client-side and SSR contexts, and `useUserServer()` specifically for server-side API routes.
 
 #### Reactive State
 
 ```typescript
 interface UserState {
-  user: AuthUser | null              // Current user object
-  userAttributes: Record<string, string> | null  // Cognito user attributes
   isAuthenticated: boolean           // Authentication status
-  authStep: string                  // Current auth flow step
-  isLoading: boolean                // Loading state
-  error: string | null              // Error messages
-  displayName: string               // Computed display name
-  email: string                     // User email
+  authStep: string                  // Current auth step ('initial', 'challengeOTP', 'challengeTOTPSetup', 'authenticated')
+  authSession: object | null        // Current authentication session
+  tokens: object | null             // JWT tokens (access, ID, refresh)
+  currentUser: AuthUser | null      // Current user object from AWS Amplify
+  userAttributes: object | null     // Cognito user attributes (email, name, etc)
+  userProfile: object | null        // User profile data from GraphQL (includes Stripe data)
+  loading: boolean                  // Loading state for async operations
+  error: string | null              // Error message if operation fails
 }
 ```
 
 #### Auth Methods
 
-- `getCurrentUser()` - Check and load current user session
-- `signIn(username, password)` - Sign in user
-- `signUp(username, password, attributes?)` - Register new user
-- `signOut(redirectTo?)` - Sign out user
-- `confirmSignUp(username, code)` - Verify email with code
-- `resendConfirmationCode(username)` - Resend verification code
-- `updateUserAttributes(attributes)` - Update user profile
-- `fetchUserAttributes()` - Reload user attributes
-- `checkAuthSession()` - Check if session is valid
+**Client-side only methods:**
+- `signUp(data)` - Register new user with multi-step flow handling
+- `signIn(credentials)` - Sign in user with MFA challenge support
+- `confirmOTP(code)` - Complete OTP/TOTP challenge during sign in
+- `signOut()` - Sign out the current user
+- `resetPassword(username)` - Send password reset code to email
+- `confirmResetPassword(username, code, newPassword)` - Complete password reset
+
+**Universal methods (client & server):**
+- `fetchUser(event?)` - Fetch complete user data (auth + profile from GraphQL)
+- `updateAttributes(attributes)` - Update Cognito user attributes
+- `updateUserProfile(profileData)` - Update user profile data via GraphQL
+- `fetchUserProfile(event?)` - Fetch only user profile data from GraphQL
 
 #### Basic Usage
 
 ```vue
 <script setup>
-const { 
-  user, 
-  isAuthenticated, 
-  isLoading, 
+const {
+  isAuthenticated,
+  userAttributes,
+  userProfile,
+  loading,
   error,
-  displayName,
-  email,
-  signIn, 
+  signIn,
   signOut,
-  getCurrentUser 
+  fetchUser
 } = useUser()
 
-// Initialize user session on app load
+// Initialize user session
 onMounted(async () => {
-  await getCurrentUser()
+  await fetchUser()
 })
 
 // Sign in user
 const handleSignIn = async () => {
-  const result = await signIn('user@example.com', 'password123')
-  
-  if (result.success) {
-    console.log(`Welcome ${displayName.value}!`)
-    navigateTo('/dashboard')
-  } else {
-    console.error(result.error)
-  }
-}
+  try {
+    await signIn({
+      username: 'user@example.com',
+      password: 'password123'
+    })
 
-// Sign out user
-const handleSignOut = async () => {
-  await signOut('/login')
+    if (isAuthenticated.value) {
+      console.log('User signed in:', userAttributes.value?.email)
+      console.log('Stripe Customer:', userProfile.value?.stripeCustomerId)
+    }
+  } catch (err) {
+    console.error('Sign in failed:', error.value)
+  }
 }
 </script>
 
 <template>
-  <div v-if="isLoading">Loading...</div>
+  <div v-if="loading">Loading...</div>
   <div v-else-if="isAuthenticated">
-    <p>Welcome {{ displayName }}!</p>
-    <button @click="handleSignOut">Sign Out</button>
+    <p>Welcome {{ userAttributes?.email }}!</p>
+    <p>Stripe Customer ID: {{ userProfile?.stripeCustomerId }}</p>
+    <button @click="signOut">Sign Out</button>
   </div>
   <div v-else>
     <button @click="handleSignIn">Sign In</button>
@@ -216,53 +135,136 @@ const handleSignOut = async () => {
 </template>
 ```
 
-#### Advanced Usage
+#### Server-side Usage
 
 ```typescript
-// Multi-step authentication with MFA
-const handleAdvancedSignIn = async (email: string, password: string) => {
-  const { success, nextStep } = await signIn(email, password)
-  
-  if (!success && nextStep) {
-    switch (nextStep.signInStep) {
-      case 'CONFIRM_SIGN_IN_WITH_SMS_CODE':
-        // Handle SMS MFA
-        showSMSCodeInput()
-        break
-      case 'CONFIRM_SIGN_IN_WITH_TOTP_CODE':
-        // Handle TOTP MFA
-        showTOTPInput()
-        break
-      case 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED':
-        // Handle password reset
-        showNewPasswordForm()
-        break
-    }
-  }
-}
+// For server-side API routes, pages, or middleware
+const {
+  isAuthenticated,
+  userAttributes,
+  userProfile,
+  fetchUser
+} = useUserServer()
 
-// Update user profile
-const updateProfile = async () => {
-  const result = await updateUserAttributes({
-    'given_name': 'John',
-    'family_name': 'Smith',
-    'custom:display_name': 'John Smith',
-    'phone_number': '+1234567890'
-  })
-  
-  if (result.success) {
-    console.log('Profile updated successfully')
-  }
-}
+// Fetch user data with server context
+await fetchUser(event)
 
-// Check session validity
-const checkSession = async () => {
-  const isValid = await checkAuthSession()
-  console.log('Session is valid:', isValid)
+if (isAuthenticated.value) {
+  const userId = userAttributes.value?.sub
+  const email = userAttributes.value?.email
+  const stripeCustomerId = userProfile.value?.stripeCustomerId
+  // Use authenticated user data...
 }
 ```
 
-## Middleware
+#### Multi-Step Authentication
+
+```typescript
+const handleAdvancedSignIn = async (email: string, password: string) => {
+  await signIn({ username: email, password })
+
+  // Handle different auth challenges
+  switch (authStep.value) {
+    case 'challengeOTP':
+      // Show SMS/TOTP code input
+      showOTPInput()
+      break
+    case 'challengeTOTPSetup':
+      // Show TOTP setup (first-time MFA)
+      showTOTPSetup()
+      break
+    case 'authenticated':
+      // Success - user is fully authenticated
+      navigateTo('/dashboard')
+      break
+  }
+}
+
+// Complete OTP challenge
+const handleOTPConfirm = async (code: string) => {
+  await confirmOTP(code)
+  if (authStep.value === 'authenticated') {
+    navigateTo('/dashboard')
+  }
+}
+```
+
+#### Password Reset Flow
+
+```typescript
+// Send reset code
+const handlePasswordReset = async (email: string) => {
+  const result = await resetPassword(email)
+  if (result.success) {
+    // Show code input form
+    showResetCodeForm()
+  }
+}
+
+// Complete reset with new password
+const handleResetConfirm = async (email: string, code: string, newPassword: string) => {
+  const result = await confirmResetPassword(email, code, newPassword)
+  if (result.success) {
+    navigateTo('/auth/login')
+  }
+}
+```
+
+## Server Middleware
+
+### `requireAuth(event)` and `withAuth(handler)`
+
+Server-side authentication utilities for protecting API routes.
+
+#### `requireAuth(event)`
+
+Direct authentication validation for server API routes. Only validates authentication and throws 401 error if not authenticated.
+
+```typescript
+import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/middleware'
+
+export default defineEventHandler(async (event) => {
+  // Validate authentication - throws 401 if not authenticated
+  await requireAuth(event)
+
+  // Get user data after authentication
+  const { userAttributes, userProfile } = useUserServer()
+
+  // Use authenticated user data
+  const userId = userAttributes.value?.sub
+  const stripeCustomerId = userProfile.value?.stripeCustomerId
+
+  // Your protected API logic here...
+  return { data: 'protected data' }
+})
+```
+
+#### `withAuth(handler)`
+
+Higher-order function that wraps an event handler with authentication.
+
+```typescript
+import { withAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/middleware'
+
+export default withAuth(async (event) => {
+  // Authentication already validated
+  const { userAttributes, userProfile } = useUserServer()
+
+  // Your protected API logic here...
+  return {
+    user: userAttributes.value,
+    profile: userProfile.value
+  }
+})
+```
+
+#### When to use which approach:
+
+- **Use `requireAuth()`** when you need granular control or conditional authentication
+- **Use `withAuth()`** when you always need authentication at the start of the handler
+- **Use `useUserServer()` directly** when you handle authentication yourself
+
+## Route Middleware
 
 ### `auth` Middleware
 
@@ -277,24 +279,13 @@ definePageMeta({
 </script>
 ```
 
-#### With Custom Redirect
+The middleware automatically:
+- Calls `fetchUser(event)` to validate session and fetch user profile data
+- Redirects to `/auth/login` if not authenticated
+- Preserves intended destination in redirect query parameter
+- Works with both client-side navigation and SSR
 
-```typescript
-// middleware/custom-auth.ts
-export default defineNuxtRouteMiddleware(async (to) => {
-  const { checkAuthSession } = useUser()
-  
-  const isAuthenticated = await checkAuthSession()
-  
-  if (!isAuthenticated) {
-    return navigateTo('/custom-login', {
-      query: { redirect: to.fullPath }
-    })
-  }
-})
-```
-
-### `guest` Middleware  
+### `guest` Middleware
 
 Redirects authenticated users away from auth pages (login, signup).
 
@@ -312,65 +303,75 @@ definePageMeta({
 </template>
 ```
 
-## Types & Utils
+## Components
 
-### Authentication Types
+### `<Authenticator>`
+
+A complete authentication component that handles sign-in, sign-up, and email verification flows.
+
+#### Props
+
+- `providers` - External auth providers (optional)
+- `signInFields` - Custom sign-in form fields
+- `signUpFields` - Custom sign-up form fields
+- `verifyFields` - Custom verification form fields
+- `state` - Initial state: `'signin' | 'signup' | 'verify'`
+
+#### Events
+
+- `@signedIn` - Emitted when user successfully authenticates
+- `@stateChange` - Emitted when auth flow state changes
+
+#### Basic Usage
+
+```vue
+<template>
+  <Authenticator
+    @signed-in="handleSignIn"
+    :state="'signin'"
+  />
+</template>
+
+<script setup>
+const handleSignIn = () => {
+  navigateTo('/dashboard')
+}
+</script>
+```
+
+## Utils
+
+### Authentication Utilities
+
+When explicit typing is needed, import types directly from AWS Amplify:
 
 ```typescript
-// User state interface
-interface UserState {
-  user: AuthUser | null
-  userAttributes: Record<string, string> | null
-  isAuthenticated: boolean
-  authStep: string
-  isLoading: boolean
-  error: string | null
-}
+import type { AuthUser } from 'aws-amplify/auth'
 
-// Method response interface
-interface AuthResponse {
-  success: boolean
-  error?: string
-  nextStep?: any
-  result?: any
-}
-
-// Sign-in parameters
-interface SignInParams {
-  username: string
-  password: string
-}
-
-// Sign-up parameters  
-interface SignUpParams {
-  username: string
-  password: string
-  attributes?: Record<string, string>
-}
+// AuthUser is the standard AWS Amplify user object
+const currentUser: AuthUser = // ... authenticated user
 ```
+
+The composables use TypeScript inference for most state and parameters, providing type safety without explicit interfaces.
 
 ### Utility Functions
 
 ```typescript
-// Check if route needs authentication
+// Route checking utilities
 isProtectedRoute('/dashboard')    // true
 isProtectedRoute('/auth/login')   // false
-
-// Check if route is auth-related
 isAuthRoute('/auth/signup')       // true
 isAuthRoute('/dashboard')         // false
 
-// Get safe redirect URL
+// Safe redirect handling
 getRedirectUrl({ redirect: '/dashboard' })  // '/dashboard'
-getRedirectUrl({ redirect: 'https://evil.com' })  // '/'
+getRedirectUrl({ redirect: 'https://evil.com' })  // '/' (safe)
 
-// Extract user display name
-getUserDisplayName(user)  // 'John Smith' or fallback
+// User data extraction
+getUserDisplayName(userAttributes)  // 'John Smith' or fallback
+getUserEmail(userAttributes)        // 'user@example.com'
 
-// Extract user email
-getUserEmail(user)        // 'user@example.com'
-
-// Handle auth errors with friendly messages
+// Error handling with friendly messages
 handleAuthError(error)    // 'Invalid email or password'
 ```
 
@@ -386,11 +387,9 @@ definePageMeta({
   layout: 'auth'
 })
 
-const { isAuthenticated } = useUser()
 const router = useRouter()
 
 const handleSignedIn = () => {
-  // Redirect to intended page or dashboard
   const redirect = router.currentRoute.value.query.redirect as string
   navigateTo(redirect || '/dashboard')
 }
@@ -399,7 +398,7 @@ const handleSignedIn = () => {
 <template>
   <div class="min-h-screen flex items-center justify-center">
     <div class="max-w-md w-full">
-      <Authenticator 
+      <Authenticator
         @signed-in="handleSignedIn"
         :state="'signin'"
       />
@@ -417,36 +416,57 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const { user, displayName, email, signOut, isLoading } = useUser()
+const { userAttributes, userProfile, signOut, loading } = useUser()
 
 const handleSignOut = async () => {
-  await signOut('/auth/login')
+  await signOut()
+  navigateTo('/auth/login')
 }
 </script>
 
 <template>
-  <div v-if="isLoading">
-    Loading dashboard...
-  </div>
-  
+  <div v-if="loading">Loading dashboard...</div>
+
   <div v-else class="dashboard">
     <header class="flex justify-between items-center p-6">
       <h1>Dashboard</h1>
       <div class="flex items-center gap-4">
-        <span>{{ displayName }}</span>
-        <button @click="handleSignOut" class="btn-secondary">
-          Sign Out
-        </button>
+        <span>{{ userAttributes?.email }}</span>
+        <button @click="handleSignOut">Sign Out</button>
       </div>
     </header>
-    
+
     <main class="p-6">
-      <p>Welcome back, {{ displayName }}!</p>
-      <p>Your email: {{ email }}</p>
-      <p>User ID: {{ user?.userId }}</p>
+      <p>Welcome back!</p>
+      <p>User ID: {{ userAttributes?.sub }}</p>
+      <p>Stripe Customer: {{ userProfile?.stripeCustomerId }}</p>
     </main>
   </div>
 </template>
+```
+
+### Protected API Route
+
+```typescript
+// server/api/billing/subscription.get.ts
+export default defineEventHandler(async (event) => {
+  // Authenticate and fetch user data
+  const { userAttributes, userProfile, fetchUser } = useUserServer()
+  await fetchUser(event)
+
+  if (!userProfile.value?.stripeCustomerId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'No Stripe customer found'
+    })
+  }
+
+  // Return protected data
+  return {
+    success: true,
+    data: userProfile.value
+  }
+})
 ```
 
 ### User Profile Management
@@ -458,7 +478,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const { userAttributes, updateUserAttributes, isLoading } = useUser()
+const { userAttributes, updateAttributes, loading } = useUser()
 
 const profileForm = ref({
   displayName: '',
@@ -480,94 +500,80 @@ watchEffect(() => {
 })
 
 const updateProfile = async () => {
-  const result = await updateUserAttributes({
-    'custom:display_name': profileForm.value.displayName,
-    'given_name': profileForm.value.firstName,
-    'family_name': profileForm.value.lastName,
-    'phone_number': profileForm.value.phone
-  })
-  
-  if (result.success) {
+  try {
+    await updateAttributes({
+      'custom:display_name': profileForm.value.displayName,
+      'given_name': profileForm.value.firstName,
+      'family_name': profileForm.value.lastName,
+      'phone_number': profileForm.value.phone
+    })
+
     console.log('Profile updated successfully!')
+  } catch (err) {
+    console.error('Update failed:', err)
   }
 }
 </script>
 
 <template>
-  <form @submit.prevent="updateProfile" class="max-w-md mx-auto">
+  <form @submit.prevent="updateProfile">
     <h2>Edit Profile</h2>
-    
-    <div class="form-group">
+
+    <div>
       <label>Display Name</label>
       <input v-model="profileForm.displayName" type="text" required>
     </div>
-    
-    <div class="form-group">
+
+    <div>
       <label>First Name</label>
       <input v-model="profileForm.firstName" type="text">
     </div>
-    
-    <div class="form-group">
+
+    <div>
       <label>Last Name</label>
       <input v-model="profileForm.lastName" type="text">
     </div>
-    
-    <div class="form-group">
+
+    <div>
       <label>Phone Number</label>
       <input v-model="profileForm.phone" type="tel">
     </div>
-    
-    <button type="submit" :disabled="isLoading">
-      {{ isLoading ? 'Updating...' : 'Update Profile' }}
+
+    <button type="submit" :disabled="loading">
+      {{ loading ? 'Updating...' : 'Update Profile' }}
     </button>
   </form>
 </template>
 ```
 
-### Session Management
-
-```vue
-<!-- plugins/auth-init.client.ts -->
-export default defineNuxtPlugin(async () => {
-  const { getCurrentUser, isAuthenticated } = useUser()
-  
-  // Initialize user session on app start
-  await getCurrentUser()
-  
-  // Set up session refresh
-  if (isAuthenticated.value) {
-    // Refresh session every 30 minutes
-    setInterval(async () => {
-      await getCurrentUser()
-    }, 30 * 60 * 1000)
-  }
-})
-```
-
 ## API Reference
 
-### `useUser()` Return Values
+### `useUser()` / `useUserServer()` Return Values
 
 #### State Properties
-- `user: ComputedRef<AuthUser | null>` - Current authenticated user
-- `userAttributes: ComputedRef<Record<string, string> | null>` - User attributes from Cognito
-- `isAuthenticated: ComputedRef<boolean>` - Authentication status  
+- `isAuthenticated: ComputedRef<boolean>` - Authentication status
 - `authStep: ComputedRef<string>` - Current authentication step
-- `isLoading: ComputedRef<boolean>` - Loading state for async operations
+- `authSession: ComputedRef<object | null>` - Current authentication session
+- `tokens: ComputedRef<object | null>` - JWT tokens (access, ID, refresh)
+- `currentUser: ComputedRef<AuthUser | null>` - Current authenticated user object
+- `userAttributes: ComputedRef<object | null>` - User attributes from Cognito
+- `userProfile: ComputedRef<object | null>` - User profile data from GraphQL
+- `loading: ComputedRef<boolean>` - Loading state for async operations
 - `error: ComputedRef<string | null>` - Current error message
-- `displayName: ComputedRef<string>` - Computed user display name
-- `email: ComputedRef<string>` - User email address
 
-#### Auth Methods
-- `getCurrentUser(): Promise<AuthUser | null>` - Load current user session
-- `signIn(username: string, password: string): Promise<AuthResponse>` - Authenticate user
-- `signUp(username: string, password: string, attributes?: Record<string, string>): Promise<AuthResponse>` - Register user
-- `signOut(redirectTo?: string): Promise<AuthResponse>` - Sign out user
-- `confirmSignUp(username: string, code: string): Promise<AuthResponse>` - Verify email
-- `resendConfirmationCode(username: string): Promise<AuthResponse>` - Resend verification
-- `updateUserAttributes(attributes: Record<string, string>): Promise<AuthResponse>` - Update profile
-- `fetchUserAttributes(): Promise<Record<string, string> | null>` - Reload attributes  
-- `checkAuthSession(): Promise<boolean>` - Check session validity
+#### Auth Methods (Client-side only)
+- `signUp(data): Promise<any>` - Register new user with multi-step flow
+- `signIn(credentials): Promise<any>` - Authenticate user with MFA support
+- `confirmOTP(code): Promise<any>` - Complete OTP/TOTP challenge
+- `signOut(): Promise<void>` - Sign out current user
+- `resetPassword(username): Promise<{ success: boolean, error?: string }>` - Send reset code
+- `confirmResetPassword(username, code, newPassword): Promise<{ success: boolean, error?: string }>` - Complete password reset
+
+#### Universal Methods (Client & Server)
+- `fetchUser(event?): Promise<void>` - Fetch complete user data (auth + profile)
+- `updateAttributes(attributes): Promise<void>` - Update Cognito user attributes
+- `updateUserProfile(profileData): Promise<void>` - Update user profile via GraphQL
+- `fetchUserProfile(event?): Promise<void>` - Fetch user profile data from GraphQL
 
 ### Error Handling
 
@@ -576,12 +582,14 @@ The layer includes comprehensive error handling with user-friendly messages:
 ```typescript
 // Common errors are automatically mapped to friendly messages
 'UserNotFoundException' → 'No account found with this email address'
-'NotAuthorizedException' → 'Invalid email or password'  
+'NotAuthorizedException' → 'Invalid email or password'
 'UserNotConfirmedException' → 'Please verify your email address before signing in'
 'InvalidPasswordException' → 'Password does not meet requirements'
 'UsernameExistsException' → 'An account with this email already exists'
 'CodeMismatchException' → 'Invalid verification code'
 'ExpiredCodeException' → 'Verification code has expired'
+'LimitExceededException' → 'Too many attempts. Please try again later'
+'TooManyRequestsException' → 'Too many requests. Please try again later'
 ```
 
-This comprehensive auth layer provides everything needed for secure user authentication in a Nuxt 3 application with AWS Amplify.
+This comprehensive auth layer provides everything needed for secure user authentication in a Nuxt 3 application with AWS Amplify, including server-side API protection and GraphQL-based user profile management.
