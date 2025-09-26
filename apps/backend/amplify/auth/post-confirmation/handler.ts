@@ -3,9 +3,18 @@ import { type Schema } from "../../data/resource";
 import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/data";
 import { getAmplifyDataClientConfig } from '@aws-amplify/backend/function/runtime';
-import { env } from "$amplify/env/post-confirmation";
 import { getFreePlan } from "@starter-nuxt-amplify-saas/billing/utils";
 import Stripe from 'stripe';
+
+// Handle dynamic module import for AWS Amplify build context
+let env: any;
+try {
+  const envModule = await import("$amplify/env/post-confirmation");
+  env = envModule.env;
+} catch (error) {
+  console.warn("Could not import $amplify/env/post-confirmation. This is expected during TypeScript compilation.");
+  env = process.env; // Fallback to process.env during development
+}
 
 const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);
 
@@ -18,6 +27,7 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
 });
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
+
   const userAttributes = event.request.userAttributes;
   const userId = userAttributes.sub;
   const email = userAttributes.email;

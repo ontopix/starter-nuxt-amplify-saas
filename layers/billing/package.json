@@ -7,7 +7,10 @@
     ".": "./nuxt.config.ts",
     "./billing-plans.json": "./billing-plans.json",
     "./utils": "./utils/index.ts",
-    "./types": "./types/index.ts"
+    "./types": "./types/index.ts",
+    "./data": "./data/index.ts",
+    "./data/schemas": "./data/schemas.ts",
+    "./data/types": "./data/types.ts"
   },
   "scripts": {
     "dev": "nuxi dev .playground",
@@ -18,6 +21,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@aws-amplify/backend": "^1.16.1",
     "@starter-nuxt-amplify-saas/auth": "workspace:*",
     "@stripe/stripe-js": "^4.9.0",
     "jsonwebtoken": "^9.0.2",

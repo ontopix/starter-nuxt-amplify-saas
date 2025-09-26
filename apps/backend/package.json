@@ -14,7 +14,6 @@
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
   "devDependencies": {
-    "@aws-amplify/backend": "^1.16.1",
     "@aws-amplify/backend-cli": "^1.8.0",
     "@types/aws-lambda": "^8.10.145",
     "aws-cdk-lib": "2.204.0",
@@ -24,8 +23,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@aws-amplify/backend": "^1.16.1",
     "aws-amplify": "^6.15.3",
     "zod": "3.25.17",
-    "@starter-nuxt-amplify-saas/billing": "workspace:*"
+    "@starter-nuxt-amplify-saas/billing": "workspace:*",
+    "@starter-nuxt-amplify-saas/auth": "workspace:*"
   }
 }

@@ -3,6 +3,14 @@
   "type": "module",
   "version": "0.0.1",
   "main": "./nuxt.config.ts",
+  "exports": {
+    ".": "./nuxt.config.ts",
+    "./data": "./data/index.ts",
+    "./data/schemas": "./data/schemas.ts",
+    "./data/types": "./data/types.ts",
+    "./composables/useUser": "./composables/useUser.ts",
+    "./server/utils/middleware": "./server/utils/middleware.ts"
+  },
   "scripts": {
     "dev": "nuxi dev .playground",
     "dev:prepare": "nuxt prepare .playground",
@@ -12,10 +20,14 @@
     "lint": "eslint ."
   },
   "devDependencies": {
+    "@aws-amplify/backend": "^1.16.1",
     "@nuxt/eslint": "latest",
     "eslint": "^9.31.0",
     "nuxt": "^4.0.0",
     "typescript": "^5.8.3",
     "vue": "latest"
+  },
+  "dependencies": {
+
   }
 }
