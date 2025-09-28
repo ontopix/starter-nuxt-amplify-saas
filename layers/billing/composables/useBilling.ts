@@ -1,11 +1,4 @@
 import { createSharedComposable } from '@vueuse/core'
-import {
-  getAllPlans,
-  getPlanByPriceId,
-  isSubscriptionActive,
-  getSubscriptionStatus,
-  handleBillingError
-} from '../utils'
 
 interface UserProfile {
   id: string
@@ -19,9 +12,55 @@ interface BillingPlan {
   id: string
   name: string
   description: string
-  price: number
-  stripePriceId: string
+  monthlyPrice: number
+  yearlyPrice: number
+  monthlyStripePriceId: string
+  yearlyStripePriceId: string
   features: string[]
+}
+
+// Helper functions
+const getAllPlans = (): BillingPlan[] => {
+  const appConfig = useAppConfig()
+  return appConfig.billing.plans as BillingPlan[]
+}
+
+const getPlanByPriceId = (priceId: string): BillingPlan | undefined => {
+  const plans = getAllPlans()
+  return plans.find(p => p.monthlyStripePriceId === priceId || p.yearlyStripePriceId === priceId)
+}
+
+const isSubscriptionActive = (userProfile: UserProfile | null): boolean => {
+  if (!userProfile) return false
+  return !!userProfile.stripePriceId
+}
+
+const getSubscriptionStatus = (userProfile: UserProfile | null): string => {
+  if (!userProfile || !userProfile.stripePriceId) return 'none'
+  const plan = getPlanByPriceId(userProfile.stripePriceId)
+  return plan ? 'active' : 'unknown'
+}
+
+const handleBillingError = (error: any): string => {
+  if (error?.type === 'StripeCardError') {
+    return error.message || 'Your payment was declined. Please try a different payment method.'
+  }
+  if (error?.type === 'StripeRateLimitError') {
+    return 'Too many requests. Please try again later.'
+  }
+  if (error?.type === 'StripeInvalidRequestError') {
+    return 'Invalid request. Please contact support.'
+  }
+  if (error?.type === 'StripeAPIError') {
+    return 'Service error. Please try again later.'
+  }
+  if (error?.type === 'StripeConnectionError') {
+    return 'Network error. Please check your connection and try again.'
+  }
+  if (error?.type === 'StripeAuthenticationError') {
+    return 'Authentication error. Please contact support.'
+  }
+  return error?.message || 'An unexpected error occurred. Please try again.'
 }
 
 /**

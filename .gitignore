@@ -46,3 +46,6 @@ Thumbs.db
 
 # MacOS
 .DS_Store
+
+# Local files (not to be part of the repo)
+.local

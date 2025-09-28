@@ -1,49 +1,97 @@
 export default defineAppConfig({
-  // Instance-specific billing configuration
   billing: {
     plans: [
-      {
-        "id": "free",
-        "name": "Free",
-        "description": "Perfect for getting started",
-        "price": 0,
-        "stripePriceId": "",
-        "features": [
-          "1 project",
-          "1 team member",
-          "1GB storage",
-          "Basic support"
-        ]
-      },
-      {
-        "id": "pro",
-        "name": "Pro",
-        "description": "For growing teams and businesses",
-        "price": 29,
-        "stripePriceId": "",
-        "features": [
-          "Unlimited projects",
-          "10 team members",
-          "100GB storage",
-          "Priority support",
-          "Advanced analytics"
-        ]
-      },
-      {
-        "id": "enterprise",
-        "name": "Enterprise",
-        "description": "For large organizations",
-        "price": 99,
-        "stripePriceId": "",
-        "features": [
-          "Unlimited projects",
-          "Unlimited team members",
-          "1TB storage",
-          "Dedicated support",
-          "Advanced security",
-          "SSO integration"
-        ]
+    {
+      "id": "free",
+      "name": "Free",
+      "description": "Perfect for getting started with basic usage",
+      "monthlyPrice": 0,
+      "yearlyPrice": 0,
+      "priceCurrency": "USD",
+      "stripeProductId": "",
+      "monthlyStripePriceId": "",
+      "yearlyStripePriceId": "",
+      "features": [
+        "1 project",
+        "1 team member",
+        "1 GB storage",
+        "Community support"
+      ],
+      "limits": {
+        "projects": 1,
+        "teamMembers": 1,
+        "storage": 1
       }
+    },
+    {
+      "id": "starter",
+      "name": "Starter",
+      "description": "Great for small teams and early projects",
+      "monthlyPrice": 5.95,
+      "yearlyPrice": 65,
+      "priceCurrency": "USD",
+      "stripeProductId": "",
+      "monthlyStripePriceId": "",
+      "yearlyStripePriceId": "",
+      "features": [
+        "5 projects",
+        "Up to 3 team members",
+        "10 GB storage",
+        "Email support"
+      ],
+      "limits": {
+        "projects": 5,
+        "teamMembers": 3,
+        "storage": 10
+      }
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "description": "Advanced features for growing teams",
+      "monthlyPrice": 19.95,
+      "yearlyPrice": 215,
+      "priceCurrency": "USD",
+      "stripeProductId": "",
+      "monthlyStripePriceId": "",
+      "yearlyStripePriceId": "",
+      "features": [
+        "Unlimited projects",
+        "Up to 10 team members",
+        "100 GB storage",
+        "Priority support",
+        "Advanced analytics"
+      ],
+      "limits": {
+        "projects": -1,
+        "teamMembers": 10,
+        "storage": 100
+      }
+    },
+    {
+      "id": "enterprise",
+      "name": "Enterprise",
+      "description": "Custom solutions for large organizations",
+      "monthlyPrice": 0,
+      "yearlyPrice": 0,
+      "priceCurrency": "USD",
+      "stripeProductId": "",
+      "monthlyStripePriceId": "",
+      "yearlyStripePriceId": "",
+      "features": [
+        "Unlimited projects",
+        "Unlimited team members",
+        "1 TB+ storage",
+        "Dedicated account manager",
+        "Custom integrations",
+        "Premium support SLA"
+      ],
+      "limits": {
+        "projects": -1,
+        "teamMembers": -1,
+        "storage": -1
+      }
+    }
     ]
   },
   // Instance-specific UI configuration

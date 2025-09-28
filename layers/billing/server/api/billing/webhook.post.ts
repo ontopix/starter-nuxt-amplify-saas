@@ -1,7 +1,7 @@
 import Stripe from 'stripe'
 import { runAmplifyApi } from '@starter-nuxt-amplify-saas/amplify/utils/server'
 import { generateClient } from 'aws-amplify/data/server'
-import { getPlanByPriceId } from '../../../utils'
+// Import removed - getPlanByPriceId function no longer needed
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -150,13 +150,12 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   if (!userId) return
 
   const priceId = subscription.items.data[0]?.price?.id
-  const plan = priceId ? getPlanByPriceId(priceId) : null
   const customerId = getCustomerId(subscription.customer)
 
   await updateUserProfile(userId, {
     stripeCustomerId: customerId || undefined,
     stripePriceId: priceId,
-    stripeProductId: plan?.stripeProductId
+    stripeProductId: subscription.items.data[0]?.price?.product as string || undefined
   })
 }
 
@@ -165,11 +164,10 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   if (!userId) return
 
   const priceId = subscription.items.data[0]?.price?.id
-  const plan = priceId ? getPlanByPriceId(priceId) : null
 
   await updateUserProfile(userId, {
     stripePriceId: priceId,
-    stripeProductId: plan?.stripeProductId
+    stripeProductId: subscription.items.data[0]?.price?.product as string || undefined
   })
 }
 
