@@ -1,5 +1,3 @@
-import billingPlans from '../billing-plans.json'
-
 // ============ PLAN FUNCTIONS ============
 
 interface BillingPlan {
@@ -20,24 +18,27 @@ interface UserProfile {
 }
 
 /**
- * Get all available billing plans
+ * Get all available billing plans from app configuration
  */
 export const getAllPlans = (): BillingPlan[] => {
-  return billingPlans as BillingPlan[]
+  const appConfig = useAppConfig()
+  return appConfig.billing.plans as BillingPlan[]
 }
 
 /**
  * Get a plan by ID
  */
 export const getPlanById = (planId: string): BillingPlan | undefined => {
-  return billingPlans.find(p => p.id === planId) as BillingPlan | undefined
+  const plans = getAllPlans()
+  return plans.find(p => p.id === planId)
 }
 
 /**
  * Get a plan by Stripe price ID
  */
 export const getPlanByPriceId = (priceId: string): BillingPlan | undefined => {
-  return billingPlans.find(p => p.stripePriceId === priceId) as BillingPlan | undefined
+  const plans = getAllPlans()
+  return plans.find(p => p.stripePriceId === priceId)
 }
 
 /**

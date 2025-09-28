@@ -1,47 +1,57 @@
-export interface DashboardMenuItem {
-  label: string
-  icon?: string
-  to?: string
-  badge?: string
-  children?: DashboardMenuItem[]
-  type?: 'trigger'
-  target?: '_blank'
-  exact?: boolean
-  defaultOpen?: boolean
-}
-
-export interface SubscriptionPlan {
-  id: string
-  name: string
-  description: string
-  price: number
-  interval: 'month' | 'year'
-  stripePriceId: string
-  features: string[]
-  popular?: boolean
-  limits: {
-    projects?: number
-    users?: number
-    storage?: string
-    apiRequests?: number
-  }
-}
-
-export interface BillingConfig {
-  plans: SubscriptionPlan[]
-}
-
-export interface DashboardConfig {
-  navigation: {
-    main: DashboardMenuItem[][]
-  }
-}
-
-import billingPlans from '@starter-nuxt-amplify-saas/billing/billing-plans.json'
-
 export default defineAppConfig({
+  // Instance-specific billing configuration
   billing: {
-    plans: billingPlans
+    plans: [
+      {
+        "id": "free",
+        "name": "Free",
+        "description": "Perfect for getting started",
+        "price": 0,
+        "stripePriceId": "",
+        "features": [
+          "1 project",
+          "1 team member",
+          "1GB storage",
+          "Basic support"
+        ]
+      },
+      {
+        "id": "pro",
+        "name": "Pro",
+        "description": "For growing teams and businesses",
+        "price": 29,
+        "stripePriceId": "",
+        "features": [
+          "Unlimited projects",
+          "10 team members",
+          "100GB storage",
+          "Priority support",
+          "Advanced analytics"
+        ]
+      },
+      {
+        "id": "enterprise",
+        "name": "Enterprise",
+        "description": "For large organizations",
+        "price": 99,
+        "stripePriceId": "",
+        "features": [
+          "Unlimited projects",
+          "Unlimited team members",
+          "1TB storage",
+          "Dedicated support",
+          "Advanced security",
+          "SSO integration"
+        ]
+      }
+    ]
+  },
+  // Instance-specific UI configuration
+  ui: {
+    colors: {
+      primary: 'blue',
+      neutral: 'slate'
+    }
   },
   dashboard: {
     navigation: {
