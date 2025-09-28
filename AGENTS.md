@@ -1,542 +1,209 @@
-# AGENTS.md
+## AGENTS.md — AI Agent & Contributor Operational Guide
 
-*Comprehensive guide optimized for AI agents working in this repository*
+This document is the single source of truth for working with this repository.
 
-## Document Management Principles
+## 🚨 CRITICAL INSTRUCTIONS - READ BEFORE ANY TASK
 
-### Meta-Development Principles
-1. **Coherence Principle**: If an instruction contradicts this document, the agent MUST report the discrepancy before proceeding
-2. **Evolution Principle**: If the user decides to proceed with a decision that contradicts AGENTS.md, propose document update
-3. **Reference Principle**: This document is the source of truth for architectural decisions and code patterns
-4. **Feedback Principle**: Agents should suggest improvements based on emerging patterns from real usage
+**ALL agents and contributors MUST consult these instructions before performing any task:**
 
-### Contradiction Protocol
+### Consistency Validation
+1. **ALWAYS** validate that any instruction does NOT contradict the instructions, patterns, or architecture documented in this file.
+2. **IF CONTRADICTION EXISTS**: Immediately inform the user about the detected inconsistency and the specific sections that would be affected
+3. **DO NOT proceed** with contradictory changes without explicit user confirmation
+
+### Conflict Resolution Protocol
+- If the user confirms to proceed **despite the contradiction**:
+  1. Apply the requested changes
+  2. **MANDATORY**: Simultaneously update this document to maintain coherence
+  3. Document the changes made in both locations
+
+### Coherence Principle
+This document must remain the single source of truth. Any deviation must result in an immediate update of these instructions to prevent future inconsistencies.
+
+## Repository Architecture
+
 ```
-1. Detect contradiction between user instruction and AGENTS.md
-2. Inform user of specific discrepancy
-3. Explain implications of each approach
-4. If user confirms to proceed: implement AND propose AGENTS.md update
-5. Document the decision for future reference
+starter-nuxt-amplify-saas/
+├── apps/
+│   ├── backend/             # AWS Amplify Gen2 backend
+│   │   └── amplify/         # Entry: backend.ts, auth/resource.ts, data/resource.ts
+│   ├── saas/                # Nuxt 4 dashboard app (SSR)
+│   │   ├── app/app.config.ts # Instance-specific configuration
+│   │   └── amplify.yml      # Deployment config
+│   └── landing/             # Nuxt 4 marketing site (SSG)
+├── layers/                  # Reusable Nuxt layers
+│   ├── auth/               # Authentication (Cognito + Amplify)
+│   ├── billing/            # Stripe integration (portal-first)
+│   ├── amplify/            # Amplify client configuration
+│   ├── uix/                # UI components & theme
+│   ├── i18n/               # Internationalization
+│   └── debug/              # Development utilities
+├── scripts/                # Operational scripts
+│   └── billing-stripe-sync.ts # Sync plans to Stripe
+└── package.json            # Workspace root with top-level scripts
 ```
-
-### Semantic Versioning of Patterns
-- **MAJOR**: Fundamental architectural changes (stack, main framework)
-- **MINOR**: New development patterns or layers
-- **PATCH**: Refinement of existing patterns or new commands
-
----
-
-## Table of Contents
-
-### 🚀 Quick References
-- [Essential Commands](#essential-commands)
-- [Critical Paths](#critical-paths)
-- [Tech Stack](#tech-stack)
-
-### 🏗️ Fundamentals
-- [Essential Architecture](#essential-architecture)  
-- [Development Patterns](#development-patterns)
-- [Critical Configuration](#critical-configuration)
-
-### ⚡ Workflows
-- [Initial Setup](#initial-setup)
-- [Common Tasks](#common-tasks)
-- [Troubleshooting](#troubleshooting)
-
-### 📚 Layer Documentation
-- [Layer-Specific References](#layer-specific-references)
-
----
-
-## Essential Commands
-
-| Action | Command | Context |
-|--------|---------|---------|
-| **Development** | `pnpm saas:dev` | SaaS dashboard |
-| | `pnpm landing:dev` | Landing page |
-| **Build** | `pnpm saas:build` | Production SaaS |
-| | `pnpm saas:typecheck` | Type validation |
-| **Backend** | `pnpm backend:sandbox:init` | Setup AWS sandbox |
-| | `pnpm amplify:sandbox:generate-outputs` | Config generation |
-| **Billing** | `pnpm billing:stripe:sync` | Sync plans to Stripe |
-| | `pnpm billing:stripe:listen` | Webhook development |
-
----
-
-## Critical Paths
-
-| Element | Path | Purpose |
-|---------|------|---------|
-| **Main Config** | `apps/saas/app/app.config.ts` | Navigation + billing |
-| **Billing Plans** | `apps/saas/app/billing-plans.json` | Plans definition |
-| **Auth Config** | `apps/backend/amplify/auth/resource.ts` | Cognito setup |
-| **DB Schema** | `apps/backend/amplify/data/resource.ts` | Data models |
-| **Backend Config** | `apps/backend/amplify/backend.ts` | AWS Amplify |
-
----
 
 ## Tech Stack
 
-### Core Stack
-- **Frontend**: Nuxt 4 (SSR/SSG) + TypeScript
-- **Backend**: AWS Amplify Gen2 + DynamoDB + Cognito
-- **UI**: Nuxt UI Pro + Tailwind CSS
-- **Billing**: Stripe + webhooks
-- **Package Manager**: pnpm (workspaces)
+- **Package Manager**: pnpm@10.13.1 (use `corepack enable`)
+- **Runtime**: Node.js ≥20.19 (Amplify Console: Node 22 override)
+- **Frontend**: Nuxt 4.x + TypeScript
+- **Backend**: AWS Amplify Gen2 (Cognito, DynamoDB, AppSync)
+- **Billing**: Stripe (portal-first approach)
+- **UI**: Nuxt UI Pro + TailwindCSS
 
-### Key Architectural Decisions
-- **Layers First**: Shared functionality via Nuxt Layers
-- **Composables First**: Reusable logic in composables
-- **Type Safety**: Strict TypeScript + Amplify generated types
-- **Component System**: Nuxt UI/Pro over custom implementations
+## Quick Start
 
----
-
-## Essential Architecture
-
-### App Structure
-```
-apps/
-├── backend/        # AWS Amplify Gen2 backend
-├── saas/          # Main dashboard (SSR)
-└── landing/       # Marketing site (SSG)
-```
-
-### Shared Layers (Nuxt Layers)
-```
-layers/
-├── uix/           # UI foundation + Tailwind
-├── amplify/       # AWS integration
-├── auth/          # Authentication
-├── billing/       # Stripe + subscriptions  
-├── debug/         # Dev tools
-└── i18n/          # Internationalization
-```
-
-### Dependency Flow
-- **SaaS**: `uix` → `amplify` → `auth` → `billing` → `debug` → `i18n`
-- **Landing**: `uix` → `amplify` → `i18n`
-
-### Core Data Models
-```typescript
-UserSubscription {
-  userId: string
-  stripeSubscriptionId?: string
-  planId: string
-  status: string
-  currentPeriodEnd?: Date
-}
-
-StripeCustomer {
-  userId: string
-  stripeCustomerId: string
-}
-
-BillingUsage {
-  userId: string
-  period: string
-  projects?: number
-  apiRequests?: number
-}
-```
-
----
-
-## Development Patterns
-
-### 1. Composables-First
-**ALWAYS check existing composables before implementing new functionality**
-- Locations: `/composables/`, `/layers/*/composables/`
-- Core composables: `useUser()`, `useBilling()`, `useAuth()`
-
-### 2. Nuxt UI Priority
-**ALWAYS consult https://ui.nuxt.com/components before creating custom components**
-- Dashboard: Use `UDashboard*` components 
-- Forms: `UButton`, `UInput`, `USelect`
-- Layout: `UCard`, `UAlert`, `UModal`
-
-### 3. TypeScript Strict
-- Use Amplify generated types
-- Explicit interfaces for component props
-- `generateClient()` for GraphQL operations
-
-### 4. File Naming Conventions
-```
-components/     # PascalCase
-composables/    # camelCase (use- prefix)
-middleware/     # kebab-case
-pages/         # kebab-case (file routing)
-server/api/    # kebab-case
-```
-
-### 5. Authentication
-```typescript
-// Protect pages
-definePageMeta({ middleware: 'auth' })
-
-// Use in components
-const { user, isAuthenticated } = useUser()
-```
-
-### 6. Amplify Layer Usage Patterns
-
-**Core principle: Use Amplify layer for all AWS operations following established patterns**
-
-#### Client-Side Operations
-Access Amplify APIs through the global plugin in components and composables:
-
-```typescript
-// Basic access pattern
-const { $Amplify } = useNuxtApp()
-
-// Authentication
-const { Auth } = $Amplify
-await Auth.signIn({ username: email, password })
-await Auth.signUp({ username: email, password, options: { userAttributes: { 'custom:display_name': name } } })
-await Auth.confirmSignUp({ username: email, confirmationCode: code })
-
-// GraphQL Client
-const client = $Amplify.GraphQL.client
-const result = await client.graphql({
-  query: listUserSubscriptions,
-  variables: { filter: { userId: { eq: 'user-123' } } }
-})
-
-// Storage Operations
-await $Amplify.Storage.uploadData({
-  path: `uploads/${file.name}`,
-  data: file,
-  options: { contentType: file.type }
-})
-
-const url = await $Amplify.Storage.getUrl({
-  path: 'uploads/file.pdf',
-  options: { expiresIn: 3600 }
-})
-```
-
-#### Server-Side Operations
-Use `runAmplifyApi` utility for server contexts (API routes, server functions):
-
-```typescript
-// Import the server utilities
-import { runAmplifyApi } from '@starter-nuxt-amplify-saas/amplify/utils/server'
-import { generateClient } from 'aws-amplify/data/server'
-
-// API route pattern
-export default defineEventHandler(async (event) => {
-  return await runAmplifyApi(event, async (contextSpec) => {
-    const client = generateClient({ authMode: 'userPool' })
-    const { data, errors } = await client.models.UserSubscription.list(contextSpec, {
-      filter: { userId: { eq: userId } }
-    })
-    
-    if (errors) {
-      throw createError({ statusCode: 500, statusMessage: 'Database query failed' })
-    }
-    
-    return { subscriptions: data }
-  })
-})
-```
-
-#### GraphQL Operations
-Use auto-generated operations with full type safety:
-
-```typescript
-// Import operations from generated files
-import { 
-  listUserSubscriptions, 
-  getUserSubscription, 
-  createUserSubscription 
-} from '~/layers/amplify/utils/graphql/queries'
-import type { Schema } from '@starter-nuxt-amplify-saas/backend/amplify/data/resource'
-
-// Type-safe operations
-const client = $Amplify.GraphQL.client
-const result = await client.graphql({
-  query: createUserSubscription,
-  variables: {
-    input: {
-      userId: 'user-123',
-      planId: 'pro',
-      status: 'active'
-    }
-  }
-})
-
-// Access typed data
-const subscription = result.data?.createUserSubscription
-console.log(subscription?.planId) // TypeScript knows this is string
-```
-
-#### Composable Integration Pattern
-Create reusable composables that wrap Amplify operations:
-
-```typescript
-// composables/useSubscriptions.ts
-export const useSubscriptions = () => {
-  const { $Amplify } = useNuxtApp()
-  const client = $Amplify.GraphQL.client
-  
-  const subscriptions = ref<Schema['UserSubscription']['type'][]>([])
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-
-  const fetchUserSubscriptions = async (userId: string) => {
-    isLoading.value = true
-    error.value = null
-
-    try {
-      const result = await client.graphql({
-        query: listUserSubscriptions,
-        variables: { filter: { userId: { eq: userId } } }
-      })
-
-      subscriptions.value = result.data?.listUserSubscriptions?.items || []
-    } catch (err) {
-      error.value = 'Failed to fetch subscriptions'
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  return {
-    subscriptions: readonly(subscriptions),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    fetchUserSubscriptions
-  }
-}
-```
-
-#### Best Practices
-- **Client vs Server**: Use `$Amplify` in components/composables, `runAmplifyApi` in server routes
-- **Error Handling**: Always check for GraphQL `errors` array in responses
-- **Type Safety**: Import and use generated types from schema
-- **Authentication Context**: Server operations automatically use authenticated user context
-- **Storage Paths**: Use consistent path patterns (`uploads/`, `public/`, etc.)
-
-### 7. Commit Message Convention
-
-**Follow Conventional Commits specification for consistent git history**
-
-#### Format
-```
-<type>(<scope>): <description>
-```
-
-#### Commit Types
-- **`feat`**: New features or functionality
-- **`fix`**: Bug fixes
-- **`refactor`**: Code improvements without behavior changes
-- **`chore`**: Maintenance, dependencies, build tasks
-- **`doc`**: Documentation updates
-- **`test`**: Testing related changes
-- **`style`**: Code formatting, linting fixes
-
-#### Common Scopes
-- **`billing`**: Stripe billing/subscription features
-- **`auth`**: Authentication and authorization
-- **`i18n`**: Internationalization
-- **`saas`**: SaaS app specific changes
-- **`amplify`**: AWS Amplify backend
-- **`uix`**: UI/design system changes
-- **`debug`**: Development/debugging tools
-- **`deps`**: Dependencies
-- **`docs`**: Documentation files
-
-#### Examples (from project history)
 ```bash
-feat(billing): integrate Stripe billing system with subscription management and webhooks
-feat(auth): implement forgot password
-feat(i18n): add internationalization support
-chore(deps): bump packages
-refactor(billing): improve billing sync script
-doc(readme): update readme with last updates
-feat(debug): add debug layer
+corepack enable
+pnpm install
+pnpm backend:sandbox:init
+pnpm amplify:sandbox:generate-outputs
+pnpm amplify:sandbox:generate-graphql-client-code
+pnpm saas:dev
 ```
 
-#### Rules
-- Use present tense: "add" not "added"
-- Start description with lowercase
-- No period at the end
-- Keep total message under 72 characters
-- Be descriptive but concise
-- Focus on **what** and **why**, not **how**
+- SaaS: `http://localhost:3000` (or `http://localhost:3001` if 3000 occupied)
+- Landing: `pnpm landing:dev` → `http://localhost:3001`
+- Secrets: Create `.env` in `apps/saas/` for Stripe keys (never commit)
 
----
+## Essential Commands
 
-## Critical Configuration
+### Development
+- `pnpm saas:dev` — Main dashboard app dev server
+- `pnpm landing:dev` — Marketing site dev server
 
-### Essential Environment Variables
-```bash
-# Development
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
+### Backend
+- `pnpm backend:sandbox:init` — Deploy AWS resources to dev account
+- `pnpm backend:sandbox:delete` — Clean up sandbox resources
+- `pnpm amplify:sandbox:generate-outputs` — Required before first frontend build
+- `pnpm amplify:sandbox:generate-graphql-client-code` — Generate types + operations
 
-# Auto-generated
-SANDBOX_STACK_NAME=amplify-*-sandbox-*
-```
+### Building
+- `pnpm --filter @starter-nuxt-amplify-saas/saas build` — Production build
+- `pnpm --filter @starter-nuxt-amplify-saas/landing build` — Static generation
+- `pnpm --filter @starter-nuxt-amplify-saas/saas preview` — Test production build
 
-### Navigation (app.config.ts)
-```typescript
-ui: {
-  sidebar: {
-    main: [
-      [{ label: 'Dashboard', icon: 'i-lucide-home', to: '/dashboard' }],
-      [{ 
-        label: 'Settings', 
-        icon: 'i-lucide-settings',
-        children: [/*...*/]
-      }]
-    ]
-  }
-}
-```
+### Billing
+- `tsx scripts/billing-stripe-sync.ts` — Sync plans to Stripe (uses app.config.ts)
+- `pnpm billing:stripe:login` — Authenticate Stripe CLI
+- `pnpm billing:stripe:listen` — Local webhook testing
 
-**Navigation Rules**:
-- Icons: `i-lucide-[name]` (see https://lucide.dev/icons)
-- Groups = nested arrays
-- Children for submenus
+## Development Workflows
 
-### Billing Plans Schema
-```json
-{
-  "id": "plan-id",
-  "name": "Plan Name", 
-  "price": 0,
-  "interval": "month",
-  "stripePriceId": "price_...",  // Auto-updated
-  "features": ["Feature 1", "..."],
-  "limits": { "projects": 1, "users": 1 }
-}
-```
+### Frontend Feature Implementation
+1. **Plan**: Determine if feature belongs in a layer (reusable) or app (instance-specific)
+2. **Develop**: Use layers for composables/components, `apps/saas/app/` for pages
+3. **Protect**: Add `definePageMeta({ middleware: 'auth' })` to protected pages
+4. **Configure**: Update `apps/saas/app/app.config.ts` for instance-specific settings
+5. **Test**: Run `pnpm saas:dev` and verify functionality
 
----
+### Backend Schema Changes
+1. **Edit**: Modify `apps/backend/amplify/data/resource.ts`
+2. **Generate**: `pnpm amplify:sandbox:generate-graphql-client-code`
+3. **Verify**: Check generated types compile
+4. **Test**: Run app and verify affected flows
 
-## Initial Setup
+### Billing Configuration
+1. **Configure**: Edit billing plans in `apps/saas/app/app.config.ts`
+2. **Sync**: Run `tsx scripts/billing-stripe-sync.ts` (uses test keys)
+3. **Restart**: Restart dev server to pick up config changes
+4. **Test**: Verify plans appear in UI
 
-### Required Sequence
-```bash
-1. pnpm install
-2. pnpm backend:sandbox:init
-3. pnpm amplify:sandbox:generate-outputs  
-4. pnpm amplify:sandbox:generate-graphql-client-code
-5. pnpm saas:dev
-```
+### Bug Fixes
+1. **Reproduce**: Under `pnpm saas:dev`
+2. **Locate**: Find the smallest layer/app owning the logic
+3. **Fix**: Edit code
+4. **Validate**: Manual testing (no automated tests configured)
+5. **Document**: Update relevant README if behavior changes
 
-### Environment Variables
-Create `.env.local` in relevant apps with Stripe keys for full functionality.
+## Security & Guardrails
 
----
+### ⚠️ HIGH RISK OPERATIONS
+- `pnpm backend:sandbox:init` → **Deploys AWS resources, incurs costs**
+- `tsx scripts/billing-stripe-sync.ts` → **Creates products/prices in Stripe**
+- Schema changes in `apps/backend/amplify/data/resource.ts` → **May affect data**
 
-## Common Tasks
+### 🔒 Security Rules
+- **Never commit secrets** to version control
+- **Use test Stripe keys** for development (`STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`)
+- **Dev AWS account only** for sandbox operations
+- **Clean up resources** with `pnpm backend:sandbox:delete` when done
 
-### New Dashboard Page
-1. Create in `apps/saas/app/pages/`
-2. Use layout: `<UDashboardPage><UDashboardPanel>...</UDashboardPanel></UDashboardPage>`
-3. Auth: `definePageMeta({ middleware: 'auth' })`
-4. Update navigation in `app.config.ts`
+### 💰 Cost Management
+- Sandbox creates: Cognito User Pool, DynamoDB tables, AppSync API
+- Clean up with `pnpm backend:sandbox:delete`
+- Monitor AWS costs in development account
 
-### New Billing Plan  
-1. Edit `apps/saas/app/billing-plans.json`
-2. `pnpm billing:stripe:sync`
-3. ✅ Auto-available in UI
+## Contribution Standards
 
-### New Layer
-1. Create folder in `layers/`
-2. `nuxt.config.ts` with configuration
-3. Add to `extends` in target app
+### Git Conventions
+- **Format**: `<type>(<scope>): <description>` (max 72 chars)
+- **Types**: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `style`
+- **Scopes**: `billing`, `auth`, `i18n`, `saas`, `amplify`, `uix`, `debug`, `deps`, `docs`
 
-### New DB Model
-1. Edit `apps/backend/amplify/data/resource.ts`  
-2. `pnpm amplify:sandbox:generate-graphql-client-code`
-3. Use generated types in frontend
+### Code Standards
+- **TypeScript**: Strict mode enabled
+- **Architecture**: Prefer layers for reusable code, apps for instance-specific
+- **UI**: Use Nuxt UI Pro components
+- **Naming**:
+  - Components: `PascalCase`
+  - Composables: `useX`
+  - Pages: `kebab-case`
+  - API routes: `kebab-case`
 
----
+### Pull Requests
+- Keep PRs small and atomic
+- Update relevant READMEs when changing layer APIs
+- Reference this file when behavior/patterns change
 
 ## Troubleshooting
 
-### Critical Errors
-| Error | Solution |
-|-------|----------|
-| "Amplify not configured" | `pnpm amplify:sandbox:generate-outputs` |
-| Stripe sync fails | Check `STRIPE_SECRET_KEY` + valid JSON |
-| Auth redirect loops | Review middleware + Cognito setup |
-| Build failures | TypeScript errors + imports + layer deps |
+**"Amplify not configured"**
+→ Run `pnpm amplify:sandbox:generate-outputs`
 
-### Debug Tools
-- **Development**: `/debug` page
-- **Logs**: AWS Console (Amplify)
-- **Billing**: Stripe Dashboard
+**Node native binding errors in Amplify Console**
+→ Set Node 22 override (see README.md)
 
----
+**Plans not loading in UI**
+→ Check `apps/saas/app/app.config.ts` has billing.plans configured
 
-## Key Composables and Components
+**GraphQL types out of sync**
+→ Run `pnpm amplify:sandbox:generate-graphql-client-code`
 
-### Billing System
-```typescript
-// Primary composable
-const {
-  subscription,
-  currentPlan, 
-  availablePlans,
-  createCheckoutSession,
-  createPortalSession
-} = useBilling()
+**Port 3000 already in use**
+→ Nuxt will auto-fallback to 3001
+
+## Verification Checklist
+
+Run this sequence to verify you can work with the project:
+
+```bash
+# Setup
+corepack enable && pnpm install
+
+# Backend
+pnpm backend:sandbox:init
+pnpm amplify:sandbox:generate-outputs
+pnpm amplify:sandbox:generate-graphql-client-code
+
+# Frontend
+pnpm saas:dev
 ```
 
-**Available Components**:
-- `<BillingSubscriptionCard />` - Current subscription
-- `<BillingPlansGrid />` - Plan selection + checkout
-- `<BillingPortal />` - Stripe customer portal
+**Success criteria**:
+- Visit `http://localhost:3000` → see login/signup
+- Can register and login
+- `/debug` page shows diagnostics
+- Billing plans visible in UI
 
-### Stripe Customer Portal
-**⚠️ Requires**: Portal activated in Stripe Dashboard + active subscription
-**Endpoint**: `POST /api/billing/portal`
+## References
 
----
-
-## Version Information
-
-- **Package Manager**: pnpm 10.13.1+ (with corepack)
-- **Node.js**: 18+ (required for Nuxt 4)
-- **Last Updated**: 2025-09-11
+- **Project setup & deployment**: `README.md`
+- **Layer documentation**: `layers/*/README.md`
+- **Build configs**: `apps/*/amplify.yml`
+- **Instance configuration**: `apps/saas/app/app.config.ts`
 
 ---
 
-## Layer-Specific References
-
-Each layer provides detailed documentation for AI agents to understand specific implementations and usage patterns.
-
-### Layer README.md Files
-
-| Layer | Purpose | README Location |
-|-------|---------|----------------|
-| **uix** | UI foundation, design system, Nuxt UI Pro + Tailwind | [layers/uix/README.md](layers/uix/README.md) |
-| **amplify** | AWS integration, GraphQL client, storage | [layers/amplify/README.md](layers/amplify/README.md) |
-| **auth** | Authentication, AWS Cognito, middleware | [layers/auth/README.md](layers/auth/README.md) |
-| **billing** | Stripe integration, subscriptions, payments | [layers/billing/README.md](layers/billing/README.md) |
-| **i18n** | Internationalization, translations, formatting | [layers/i18n/README.md](layers/i18n/README.md) |
-| **debug** | Development tools, debugging utilities | [layers/debug/README.md](layers/debug/README.md) |
-
-### Layer Documentation Rules
-
-**Meta-Rules for Layer READMEs:**
-1. **Same Principles Apply**: All meta-principles defined in this AGENTS.md also apply to layer README.md files
-2. **Contradiction Protocol**: If changes contradict layer README, follow same 5-step protocol
-3. **Update Requirement**: When components, composables, or utilities are added/removed/modified, update corresponding README.md
-4. **Reference Context**: Use layer READMEs for specific implementation details and examples
-5. **Consistency**: Maintain consistent documentation structure across all layer READMEs
-
-**When to Consult Layer READMEs:**
-- **Component Usage**: Specific component props, events, and examples
-- **Composable Details**: Method signatures, return values, usage patterns  
-- **API Endpoints**: Server routes, request/response formats
-- **Configuration**: Layer-specific setup and customization
-- **Troubleshooting**: Layer-specific issues and solutions
-
----
-
-*This document is optimized for efficient consultation by AI agents. For architectural changes, follow the contradiction protocol defined above.*
+**Note**: No test runner or linter is currently configured. This document will be updated when testing infrastructure is added.
