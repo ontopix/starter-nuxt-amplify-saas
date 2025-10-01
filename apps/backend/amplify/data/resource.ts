@@ -1,16 +1,16 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { postConfirmation } from "../auth/post-confirmation/resource";
 
+const userProfileModel = a.model({
+  userId: a.string().required(),
+  stripeCustomerId: a.string(),
+  stripeProductId: a.string(),
+  stripePriceId: a.string(),
+}).identifier(['userId'])
+
 const schema = a
   .schema({
-    UserProfile: a
-      .model({
-        userId: a.string().required(),
-        stripeCustomerId: a.string(),
-        stripeProductId: a.string(),
-        stripePriceId: a.string(),
-      })
-      .identifier(['userId'])
+    UserProfile: userProfileModel
       .authorization((allow) => [
         allow.publicApiKey(),
         allow.ownerDefinedIn("userId").to(["read"]),

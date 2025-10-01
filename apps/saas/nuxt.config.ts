@@ -16,11 +16,21 @@ export default defineNuxtConfig({
     '@': path.resolve(__dirname)
   },
 
+  routeRules: {
+    '/auth/**': { ssr: false }
+  },
+
   // Configuración i18n específica de la app SaaS (opcional)
   i18n: {
     locales: [
       { code: 'en', file: 'en/app.json' },
       { code: 'es', file: 'es/app.json' }
     ]
+  },
+  nitro: {
+    externals: {
+      inline: ['vue', 'vue/server-renderer', '@vue/runtime-dom', '@vue/shared']
+    },
+    bundledStorage: ['@iconify-json/lucide']
   }
 })
