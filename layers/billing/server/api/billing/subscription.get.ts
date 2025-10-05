@@ -1,4 +1,4 @@
-import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/middleware'
+import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/auth'
 import { useUserServer } from '@starter-nuxt-amplify-saas/auth/composables/useUser'
 
 export default defineEventHandler(async (event) => {
