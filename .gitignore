@@ -1,51 +1,34 @@
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
 
 # Logs
 logs
 *.log
-logs/**/*.log
 
-# Dependency directories
-node_modules/
-jspm_packages/
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
+.envrc*
 
 # Amplify
-amplify/.config/local-*
-amplify/backend/amplify-meta.json
-amplify/backend/awscloudformation
-amplify/#current-cloud-backend
-amplify/.amplifyrc
-amplify/hooks/*.sh
+.amplify
+amplify_outputs*
+amplifyconfiguration*
+utils/graphql
 
-# TypeScript
-*.tsbuildinfo
-
-# Build directories
-dist/
-build/
-
-# Miscellaneous
-.DS_Store
-Thumbs.db
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# IDEs and editors
-.idea/
-.vscode/
-*.sublime-workspace
-*.sublime-project
-
-# MacOS
-.DS_Store
-
-# Local files (not to be part of the repo)
-.local
+# Local files
+.local*

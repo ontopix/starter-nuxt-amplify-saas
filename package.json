@@ -9,6 +9,7 @@
   "scripts": {
     "backend:sandbox:init": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:init",
     "backend:sandbox:delete": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:delete -y",
+    "backend:sandbox:secrets": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:secrets",
     "amplify:sandbox:generate-outputs": "pnpm --filter @starter-nuxt-amplify-saas/amplify run sandbox:generate-outputs",
     "amplify:sandbox:generate-graphql-client-code": "pnpm --filter @starter-nuxt-amplify-saas/amplify run sandbox:generate-graphql-client-code",
     "saas:dev": "pnpm --filter @starter-nuxt-amplify-saas/saas run dev",
