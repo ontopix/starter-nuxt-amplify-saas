@@ -21,7 +21,10 @@
     "amplify:generate-outputs": "pnpm --filter @starter-nuxt-amplify-saas/amplify run generate-outputs",
     "billing:stripe:sync": "tsx scripts/billing-stripe-sync.ts layers/billing/billing-plans.json",
     "billing:stripe:login": "stripe login",
-    "billing:stripe:listen": "stripe listen --forward-to localhost: 3000/api/billing/webhooks/stripe"
+    "billing:stripe:listen": "stripe listen --forward-to localhost: 3000/api/billing/webhooks/stripe",
+    "saas:test:auth": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:auth",
+    "saas:test:auth:headed": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:auth:headed",
+    "saas:test:auth:setup": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:auth:setup"
   },
   "devDependencies": {
     "@aws-amplify/backend-cli": "^1.8.0",
