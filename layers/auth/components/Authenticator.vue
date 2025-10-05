@@ -38,10 +38,17 @@ const props = defineProps({
     type: Array,
     default: () => [
       {
-        name: 'name',
+        name: 'firstName',
         type: 'text',
-        label: 'Name',
-        placeholder: 'Enter your name',
+        label: 'First Name',
+        placeholder: 'Enter your first name',
+        required: true
+      },
+      {
+        name: 'lastName',
+        type: 'text',
+        label: 'Last Name',
+        placeholder: 'Enter your last name',
         required: true
       },
       {
@@ -98,7 +105,8 @@ const signInSchema = z.object({
 })
 
 const signUpSchema = z.object({
-  name: z.string().min(1, 'Display name is required').max(16, 'Display name must be 16 characters or less'),
+  firstName: z.string().min(1, 'First name is required').max(50, 'First name must be 50 characters or less'),
+  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name must be 50 characters or less'),
   email: z.string().email('Invalid email'),
   password: z.string().min(8, 'Must be at least 8 characters')
 })
@@ -151,13 +159,14 @@ async function onSignUpSubmit(event: FormSubmitEvent<z.infer<typeof signUpSchema
   loading.value = true
   try {
     const { Auth } = useNuxtApp().$Amplify
-    console.log('onSignUpSubmit', event.data.email, event.data.password, event.data.name)
+    console.log('onSignUpSubmit', event.data.email, event.data.password, event.data.firstName, event.data.lastName)
     const { isSignUpComplete, nextStep } = await Auth.signUp({
       username: event.data.email,
       password: event.data.password,
       options: {
         userAttributes: {
-          'custom:display_name': event.data.name
+          'given_name': event.data.firstName,
+          'family_name': event.data.lastName
         }
       }
     })

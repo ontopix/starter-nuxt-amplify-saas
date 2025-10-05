@@ -20,7 +20,9 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
   const userAttributes = event.request.userAttributes;
   const userId = userAttributes.sub;
   const email = userAttributes.email;
-  const name = userAttributes['custom:display_name'];
+  const firstName = userAttributes.given_name || '';
+  const lastName = userAttributes.family_name || '';
+  const name = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || '';
 
   try {
     console.log(`Creating Stripe customer for user: ${email}`);
@@ -32,6 +34,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
       }
     });
     console.log(`Stripe customer created: ${stripeCustomer.id}`);
+
 
     // Create UserProfile with only Stripe customer ID, no plan assigned
     await client.models.UserProfile.create({

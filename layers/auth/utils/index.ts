@@ -47,22 +47,26 @@ export const getRedirectUrl = (query: Record<string, any>): string => {
  * Format user display name from auth user
  */
 export const getUserDisplayName = (user: any): string => {
-  if (user?.attributes?.['custom:display_name']) {
-    return user.attributes['custom:display_name']
-  }
-  
-  if (user?.attributes?.name) {
-    return user.attributes.name
-  }
-  
   if (user?.attributes?.given_name && user?.attributes?.family_name) {
     return `${user.attributes.given_name} ${user.attributes.family_name}`
   }
-  
+
+  if (user?.attributes?.given_name) {
+    return user.attributes.given_name
+  }
+
+  if (user?.attributes?.family_name) {
+    return user.attributes.family_name
+  }
+
+  if (user?.attributes?.name) {
+    return user.attributes.name
+  }
+
   if (user?.attributes?.email) {
     return user.attributes.email.split('@')[0]
   }
-  
+
   return 'User'
 }
 

@@ -221,7 +221,7 @@ Server-side authentication utilities for protecting API routes.
 Direct authentication validation for server API routes. Only validates authentication and throws 401 error if not authenticated.
 
 ```typescript
-import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/middleware'
+import { requireAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   // Validate authentication - throws 401 if not authenticated
@@ -244,7 +244,7 @@ export default defineEventHandler(async (event) => {
 Higher-order function that wraps an event handler with authentication.
 
 ```typescript
-import { withAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/middleware'
+import { withAuth } from '@starter-nuxt-amplify-saas/auth/server/utils/auth'
 
 export default withAuth(async (event) => {
   // Authentication already validated
@@ -481,7 +481,6 @@ definePageMeta({
 const { userAttributes, updateAttributes, loading } = useUser()
 
 const profileForm = ref({
-  displayName: '',
   firstName: '',
   lastName: '',
   phone: ''
@@ -491,7 +490,6 @@ const profileForm = ref({
 watchEffect(() => {
   if (userAttributes.value) {
     profileForm.value = {
-      displayName: userAttributes.value['custom:display_name'] || '',
       firstName: userAttributes.value['given_name'] || '',
       lastName: userAttributes.value['family_name'] || '',
       phone: userAttributes.value['phone_number'] || ''
@@ -502,7 +500,6 @@ watchEffect(() => {
 const updateProfile = async () => {
   try {
     await updateAttributes({
-      'custom:display_name': profileForm.value.displayName,
       'given_name': profileForm.value.firstName,
       'family_name': profileForm.value.lastName,
       'phone_number': profileForm.value.phone
@@ -520,18 +517,13 @@ const updateProfile = async () => {
     <h2>Edit Profile</h2>
 
     <div>
-      <label>Display Name</label>
-      <input v-model="profileForm.displayName" type="text" required>
-    </div>
-
-    <div>
       <label>First Name</label>
-      <input v-model="profileForm.firstName" type="text">
+      <input v-model="profileForm.firstName" type="text" required>
     </div>
 
     <div>
       <label>Last Name</label>
-      <input v-model="profileForm.lastName" type="text">
+      <input v-model="profileForm.lastName" type="text" required>
     </div>
 
     <div>

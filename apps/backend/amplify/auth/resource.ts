@@ -13,12 +13,6 @@ export const auth = defineAuth({
     'profilePicture': {
       mutable: true,
       required: false
-    },
-    'custom:display_name': {
-      dataType: 'String',
-      mutable: true,
-      maxLen: 16,
-      minLen: 1
     }
   },
   triggers: {
