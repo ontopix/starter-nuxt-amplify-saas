@@ -4,7 +4,7 @@ import { getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-ampli
 import { generateClient } from 'aws-amplify/data/server'
 import * as queries from '../../amplify/utils/graphql/queries'
 import * as mutations from '../../amplify/utils/graphql/mutations'
-import { runAmplifyApi, generateServerClient } from '../../amplify/utils/server'
+import { withAmplifyAuth, withAmplifyPublic } from '../../amplify/server/utils/amplify'
 import { handleAuthError } from '../utils'
 
 // Create state factory function
@@ -309,7 +309,7 @@ const _useUser = () => {
       }
 
       if (import.meta.server) {
-        const result = await runAmplifyApi(event, async (contextSpec) => {
+        const result = await withAmplifyAuth(event, async (contextSpec) => {
           const client = generateClient({ authMode: 'userPool' })
           return await client.graphql(contextSpec, {
             query: queries.getUserProfile,
@@ -352,19 +352,10 @@ const _useUser = () => {
       }
 
       if (import.meta.server) {
-        const result = await runAmplifyApi(undefined, async (contextSpec) => {
-          const client = generateClient({ authMode: 'userPool' })
-          return await client.graphql(contextSpec, {
-            query: mutations.updateUserProfile,
-            variables: {
-              input: {
-                id: userId,
-                ...profileData
-              }
-            }
-          })
-        })
-        userState.userProfile.value = result.data?.updateUserProfile || null
+        // Note: For server updates, we'd need the H3Event context
+        // This is a limitation that needs to be addressed in the calling code
+        console.warn('Server-side user profile updates require H3Event context')
+        throw new Error('Server-side user profile updates not supported without H3Event context')
       }
     } catch (err) {
       console.error('Error updating user data:', err)
@@ -405,7 +396,7 @@ const _useUser = () => {
         }
       }
       if (import.meta.server) {
-        const authSession = await runAmplifyApi(event, contextSpec =>
+        const authSession = await withAmplifyAuth(event, contextSpec =>
           fetchAuthSession(contextSpec)
         )
         userState.authSession.value = authSession
@@ -413,10 +404,10 @@ const _useUser = () => {
 
         if (userState.isAuthenticated.value) {
           userState.tokens.value = authSession.tokens
-          userState.currentUser.value = await runAmplifyApi(event, contextSpec =>
+          userState.currentUser.value = await withAmplifyAuth(event, contextSpec =>
             getCurrentUser(contextSpec)
           )
-          userState.userAttributes.value = await runAmplifyApi(event, contextSpec =>
+          userState.userAttributes.value = await withAmplifyAuth(event, contextSpec =>
             fetchUserAttributes(contextSpec)
           )
 
