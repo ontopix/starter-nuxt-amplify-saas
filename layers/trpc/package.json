@@ -1,0 +1,20 @@
+{
+  "name": "@starter-nuxt-amplify-saas/trpc",
+  "type": "module",
+  "version": "0.0.1",
+  "main": "./nuxt.config.ts",
+  "description": "tRPC layer for type-safe API development",
+  "dependencies": {
+    "@trpc/client": "^10.45.2",
+    "@trpc/server": "^10.45.2",
+    "trpc-nuxt": "^0.10.22",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "latest",
+    "eslint": "^9.31.0",
+    "nuxt": "^4.0.0",
+    "typescript": "^5.8.3",
+    "vue": "latest"
+  }
+}
