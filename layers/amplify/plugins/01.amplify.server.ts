@@ -1,21 +1,25 @@
+// plugins/amplify.server.ts
 import type { CookieRef } from 'nuxt/app'
+
 import {
   createKeyValueStorageFromCookieStorageAdapter,
   createUserPoolsTokenProvider,
   createAWSCredentialsAndIdentityIdProvider,
   runWithAmplifyServerContext
 } from 'aws-amplify/adapter-core'
+
 import { parseAmplifyConfig } from 'aws-amplify/utils'
+
 import {
   fetchAuthSession,
   fetchUserAttributes,
   getCurrentUser
 } from 'aws-amplify/auth/server'
+
 import { generateClient } from 'aws-amplify/data/server'
-import type {
-  LibraryOptions,
-  FetchAuthSessionOptions
-} from '@aws-amplify/core'
+import type { Schema } from '@starter-nuxt-amplify-saas/backend/amplify/data/resource'
+
+import type { LibraryOptions, FetchAuthSessionOptions } from '@aws-amplify/core'
 import type {
   GraphQLOptionsV6,
   GraphQLResponseV6
@@ -23,174 +27,159 @@ import type {
 
 import outputs from '../amplify_outputs.json'
 
-// parse the content of `amplify_outputs.json` into the shape of ResourceConfig
+/**
+ * Server plugin responsibilities:
+ * - Parse Amplify config from amplify_outputs.json (ResourceConfig).
+ * - Build a cookie-backed key-value storage so SSR can read/write Cognito tokens.
+ * - Create token/credentials providers wired to those cookies.
+ * - Expose server-safe Amplify APIs (Auth, Data, GraphQL) via Nuxt provide.
+ * - Ensure ALL calls run inside runWithAmplifyServerContext so user tokens are applied.
+ */
+
+// 1) Parse SSR config (ResourceConfig)
 const amplifyConfig = parseAmplifyConfig(outputs)
 
-// create the Amplify used token cookies names array
+// 2) Build cookie names required by Cognito (LastAuthUser + tokens)
 const userPoolClientId = amplifyConfig.Auth!.Cognito.userPoolClientId
-const lastAuthUserCookieName = `CognitoIdentityServiceProvider.${userPoolClientId}.LastAuthUser`
+const lastAuthUserCookieName =
+  'CognitoIdentityServiceProvider.' + userPoolClientId + '.LastAuthUser'
 
-// create a GraphQL client that can be used in a server context
-const gqlServerClient = generateClient({ config: amplifyConfig, authMode: 'userPool' })
-
+// Helper to compute all token cookie names for a specific username
 const getAmplifyAuthKeys = (lastAuthUser: string) =>
   ['idToken', 'accessToken', 'refreshToken', 'clockDrift']
-    .map(
-      key =>
-        `CognitoIdentityServiceProvider.${userPoolClientId}.${lastAuthUser}.${key}`
-    )
+    .map(key => 'CognitoIdentityServiceProvider.' + userPoolClientId + '.' + lastAuthUser + '.' + key)
     .concat(lastAuthUserCookieName)
 
-// define the plugin
+// 3) Create server-side Data/GraphQL clients with explicit config
+const gqlServerClient = generateClient({ config: amplifyConfig, authMode: 'userPool' })
+const dataServerClient = generateClient<Schema>({ config: amplifyConfig, authMode: 'userPool' })
+
 export default defineNuxtPlugin({
-  name: 'AmplifyAPIs',
+  name: 'amplify.server',
   enforce: 'pre',
   setup() {
-    // The Nuxt composable `useCookie` is capable of sending cookies to the
-    // client via the `SetCookie` header. If the `expires` option is left empty,
-    // it sets a cookie as a session cookie. If you need to persist the cookie
-    // on the client side after your end user closes your Web app, you need to
-    // specify an `expires` value.
-    //
-    // We use 30 days here as an example (the default Cognito refreshToken
-    // expiration time).
+    // Cookie lifetime (e.g., 30 days ~ default Cognito refresh token lifetime)
     const expires = new Date()
     expires.setDate(expires.getDate() + 30)
 
-    // Get the last auth user cookie value
-    //
-    // We use `sameSite: 'lax'` in this example, which allows the cookie to be
-    // sent to your Nuxt server when your end user gets redirected to your Web
-    // app from a different domain. You should choose an appropriate value for
-    // your own use cases.
-    const lastAuthUserCookie = useCookie(lastAuthUserCookieName, {
-      sameSite: 'lax',
-      expires,
-      secure: true
-    })
+    // TIP: set path:'/' so cookies are sent for all routes in your app
+    const cookieOpts = { sameSite: 'lax', expires, secure: true, path: '/' as const }
 
-    // Get all Amplify auth token cookie names
-    const authKeys = lastAuthUserCookie.value
-      ? getAmplifyAuthKeys(lastAuthUserCookie.value)
-      : []
+    // This cookie stores the username of the last authenticated user
+    const lastAuthUserCookie = useCookie<string | null>(lastAuthUserCookieName, cookieOpts)
 
-    // Create a key-value map of cookie name => cookie ref
-    //
-    // Using the composable `useCookie` here in the plugin setup prevents
-    // cross-request pollution.
+    // Build the list of actual token cookie names (id/access/refresh/clockDrift)
+    const authKeys = lastAuthUserCookie.value ? getAmplifyAuthKeys(lastAuthUserCookie.value) : []
+
+    // Map cookieName -> CookieRef
+    // (Using useCookie() here prevents cross-request pollution in SSR.)
     const amplifyCookies = authKeys
-      .map(name => ({
-        name,
-        cookieRef: useCookie(name, { sameSite: 'lax', expires, secure: true })
-      }))
+      .map(name => ({ name, cookieRef: useCookie<string | null | undefined>(name, cookieOpts) }))
       .reduce<Record<string, CookieRef<string | null | undefined>>>(
-        (result, current) => ({
-          ...result,
-          [current.name]: current.cookieRef
-        }),
+        (acc, cur) => ({ ...acc, [cur.name]: cur.cookieRef }),
         {}
       )
 
-    // Create a key value storage based on the cookies
-    //
-    // This key value storage is responsible for providing Amplify Auth tokens to
-    // the APIs that you are calling.
-    //
-    // If you implement the `set` method, when Amplify needed to refresh the Auth
-    // tokens on the server side, the new tokens would be sent back to the client
-    // side via `SetCookie` header in the response. Otherwise the refresh tokens
-    // would not be propagate to the client side, and Amplify would refresh
-    // the tokens when needed on the client side.
-    //
-    // In addition, if you decide not to implement the `set` method, you don't
-    // need to pass any `CookieOptions` to the `useCookie` composable.
+    // KeyValueStorage adapter bound to Nuxt cookies
+    // - Provides tokens to Amplify server APIs
+    // - If you implement set()/delete(), refreshed tokens will be sent back
+    //   to the browser via Set-Cookie headers automatically.
     const keyValueStorage = createKeyValueStorageFromCookieStorageAdapter({
       get(name) {
-        const cookieRef = amplifyCookies[name]
-
-        if (cookieRef && cookieRef.value) {
-          return { name, value: cookieRef.value }
-        }
-
+        const ref = amplifyCookies[name]
+        if (ref?.value) return { name, value: ref.value }
         return undefined
       },
       getAll() {
-        return Object.entries(amplifyCookies).map(([name, cookieRef]) => {
-          return { name, value: cookieRef.value ?? undefined }
-        })
+        return Object.entries(amplifyCookies).map(([name, ref]) => ({
+          name,
+          value: ref.value ?? undefined
+        }))
       },
       set(name, value) {
-        const cookieRef = amplifyCookies[name]
-        if (cookieRef) {
-          cookieRef.value = value
-        }
+        const ref = amplifyCookies[name]
+        if (ref) ref.value = value
       },
       delete(name) {
-        const cookieRef = amplifyCookies[name]
-
-        if (cookieRef) {
-          cookieRef.value = null
-        }
+        const ref = amplifyCookies[name]
+        if (ref) ref.value = null
       }
     })
 
-    // Create a token provider
-    const tokenProvider = createUserPoolsTokenProvider(
-      amplifyConfig.Auth!,
-      keyValueStorage
-    )
-
-    // Create a credentials provider
+    // Providers that read/write tokens/credentials via the cookie storage
+    const tokenProvider = createUserPoolsTokenProvider(amplifyConfig.Auth!, keyValueStorage)
     const credentialsProvider = createAWSCredentialsAndIdentityIdProvider(
       amplifyConfig.Auth!,
       keyValueStorage
     )
 
-    // Create the libraryOptions object
+    // Library options to pass into server context
     const libraryOptions: LibraryOptions = {
-      Auth: {
-        tokenProvider,
-        credentialsProvider
-      }
+      Auth: { tokenProvider, credentialsProvider }
     }
 
     return {
       provide: {
-        // You can add the Amplify APIs that you will use on the server side of
-        // your Nuxt app here. You must only use the APIs exported from the
-        // `aws-amplify/<category>/server` subpaths.
-        //
-        // You can call the API by via the composable `useNuxtApp()`. For example:
-        // `useNuxtApp().$Amplify.Auth.fetchAuthSession()`
-        //
-        // Recall that Amplify server APIs are required to be called in a isolated
-        // server context that is created by the `runWithAmplifyServerContext`
-        // function.
         Amplify: {
+          /**
+           * AUTH (server)
+           * Always call inside runWithAmplifyServerContext so the correct
+           * user tokens from cookies are applied during SSR.
+           *
+           * Example usage in a server route:
+           *   const { $Amplify } = useNuxtApp()
+           *   const session = await $Amplify.Auth.fetchAuthSession()
+           */
           Auth: {
-            fetchAuthSession: (options: FetchAuthSessionOptions) =>
+            fetchAuthSession: (options?: FetchAuthSessionOptions) =>
               runWithAmplifyServerContext(
                 amplifyConfig,
                 libraryOptions,
-                contextSpec => fetchAuthSession(contextSpec, options)
+                ctx => fetchAuthSession(ctx, options)
               ),
             fetchUserAttributes: () =>
               runWithAmplifyServerContext(
                 amplifyConfig,
                 libraryOptions,
-                contextSpec => fetchUserAttributes(contextSpec)
+                ctx => fetchUserAttributes(ctx)
               ),
             getCurrentUser: () =>
               runWithAmplifyServerContext(
                 amplifyConfig,
                 libraryOptions,
-                contextSpec => getCurrentUser(contextSpec)
+                ctx => getCurrentUser(ctx)
               )
           },
+
+          /**
+           * DATA (server)
+           * Use withContext(...) to run any Data/models call in the isolated
+           * server context so the request is authenticated.
+           *
+           * Example:
+           *   const user = await $Amplify.Data.withContext(ctx =>
+           *     $Amplify.Data.client.models.User.get({ id: 'xyz' }, ctx)
+           *   )
+           */
+          Data: {
+            client: dataServerClient,
+            withContext: <T>(callback: (contextSpec: any) => T | Promise<T>) =>
+              runWithAmplifyServerContext<T>(amplifyConfig, libraryOptions, callback)
+          },
+
+          /**
+           * GRAPHQL (server)
+           * A thin wrapper that executes graphql() inside the server context.
+           * Useful for custom queries/mutations/subscriptions beyond models.
+           *
+           * Example:
+           *   const res = await $Amplify.GraphQL.client.graphql({
+           *     query: `query GetX($id: ID!) { getX(id:$id) { id name } }`,
+           *     variables: { id: '123' }
+           *   })
+           */
           GraphQL: {
             client: {
-              // Follow this typing to ensure the`graphql` API return type can
-              // be inferred correctly according to your queries and mutations
               graphql: <
                 FALLBACK_TYPES = unknown,
                 TYPED_GQL_STRING extends string = string
@@ -200,12 +189,8 @@ export default defineNuxtPlugin({
               ) =>
                 runWithAmplifyServerContext<
                   GraphQLResponseV6<FALLBACK_TYPES, TYPED_GQL_STRING>
-                >(amplifyConfig, libraryOptions, contextSpec =>
-                  gqlServerClient.graphql(
-                    contextSpec,
-                    options,
-                    additionalHeaders
-                  )
+                >(amplifyConfig, libraryOptions, ctx =>
+                  gqlServerClient.graphql(ctx, options, additionalHeaders)
                 )
             }
           }

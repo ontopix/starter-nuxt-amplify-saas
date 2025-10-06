@@ -26,18 +26,23 @@ The Amplify layer integrates AWS Amplify Gen2 with Nuxt 3, providing:
 
 ```
 layers/amplify/
-├── plugins/              # Amplify initialization
-│   ├── 01.amplify.client.ts  # Client-side setup
-│   └── 01.amplify.server.ts  # Server-side setup
-├── utils/                # GraphQL operations & utilities
-│   ├── graphql/          # Generated GraphQL operations
-│   │   ├── API.ts        # TypeScript types
-│   │   ├── queries.ts    # Query operations
-│   │   ├── mutations.ts  # Mutation operations
+├── plugins/                 # Amplify initialization
+│   ├── 01.amplify.client.ts # Client-side setup
+│   └── 01.amplify.server.ts # Server-side setup
+├── server/                  # Server-specific utilities
+│   └── utils/
+│       └── amplify.ts       # Server API routes utilities
+├── utils/                   # Shared utilities
+│   ├── graphql/            # Auto-generated GraphQL operations
+│   │   ├── API.ts          # TypeScript types
+│   │   ├── queries.ts      # Query operations
+│   │   ├── mutations.ts    # Mutation operations
 │   │   └── subscriptions.ts # Subscription operations
-│   └── server.ts         # Server-side utilities
-├── amplify_outputs.json  # Auto-generated Amplify config
-└── nuxt.config.ts        # Layer configuration
+│   └── server.ts           # Legacy server utilities
+├── types/                   # TypeScript definitions
+│   └── nuxt-amplify.d.ts   # Nuxt plugin type extensions
+├── amplify_outputs.json    # Auto-generated Amplify config
+└── nuxt.config.ts          # Layer configuration
 ```
 
 ## Plugins
@@ -48,7 +53,7 @@ Initializes Amplify on the client-side with SSR support and provides global acce
 
 **Provides:**
 - `$Amplify.Auth` - Authentication methods
-- `$Amplify.GraphQL.client` - Type-safe GraphQL client  
+- `$Amplify.GraphQL.client` - Type-safe GraphQL client
 - `$Amplify.Storage` - File upload/download utilities
 
 **Configuration:**
@@ -58,180 +63,154 @@ Initializes Amplify on the client-side with SSR support and provides global acce
 
 ### Server Plugin (`01.amplify.server.ts`)
 
-Configures Amplify for server-side operations and API routes.
+Configures Amplify for server-side operations within Nuxt application context. Provides cookie-based authentication and server context management.
+
+**Provides:**
+- `$Amplify.Auth` - Server-side authentication methods
+- `$Amplify.Data.withContext()` - Authenticated data operations
+- `$Amplify.GraphQL.client` - Server-side GraphQL client
+
+## Server Utilities (`server/utils/amplify.ts`)
+
+Server utilities for Nitro API routes (`server/api/**`) that don't have access to Nuxt application context.
+
+**Functions:**
+- `withAmplifyAuth(event, callback)` - Authenticated operations with user context
+- `withAmplifyPublic(callback)` - Public operations without authentication
+
+**Usage in API Routes:**
+```typescript
+// Authenticated endpoint
+export default defineEventHandler(async (event) => {
+  return await withAmplifyAuth(event, async (contextSpec) => {
+    const client = generateClient<Schema>({ authMode: 'userPool' })
+    const { data } = await client.models.UserProfile.get(contextSpec, { userId })
+    return { data }
+  })
+})
+
+// Public endpoint
+export default defineEventHandler(async (event) => {
+  return await withAmplifyPublic(async (contextSpec) => {
+    const client = generateClient<Schema>({ authMode: 'apiKey' })
+    const { data } = await client.models.SubscriptionPlan.list(contextSpec, {
+      filter: { isActive: { eq: true } }
+    })
+    return { data }
+  })
+})
+```
 
 ## Utils & GraphQL
 
 ### Generated GraphQL Operations
 
-Auto-generated from the backend schema with full TypeScript support:
+Auto-generated from the backend schema with full TypeScript support. Generated via `pnpm amplify:sandbox:generate-graphql-client-code` command.
 
-#### API Types (`utils/graphql/API.ts`)
-```typescript
-// Core data models
-export type UserSubscription = {
-  userId: string
-  stripeSubscriptionId?: string
-  planId: string
-  status: string
-  currentPeriodEnd?: Date
-}
+**Contains:**
+- `API.ts` - Complete TypeScript type definitions for all models, inputs, and filters
+- `queries.ts` - All available GraphQL query operations
+- `mutations.ts` - All available GraphQL mutation operations
+- `subscriptions.ts` - Real-time subscription operations
 
-export type StripeCustomer = {
-  userId: string
-  stripeCustomerId: string
-  email?: string
-  name?: string
-}
+All operations include full TypeScript types and are automatically updated when the backend schema changes.
 
-export type BillingUsage = {
-  userId: string
-  period: string
-  projects?: number
-  apiRequests?: number
-}
-```
+### Legacy Server Utilities (`utils/server.ts`)
 
-#### Query Operations (`utils/graphql/queries.ts`)
-```typescript
-// Available queries
-export const listUserSubscriptions = /* GraphQL */ `
-  query ListUserSubscriptions($filter: ModelUserSubscriptionFilterInput) {
-    listUserSubscriptions(filter: $filter) {
-      items {
-        userId
-        planId
-        status
-        currentPeriodEnd
-      }
-    }
-  }
-`
-
-export const getUserSubscription = /* GraphQL */ `
-  query GetUserSubscription($userId: ID!) {
-    getUserSubscription(userId: $userId) {
-      userId
-      stripeSubscriptionId
-      planId
-      status
-    }
-  }
-`
-```
-
-#### Mutation Operations (`utils/graphql/mutations.ts`)
-```typescript
-// Available mutations
-export const createUserSubscription = /* GraphQL */ `
-  mutation CreateUserSubscription($input: CreateUserSubscriptionInput!) {
-    createUserSubscription(input: $input) {
-      userId
-      planId
-      status
-      createdAt
-    }
-  }
-`
-
-export const updateUserSubscription = /* GraphQL */ `
-  mutation UpdateUserSubscription($input: UpdateUserSubscriptionInput!) {
-    updateUserSubscription(input: $input) {
-      userId
-      planId
-      status
-      updatedAt
-    }
-  }
-`
-```
-
-### Server Utilities (`utils/server.ts`)
-
-Server-side utilities for API routes and server functions.
+Legacy server utilities maintained for backward compatibility. Consider migrating to `server/utils/amplify.ts` for new implementations.
 
 ## Usage Examples
 
-### Basic GraphQL Operations
+### Client-Side Operations (Browser)
 
 ```vue
 <script setup>
-// Access the generated client
+// Access Amplify client in browser
 const { $Amplify } = useNuxtApp()
-const client = $Amplify.GraphQL.client
 
-// Import operations
-import { listUserSubscriptions, createUserSubscription } from '~/layers/amplify/utils/graphql/queries'
-
-// Query data
-const fetchSubscriptions = async () => {
+// Using Data models (recommended)
+const fetchUserProfile = async (userId: string) => {
   try {
-    const result = await client.graphql({
-      query: listUserSubscriptions,
-      variables: {
-        filter: {
-          userId: { eq: 'user-123' }
-        }
-      }
+    const result = await $Amplify.Data.withContext(async (contextSpec) => {
+      return await $Amplify.Data.client.models.UserProfile.get(contextSpec, { userId })
     })
-    
-    const subscriptions = result.data?.listUserSubscriptions?.items || []
-    console.log('User subscriptions:', subscriptions)
+
+    console.log('User profile:', result.data)
   } catch (error) {
-    console.error('Failed to fetch subscriptions:', error)
+    console.error('Failed to fetch profile:', error)
   }
 }
 
-// Create new record
-const createSubscription = async () => {
+// Using raw GraphQL (advanced)
+import { listUserSubscriptions } from '~/layers/amplify/utils/graphql/queries'
+
+const fetchSubscriptions = async () => {
   try {
-    const result = await client.graphql({
-      query: createUserSubscription,
+    const result = await $Amplify.GraphQL.client.graphql({
+      query: listUserSubscriptions,
       variables: {
-        input: {
-          userId: 'user-123',
-          planId: 'pro',
-          status: 'active'
-        }
+        filter: { userId: { eq: 'user-123' } }
       }
     })
-    
-    console.log('Created subscription:', result.data?.createUserSubscription)
+
+    console.log('Subscriptions:', result.data?.listUserSubscriptions?.items)
   } catch (error) {
-    console.error('Failed to create subscription:', error)
+    console.error('Failed to fetch subscriptions:', error)
   }
 }
 </script>
 ```
 
-### Server-Side API Routes
+### Server-Side API Routes (Nitro)
 
 ```typescript
 // server/api/subscriptions.get.ts
-import { generateClient } from 'aws-amplify/data'
+import { generateClient } from 'aws-amplify/data/server'
 import type { Schema } from '@starter-nuxt-amplify-saas/backend/amplify/data/resource'
-import { listUserSubscriptions } from '~/layers/amplify/utils/graphql/queries'
-
-const client = generateClient<Schema>({
-  authMode: 'userPool'
-})
+import { withAmplifyAuth } from '@starter-nuxt-amplify-saas/amplify/server/utils/amplify'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const result = await client.graphql({
-      query: listUserSubscriptions
-    })
-    
+  return await withAmplifyAuth(event, async (contextSpec) => {
+    const client = generateClient<Schema>({ authMode: 'userPool' })
+
+    const { data: userSubscription } = await client.models.UserSubscription.get(
+      contextSpec,
+      { userId: 'user-123' }
+    )
+
     return {
-      subscriptions: result.data?.listUserSubscriptions?.items || []
+      success: true,
+      data: userSubscription
     }
-  } catch (error) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch subscriptions'
-    })
-  }
+  })
 })
+```
+
+### Server-Side SSR (Nuxt Context)
+
+```vue
+<script setup lang="ts">
+// In pages or components - server-side rendering
+const { $Amplify } = useNuxtApp()
+
+// This runs on server during SSR
+const { data: subscriptionPlans } = await $Amplify.Data.withContext(async (contextSpec) => {
+  return await $Amplify.Data.client.models.SubscriptionPlan.list(contextSpec, {
+    filter: { isActive: { eq: true } }
+  })
+})
+
+console.log('Plans loaded on server:', subscriptionPlans)
+</script>
+
+<template>
+  <div>
+    <h1>Available Plans</h1>
+    <div v-for="plan in subscriptionPlans" :key="plan.planId">
+      {{ plan.name }} - ${{ plan.monthlyPrice }}/month
+    </div>
+  </div>
+</template>
 ```
 
 ### Storage Operations
@@ -250,7 +229,7 @@ const uploadFile = async (file: File) => {
         contentType: file.type
       }
     })
-    
+
     console.log('Upload successful:', result)
     return result
   } catch (error) {
@@ -268,7 +247,7 @@ const getFileUrl = async (path: string) => {
         expiresIn: 3600 // 1 hour
       }
     })
-    
+
     return result.url
   } catch (error) {
     console.error('Failed to get file URL:', error)
@@ -293,16 +272,14 @@ const handleFileUpload = async (event) => {
 </script>
 ```
 
-### Type-Safe Composable Integration
+### Type-Safe Composables
 
 ```typescript
 // composables/useSubscriptions.ts
 import type { Schema } from '@starter-nuxt-amplify-saas/backend/amplify/data/resource'
-import { listUserSubscriptions } from '~/layers/amplify/utils/graphql/queries'
 
 export const useSubscriptions = () => {
   const { $Amplify } = useNuxtApp()
-  const client = $Amplify.GraphQL.client
 
   const subscriptions = ref<Schema['UserSubscription']['type'][]>([])
   const isLoading = ref(false)
@@ -313,14 +290,13 @@ export const useSubscriptions = () => {
     error.value = null
 
     try {
-      const result = await client.graphql({
-        query: listUserSubscriptions,
-        variables: {
+      const result = await $Amplify.Data.withContext(async (contextSpec) => {
+        return await $Amplify.Data.client.models.UserSubscription.list(contextSpec, {
           filter: { userId: { eq: userId } }
-        }
+        })
       })
 
-      subscriptions.value = result.data?.listUserSubscriptions?.items || []
+      subscriptions.value = result.data || []
     } catch (err) {
       error.value = 'Failed to fetch subscriptions'
       console.error(err)
@@ -338,50 +314,79 @@ export const useSubscriptions = () => {
 }
 ```
 
+### Public API Routes (No Authentication)
+
+```typescript
+// server/api/plans.get.ts
+import { generateClient } from 'aws-amplify/data/server'
+import type { Schema } from '@starter-nuxt-amplify-saas/backend/amplify/data/resource'
+import { withAmplifyPublic } from '@starter-nuxt-amplify-saas/amplify/server/utils/amplify'
+
+export default defineEventHandler(async (event) => {
+  return await withAmplifyPublic(async (contextSpec) => {
+    const client = generateClient<Schema>({ authMode: 'apiKey' })
+
+    const { data: plans } = await client.models.SubscriptionPlan.list(contextSpec, {
+      filter: { isActive: { eq: true } }
+    })
+
+    return {
+      success: true,
+      data: { plans }
+    }
+  })
+})
+```
+
 ## API Reference
 
-### Plugin Provides
+### Client Plugin (`$Amplify`)
 
 #### `$Amplify.Auth`
-- Authentication methods from `aws-amplify/auth`
-- Used internally by auth layer
-- Available for custom auth operations
+- `fetchAuthSession()` - Get current user session
+- `fetchUserAttributes()` - Get user profile attributes
+- `getCurrentUser()` - Get current authenticated user
+
+#### `$Amplify.Data`
+- `client.models.*` - Type-safe data model operations
+- `withContext(callback)` - Execute operations with proper auth context
 
 #### `$Amplify.GraphQL.client`
-- Type-safe GraphQL client
-- Pre-configured with user pool auth
-- Schema-based TypeScript support
+- `graphql(options)` - Raw GraphQL operations
+- Pre-configured with user pool authentication
 
 #### `$Amplify.Storage`
 - `uploadData(options)` - Upload files to S3
 - `getUrl(options)` - Get signed URLs for files
 
-### Generated Operations
+### Server Utilities
 
-#### Queries
-- `listUserSubscriptions` - List user subscriptions with optional filters
-- `getUserSubscription` - Get specific user subscription
-- `listStripeCustomers` - List Stripe customer records
-- `getBillingUsage` - Get usage metrics by period
+#### `withAmplifyAuth(event, callback)`
+- **Purpose:** Execute authenticated operations in Nitro API routes
+- **Parameters:** H3Event for cookie extraction, callback with contextSpec
+- **Auth Mode:** Uses user pool authentication from cookies
+- **Returns:** Promise with callback result
 
-#### Mutations
-- `createUserSubscription` - Create new subscription
-- `updateUserSubscription` - Update subscription details
-- `deleteUserSubscription` - Remove subscription
-- `createStripeCustomer` - Create Stripe customer record
+#### `withAmplifyPublic(callback)`
+- **Purpose:** Execute public operations without authentication
+- **Parameters:** Callback with contextSpec
+- **Auth Mode:** Uses API key authentication
+- **Returns:** Promise with callback result
 
-#### Types
-- `UserSubscription` - Subscription data model
-- `StripeCustomer` - Customer data model  
-- `BillingUsage` - Usage tracking model
-- All generated types include proper TypeScript definitions
+### Generated Types and Operations
 
-### Configuration
+All types and operations are automatically generated from the backend schema:
 
-The layer automatically configures:
-- **Auth Mode**: User pool authentication
-- **SSR Support**: Server-side rendering compatibility
-- **Type Generation**: Auto-generated from backend schema
-- **Error Handling**: Built-in GraphQL error handling
+- **Types:** Complete TypeScript definitions in `utils/graphql/API.ts`
+- **Queries:** All available queries in `utils/graphql/queries.ts`
+- **Mutations:** All available mutations in `utils/graphql/mutations.ts`
+- **Subscriptions:** Real-time operations in `utils/graphql/subscriptions.ts`
 
-This Amplify layer provides a complete foundation for AWS integration with type safety and SSR support built-in.
+### Usage Patterns
+
+- **Client-side:** Use `$Amplify` plugin with `useNuxtApp()`
+- **SSR (Nuxt context):** Use `$Amplify.Data.withContext()` in pages/components
+- **API routes (Nitro):** Use `withAmplifyAuth`/`withAmplifyPublic` from `server/utils/amplify.ts`
+- **Composables:** Combine `$Amplify` with reactive state management
+
+This layer provides complete AWS Amplify integration with proper SSR support and authentication patterns for all use cases.
