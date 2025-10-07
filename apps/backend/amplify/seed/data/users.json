@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "username": "alice@example.com",
+      "password": "Password123!",
+      "attributes": { "name": "Alice" },
+      "groups": ["Admin"],
+      "planId": "pro",
+      "billingInterval": "month"
+    },
+    {
+      "username": "bob@example.com",
+      "password": "Password123!",
+      "attributes": { "name": "Bob" },
+      "groups": [],
+      "planId": "starter",
+      "billingInterval": "year"
+    }
+  ]
+}

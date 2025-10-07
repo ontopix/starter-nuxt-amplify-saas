@@ -76,6 +76,9 @@ pnpm saas:dev
 - `pnpm backend:sandbox:delete` — Clean up sandbox resources
 - `pnpm amplify:sandbox:generate-outputs` — Required before first frontend build
 - `pnpm amplify:sandbox:generate-graphql-client-code` — Generate types + operations
+ - `pnpm backend:sandbox:seed` — Run sandbox seed (plans + users)
+ - `pnpm backend:sandbox:seed:plans` — Seed only billing plans from JSON
+ - `pnpm backend:sandbox:seed:users` — Seed only users from JSON
 
 ### Building
 - `pnpm --filter @starter-nuxt-amplify-saas/saas build` — Production build
@@ -103,10 +106,10 @@ pnpm saas:dev
 4. **Test**: Run app and verify affected flows
 
 ### Billing Configuration
-1. **Configure**: Edit billing plans in `apps/saas/app/app.config.ts`
-2. **Sync**: Run `tsx scripts/billing-stripe-sync.ts` (uses test keys)
-3. **Restart**: Restart dev server to pick up config changes
-4. **Test**: Verify plans appear in UI
+1. **Configure**: Seed billing plans via JSON in `apps/backend/amplify/seed/data/plans.json`
+2. **Sync (Seed)**: `pnpm backend:sandbox:seed:plans` (uses sandbox secret `STRIPE_SECRET_KEY`)
+3. **Restart**: Restart dev server if UI caches plan data
+4. **Test**: Verify plans load via billing API and match seed JSON
 
 ### Bug Fixes
 1. **Reproduce**: Under `pnpm saas:dev`
@@ -163,7 +166,7 @@ pnpm saas:dev
 → Set Node 22 override (see README.md)
 
 **Plans not loading in UI**
-→ Check `apps/saas/app/app.config.ts` has billing.plans configured
+→ Ensure you ran `pnpm backend:sandbox:seed:plans` and that `STRIPE_SECRET_KEY` is set as a sandbox secret. Plans are defined in `apps/backend/amplify/seed/data/plans.json`.
 
 **GraphQL types out of sync**
 → Run `pnpm amplify:sandbox:generate-graphql-client-code`
@@ -183,6 +186,10 @@ corepack enable && pnpm install
 pnpm backend:sandbox:init
 pnpm amplify:sandbox:generate-outputs
 pnpm amplify:sandbox:generate-graphql-client-code
+
+# Seed (optional)
+pnpm backend:sandbox:seed:plans
+pnpm backend:sandbox:seed:users
 
 # Frontend
 pnpm saas:dev
@@ -213,9 +220,10 @@ pnpm saas:dev
 #### AWS Amplify
 - **AWS Amplify Gen 2 Documentation**: https://docs.amplify.aws/
 - **Amplify JS API Reference**: https://aws-amplify.github.io/amplify-js/api/index.html
-- **Amplify Auth**: https://docs.amplify.aws/react/build-a-backend/auth/
-- **Amplify Data (GraphQL)**: https://docs.amplify.aws/react/build-a-backend/data/
-- **Amplify Storage**: https://docs.amplify.aws/react/build-a-backend/storage/
+- **Amplify Auth (Vue)**: https://docs.amplify.aws/vue/build-a-backend/auth/
+- **Amplify Data (Vue)**: https://docs.amplify.aws/vue/build-a-backend/data/
+- **Amplify Storage (Vue)**: https://docs.amplify.aws/vue/build-a-backend/storage/
+- **Amplify + Nuxt SSR Integration**: https://docs.amplify.aws/vue/build-a-backend/server-side-rendering/nuxt/
 
 #### Stripe Integration
 - **Stripe API Documentation**: https://docs.stripe.com/api
