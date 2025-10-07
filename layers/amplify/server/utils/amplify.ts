@@ -15,7 +15,7 @@ import type { LibraryOptions } from '@aws-amplify/core'
 import outputs from '../../amplify_outputs.json'
 
 // Parse the content of amplify_outputs.json into the shape of ResourceConfig
-const amplifyConfig = parseAmplifyConfig(outputs)
+export const amplifyConfig = parseAmplifyConfig(outputs)
 
 // Create the Amplify used token cookies names array
 const userPoolClientId = amplifyConfig.Auth!.Cognito.userPoolClientId
@@ -166,33 +166,17 @@ export const withAmplifyPublic = async <T>(
 }
 
 /**
- * Get an authenticated Amplify Data client (DEPRECATED - use withAmplifyAuth instead)
- *
- * @deprecated Use withAmplifyAuth for proper server context handling
- * This function exists for backward compatibility but should be migrated to withAmplifyAuth
+ * Create a preconfigured Data client for server-side public (apiKey) operations.
+ * Use together with withAmplifyPublic to provide contextSpec for calls.
  */
-export const getAmplifyDataClient = (event?: H3Event<EventHandlerRequest>) => {
-  console.warn('getAmplifyDataClient is deprecated. Use withAmplifyAuth instead for proper server context.')
-  return generateClient<Schema>()
+export const getServerPublicDataClient = () => {
+  return generateClient<Schema>({ config: amplifyConfig, authMode: 'apiKey' })
 }
 
 /**
- * LEGACY SUPPORT: Direct client access functions
- * These maintain compatibility with existing code but should be migrated to the new patterns
+ * Create a preconfigured Data client for server-side userPool operations.
+ * Use together with withAmplifyAuth to provide contextSpec for calls.
  */
-
-/**
- * Get an authenticated Data client with proper context (LEGACY)
- * @deprecated Use withAmplifyAuth instead
- */
-export const getAuthenticatedDataClient = async (event: H3Event<EventHandlerRequest>) => {
-  return withAmplifyAuth(event, (client) => client)
-}
-
-/**
- * Get a public Data client (LEGACY)
- * @deprecated Use withAmplifyPublic instead
- */
-export const getPublicDataClient = async () => {
-  return withAmplifyPublic((client) => client)
+export const getServerUserPoolDataClient = () => {
+  return generateClient<Schema>({ config: amplifyConfig, authMode: 'userPool' })
 }
