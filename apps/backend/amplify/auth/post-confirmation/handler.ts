@@ -36,14 +36,28 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
     console.log(`Stripe customer created: ${stripeCustomer.id}`);
 
 
-    // Create UserProfile with only Stripe customer ID, no plan assigned
+    // Create UserProfile with Stripe customer ID
     await client.models.UserProfile.create({
       userId: userId,
       stripeCustomerId: stripeCustomer.id,
-      stripeProductId: null,
-      stripePriceId: null
     });
     console.log(`UserProfile created for user: ${userId}`);
+
+    // Create free subscription for the user
+    await client.models.UserSubscription.create({
+      userId: userId,
+      planId: 'free',
+      stripeSubscriptionId: null, // No actual Stripe subscription for free plan
+      stripeCustomerId: stripeCustomer.id,
+      status: 'active',
+      currentPeriodStart: new Date().toISOString(), // When they started using the free plan
+      currentPeriodEnd: null, // Free plan never expires
+      cancelAtPeriodEnd: false,
+      billingInterval: null, // No billing for free plan
+      trialStart: null, // No trial needed for free plan
+      trialEnd: null, // No trial needed for free plan
+    });
+    console.log(`Free subscription created for user: ${userId}`);
 
   } catch (error) {
     console.error('Error in post-confirmation handler:', error);

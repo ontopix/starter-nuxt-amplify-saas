@@ -6,99 +6,60 @@
           Current Subscription
         </h2>
         <UBadge
-          :color="getStatusColor(subscription.status)"
+          v-if="effectiveSubscription && effectiveSubscription.plan.price > 0"
+          :color="getStatusColor(effectiveSubscription.status)"
           variant="subtle"
           size="lg"
         >
-          {{ subscription.status.replace('_', ' ').toUpperCase() }}
+          {{ effectiveSubscription.status.replace('_', ' ').toUpperCase() }}
         </UBadge>
       </div>
     </template>
 
-    <div class="grid md:grid-cols-2 gap-6">
-      <!-- Plan Information -->
-      <div class="space-y-4">
+    <!-- Skeleton -->
+    <div v-if="showSkeleton" class="space-y-4">
+      <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ subscription.plan.name }}
-          </h3>
-          <p class="text-3xl font-bold text-primary-600 mt-2">
-            ${{ subscription.plan.price }}
-            <span class="text-lg font-normal text-gray-600 dark:text-gray-400">
-              /{{ subscription.plan.interval }}
-            </span>
-          </p>
-        </div>
-
-        <div>
-          <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
-            Plan Features
-          </h4>
-          <ul class="space-y-1">
-            <li
-              v-for="feature in subscription.plan.features"
-              :key="feature"
-              class="flex items-center text-sm text-gray-600 dark:text-gray-400"
-            >
-              <UIcon name="i-lucide-check" class="w-4 h-4 text-green-600 mr-2" />
-              {{ feature }}
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Usage Stats -->
-      <div class="space-y-4">
-        <h4 class="font-semibold text-gray-900 dark:text-white">
-          Current Usage
-        </h4>
-
-        <div class="space-y-3">
-          <div v-for="usage in usageStats" :key="usage.label" class="space-y-1">
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-600 dark:text-gray-400">{{ usage.label }}</span>
-              <span class="font-medium text-gray-900 dark:text-white">
-                {{ usage.current }} / {{ usage.limit === -1 ? 'Unlimited' : usage.limit }}
-              </span>
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div
-                class="h-2 rounded-full transition-all duration-300"
-                :class="usage.percentage > 80 ? 'bg-red-500' : usage.percentage > 60 ? 'bg-yellow-500' : 'bg-green-500'"
-                :style="{ width: `${Math.min(usage.percentage, 100)}%` }"
-              ></div>
-            </div>
+          <USkeleton class="h-7 w-48 rounded" />
+          <div class="mt-3 space-y-2">
+            <USkeleton class="h-8 w-32 rounded" />
+            <USkeleton class="h-4 w-40 rounded" />
           </div>
         </div>
+        <USkeleton class="h-9 w-32 rounded" />
       </div>
     </div>
 
-    <template #footer>
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div class="text-sm text-gray-600 dark:text-gray-400">
-          <p>Next billing: {{ formatDate(subscription.currentPeriodEnd) }}</p>
-          <p v-if="subscription.cancelAtPeriodEnd" class="text-amber-600 dark:text-amber-400">
+    <!-- Plan Information with action button -->
+    <div v-else class="flex items-center justify-between">
+      <div>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ effectiveSubscription?.plan.name }}
+        </h3>
+        <p class="text-3xl font-bold text-primary-600 mt-2">
+          ${{ effectiveSubscription?.plan.price }}
+          <span class="text-lg font-normal text-gray-600 dark:text-gray-400">
+            /{{ effectiveSubscription?.plan.interval }}
+          </span>
+        </p>
+
+        <!-- Billing information integrated from footer -->
+        <div class="text-sm text-gray-600 dark:text-gray-400 mt-3">
+          <p v-if="effectiveSubscription && effectiveSubscription.plan.price > 0">Next billing: {{ formatDate(effectiveSubscription.currentPeriodEnd) }}</p>
+          <p v-if="effectiveSubscription?.cancelAtPeriodEnd" class="text-amber-600 dark:text-amber-400 mt-1">
             ⚠️ Subscription will cancel at the end of the current period
           </p>
         </div>
-        <div class="flex gap-2">
-          <UButton
-            variant="outline"
-            @click="$emit('openPortal')"
-            :loading="loading"
-          >
-            Change Plan
-          </UButton>
-          <UButton
-            color="primary"
-            @click="$emit('openPortal')"
-            :loading="loading"
-          >
-            Manage Subscription
-          </UButton>
-        </div>
       </div>
-    </template>
+
+      <UButton
+        variant="outline"
+        @click="handleClick"
+        :loading="effectiveLoading"
+      >
+        Change Plan
+      </UButton>
+    </div>
   </UCard>
 </template>
 
@@ -125,18 +86,68 @@ interface Subscription {
 }
 
 interface Props {
-  subscription: Subscription
-  usageStats: UsageStats[]
+  subscription?: Subscription | null
+  usageStats?: UsageStats[]
   loading?: boolean
+  controlled?: boolean
+  skeleton?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  loading: false
+  loading: false,
+  usageStats: () => [],
+  controlled: false,
+  skeleton: true
 })
 
-defineEmits<{
-  openPortal: []
+const emit = defineEmits<{
+  openPortal: [flowType?: string]
 }>()
+
+// Dual-mode: props first, fallback to useBilling
+const billing = useBilling()
+const effectiveSubscription = computed<Subscription | null>(() => {
+  if (props.subscription) return props.subscription
+  const s = billing.subscription.value
+  if (!s) return null
+  return {
+    plan: s.plan,
+    status: s.subscription.status,
+    currentPeriodEnd: s.subscription.currentPeriodEnd,
+    cancelAtPeriodEnd: s.subscription.cancelAtPeriodEnd
+  }
+})
+
+// Local per-action loading to avoid animating other buttons
+const localLoading = ref(false)
+const effectiveLoading = computed(() => props.loading || localLoading.value)
+
+// Show skeleton only while loading data for autonomous mode
+const showSkeleton = computed(() => {
+  if (!props.skeleton) return false
+  // Controlled mode relies on parent-provided loading; show skeleton only if loading and no data
+  if (props.controlled || props.subscription !== undefined) {
+    return !!props.loading && !props.subscription
+  }
+  // Avoid empty-state flash before first load finishes
+  if (!billing.initialized.value) return true
+  // Autonomous: while subscription is loading and not yet available
+  return billing.subscriptionLoading.value && !effectiveSubscription.value
+})
+
+const handleClick = async () => {
+  if (props.controlled || props.subscription) {
+    emit('openPortal', 'subscription_update')
+    return
+  }
+
+  try {
+    localLoading.value = true
+    await billing.openPortal({ flow_type: 'subscription_update' })
+  } finally {
+    localLoading.value = false
+  }
+}
 
 const getStatusColor = (status: string) => {
   switch (status) {

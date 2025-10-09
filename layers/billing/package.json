@@ -15,7 +15,8 @@
     "build": "nuxt build .playground",
     "generate": "nuxt generate .playground",
     "preview": "nuxt preview .playground",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/billing/webhook"
   },
   "dependencies": {
     "@starter-nuxt-amplify-saas/auth": "workspace:*",

@@ -152,6 +152,76 @@ pnpm saas:dev
   - Pages: `kebab-case`
   - API routes: `kebab-case`
 
+### UI Component Pattern: Controlled vs Autonomous (Nuxt 4)
+
+All reusable components should work in two modes without branching code across the app:
+
+- **Controlled mode (preferred by pages)**: Parent passes `props` and handles actions via `emits`.
+- **Autonomous mode (sensible defaults)**: If required `props` are not provided, the component derives data and actions from its layer composable (backed by Nuxt `useState`).
+
+Rules:
+- **Dual-mode contract**
+  - Components accept optional `props` for data and `loading` flags.
+  - Components expose a boolean `controlled?: boolean` (default `false`). When `true`, the component must not perform side-effects and should only emit events.
+  - Runtime decision:
+    - If `controlled === true` OR the relevant `props` are present → use `props` and `emit` events only.
+    - Otherwise → read state/actions from the composable (autonomous mode).
+
+- **Composable state (shared via useState)**
+  - Use Nuxt `useState` to share state across mounts in the same client session. Include:
+    - Data: e.g. `subscription`, `invoices`.
+    - Loading: e.g. `subscriptionLoading`, `invoicesLoading`, `isPortalLoading`.
+    - Errors: e.g. `subscriptionError`, `invoicesError`.
+    - Guards: `initialized` and `inFlight` (per resource/action) to prevent duplicate fetches and concurrent races.
+  - Initialize once with `ensureInitialized()` in `onMounted`. Never fetch on every component mount.
+  - Only store serializable values in `useState` (no functions/classes) to remain SSR-safe.
+  - Reference: Nuxt 4 state management with `useState` [docs](https://nuxt.com/docs/4.x/getting-started/state-management).
+
+- **Per-action loading (button-local)**
+  - Never bind a global loading flag to multiple buttons. Each button manages a local `ref(false)` for its own spinner, and only falls back to global loading when appropriate.
+
+- **Events and side-effects**
+  - In controlled mode, always `emit` (e.g. `openPortal`, `loadMore`). Parent performs side-effects.
+  - In autonomous mode, call composable methods directly.
+
+- **SSR considerations**
+  - `useState` is per-request on the server and shared on the client after hydration.
+  - Avoid using `window`/`document` in setup; gate client-only work in event handlers or `onMounted`.
+
+- **No Providers or Pinia by default**
+  - Do not introduce context providers or Pinia stores for this use case.
+  - If a future feature requires cross-user scoping or advanced devtools, revisit and update this document before adopting a new state layer.
+
+Example (sketch):
+
+```ts
+// Inside a component's <script setup>
+const props = withDefaults(defineProps<{ data?: T | null; loading?: boolean; controlled?: boolean }>(), {
+  loading: false,
+  controlled: false
+})
+const emit = defineEmits<{ action: [] }>()
+
+const billing = useBilling() // composable with useState + init guards
+
+const effectiveData = computed(() => props.data ?? billing.someData.value ?? null)
+const localLoading = ref(false)
+const effectiveLoading = computed(() => props.loading || localLoading.value)
+
+const handleClick = async () => {
+  if (props.controlled || props.data !== undefined) {
+    emit('action')
+    return
+  }
+  try {
+    localLoading.value = true
+    await billing.someAction()
+  } finally {
+    localLoading.value = false
+  }
+}
+```
+
 ### Pull Requests
 - Keep PRs small and atomic
 - Update relevant READMEs when changing layer APIs

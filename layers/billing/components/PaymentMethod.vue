@@ -9,27 +9,48 @@
       </div>
     </template>
 
-    <div class="flex items-center justify-between">
+    <div v-if="showSkeleton" class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <USkeleton class="w-12 h-8 rounded" />
+        <div class="space-y-2">
+          <USkeleton class="h-4 w-48 rounded" />
+          <USkeleton class="h-3 w-40 rounded" />
+        </div>
+      </div>
+      <USkeleton class="h-9 w-44 rounded" />
+    </div>
+
+    <div v-else class="flex items-center justify-between">
       <div class="flex items-center gap-4">
         <div class="w-12 h-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded flex items-center justify-center">
           <UIcon name="i-lucide-credit-card" class="w-6 h-6 text-white" />
         </div>
         <div>
-          <p class="font-medium text-gray-900 dark:text-white">
-            {{ paymentMethod.brand.toUpperCase() }} •••• {{ paymentMethod.last4 }}
-          </p>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            Expires {{ paymentMethod.expMonth }}/{{ paymentMethod.expYear }}
-          </p>
+          <template v-if="effectivePaymentMethod">
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ effectivePaymentMethod.brand.toUpperCase() }} •••• {{ effectivePaymentMethod.last4 }}
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Expires {{ effectivePaymentMethod.expMonth }}/{{ effectivePaymentMethod.expYear }}
+            </p>
+          </template>
+          <template v-else>
+            <p class="font-medium text-gray-900 dark:text-white">
+              No payment method
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Add a payment method to manage your subscription
+            </p>
+          </template>
         </div>
       </div>
 
       <UButton
         variant="outline"
-        @click="$emit('openPortal')"
-        :loading="loading"
+        @click="handleClick"
+        :loading="effectiveLoading"
       >
-        Update
+        {{ effectivePaymentMethod ? 'Update' : 'Add Payment Method' }}
       </UButton>
     </div>
   </UCard>
@@ -45,15 +66,54 @@ interface PaymentMethod {
 }
 
 interface Props {
-  paymentMethod: PaymentMethod
+  paymentMethod?: PaymentMethod | null
   loading?: boolean
+  controlled?: boolean
+  skeleton?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  loading: false
+  loading: false,
+  controlled: false,
+  skeleton: true
 })
 
-defineEmits<{
-  openPortal: []
+const emit = defineEmits<{
+  openPortal: [flowType?: string]
 }>()
+
+// Dual-mode: props or useBilling fallback
+const billing = useBilling()
+const effectivePaymentMethod = computed<PaymentMethod | null>(() => {
+  if (props.paymentMethod) return props.paymentMethod
+  return (billing.subscription.value?.paymentMethod as PaymentMethod | undefined) ?? null
+})
+
+// Local per-action loading
+const localLoading = ref(false)
+const effectiveLoading = computed(() => props.loading || localLoading.value)
+
+const showSkeleton = computed(() => {
+  if (!props.skeleton) return false
+  if (props.controlled || props.paymentMethod !== undefined) {
+    return !!props.loading && !props.paymentMethod
+  }
+  // Avoid empty-state flash: keep skeleton until first initialization completes
+  if (!billing.initialized.value) return true
+  return billing.subscriptionLoading.value && !effectivePaymentMethod.value
+})
+
+const handleClick = async () => {
+  if (props.controlled || props.paymentMethod !== undefined) {
+    emit('openPortal', 'payment_method_update')
+    return
+  }
+
+  try {
+    localLoading.value = true
+    await billing.openPortal({ flow_type: 'payment_method_update' })
+  } finally {
+    localLoading.value = false
+  }
+}
 </script>
