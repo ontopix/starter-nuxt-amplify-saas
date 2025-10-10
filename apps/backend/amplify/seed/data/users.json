@@ -34,7 +34,16 @@
       },
       "groups": [],
       "planId": "pro",
-      "billingInterval": "month"
+      "billingInterval": "month",
+      "paymentMethod": {
+        "type": "card",
+        "card": {
+          "number": "4242424242424242",
+          "exp_month": 12,
+          "exp_year": 2025,
+          "cvc": "123"
+        }
+      }
     },
     {
       "username": "test+pro2@ontopix.ai",
@@ -46,7 +55,16 @@
       },
       "groups": [],
       "planId": "pro",
-      "billingInterval": "month"
+      "billingInterval": "month",
+      "paymentMethod": {
+        "type": "card",
+        "card": {
+          "number": "4000056655665556",
+          "exp_month": 10,
+          "exp_year": 2026,
+          "cvc": "456"
+        }
+      }
     },
     {
       "username": "test+enterprise1@ontopix.ai",
@@ -58,7 +76,16 @@
       },
       "groups": [],
       "planId": "enterprise",
-      "billingInterval": "month"
+      "billingInterval": "month",
+      "paymentMethod": {
+        "type": "card",
+        "card": {
+          "number": "5555555555554444",
+          "exp_month": 8,
+          "exp_year": 2027,
+          "cvc": "789"
+        }
+      }
     },
     {
       "username": "test+enterprise2@ontopix.ai",
@@ -70,7 +97,16 @@
       },
       "groups": [],
       "planId": "enterprise",
-      "billingInterval": "month"
+      "billingInterval": "month",
+      "paymentMethod": {
+        "type": "card",
+        "card": {
+          "number": "378282246310005",
+          "exp_month": 6,
+          "exp_year": 2028,
+          "cvc": "321"
+        }
+      }
     },
     {
       "username": "test+expired@ontopix.ai",

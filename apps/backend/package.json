@@ -3,15 +3,20 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "exports": {
+    "./schema": "./amplify/data/resource.ts"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "pnpm exec ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID",
     "sandbox:init": "pnpm exec ampx sandbox",
     "sandbox:delete": "pnpm exec ampx sandbox delete",
     "sandbox:secrets": "printf %s \"$STRIPE_SECRET_KEY\" | pnpm exec ampx sandbox secret set STRIPE_SECRET_KEY",
-    "sandbox:seed": "pnpm exec ampx sandbox seed",
-    "sandbox:seed:plans": "SEED_TASK=plans pnpm exec ampx sandbox seed",
-    "sandbox:seed:users": "SEED_TASK=users pnpm exec ampx sandbox seed"
+    "seed": "pnpm exec ampx sandbox seed",
+    "seed:plans": "SEED_TASK=plans pnpm exec ampx sandbox seed",
+    "seed:users": "SEED_TASK=users pnpm exec ampx sandbox seed",
+    "seed:stripe": "stripe fixtures amplify/seed/data/stripe.json --api-key $STRIPE_SECRET_KEY",
+    "sandbox:amplify:seed": "tsx scripts/amplify-seed.ts"
   },
   "keywords": [],
   "author": "",

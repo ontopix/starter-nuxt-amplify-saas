@@ -7,7 +7,7 @@ async function main() {
   const outputs = await loadAmplifyOutputs()
   const task = process.env.SEED_TASK ?? 'all'
 
-  const usersPath = './data/users.json'
+  const usersPath = './amplify/seed/data/users.json'
 
   console.log(`🌱 Seeding task: ${task}`)
 
