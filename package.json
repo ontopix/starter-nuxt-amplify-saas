@@ -7,14 +7,18 @@
     "layers/*"
   ],
   "scripts": {
+    "// --- Sandbox Commands ---": "",
     "backend:sandbox:init": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:init",
     "backend:sandbox:delete": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:delete -y",
     "backend:sandbox:secrets": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:secrets",
+    "billing:sandbox:stripe:seed": "pnpm --filter @starter-nuxt-amplify-saas/billing run sandbox:stripe:seed -- ../../apps/backend/amplify/seed/data/stripe.json",
+
     "backend:sandbox:seed": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:seed",
     "backend:sandbox:seed:plans": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:seed:plans",
     "backend:sandbox:seed:users": "pnpm --filter @starter-nuxt-amplify-saas/backend run sandbox:seed:users",
     "amplify:sandbox:generate-outputs": "pnpm --filter @starter-nuxt-amplify-saas/amplify run sandbox:generate-outputs",
     "amplify:sandbox:generate-graphql-client-code": "pnpm --filter @starter-nuxt-amplify-saas/amplify run sandbox:generate-graphql-client-code",
+
     "saas:dev": "pnpm --filter @starter-nuxt-amplify-saas/saas run dev",
     "saas:build": "pnpm --filter @starter-nuxt-amplify-saas/saas run build",
     "landing:dev": "pnpm --filter @starter-nuxt-amplify-saas/landing run dev",

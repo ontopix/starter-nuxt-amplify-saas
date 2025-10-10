@@ -1,20 +1,112 @@
 {
   "users": [
     {
-      "username": "alice@example.com",
-      "password": "Password123!",
-      "attributes": { "name": "Alice" },
-      "groups": ["Admin"],
+      "username": "test+free1@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Free User1",
+        "given_name": "Free",
+        "family_name": "User1"
+      },
+      "groups": [],
+      "planId": "free",
+      "billingInterval": "month"
+    },
+    {
+      "username": "test+free2@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Free User2",
+        "given_name": "Free",
+        "family_name": "User2"
+      },
+      "groups": [],
+      "planId": "free",
+      "billingInterval": "month"
+    },
+    {
+      "username": "test+pro1@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Pro User1",
+        "given_name": "Pro",
+        "family_name": "User1"
+      },
+      "groups": [],
       "planId": "pro",
       "billingInterval": "month"
     },
     {
-      "username": "bob@example.com",
-      "password": "Password123!",
-      "attributes": { "name": "Bob" },
+      "username": "test+pro2@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Pro User2",
+        "given_name": "Pro",
+        "family_name": "User2"
+      },
       "groups": [],
-      "planId": "starter",
-      "billingInterval": "year"
+      "planId": "pro",
+      "billingInterval": "month"
+    },
+    {
+      "username": "test+enterprise1@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Enterprise User1",
+        "given_name": "Enterprise",
+        "family_name": "User1"
+      },
+      "groups": [],
+      "planId": "enterprise",
+      "billingInterval": "month"
+    },
+    {
+      "username": "test+enterprise2@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Enterprise User2",
+        "given_name": "Enterprise",
+        "family_name": "User2"
+      },
+      "groups": [],
+      "planId": "enterprise",
+      "billingInterval": "month"
+    },
+    {
+      "username": "test+expired@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Expired Card User",
+        "given_name": "Expired",
+        "family_name": "Card"
+      },
+      "groups": [],
+      "planId": "free",
+      "billingInterval": "month"
+    },
+    {
+      "username": "test+declined@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "Declined Card User",
+        "given_name": "Declined",
+        "family_name": "Card"
+      },
+      "groups": [],
+      "planId": "free",
+      "billingInterval": "month"
+    },
+    {
+      "username": "test+3dsecure@ontopix.ai",
+      "password": "TestPassword123!",
+      "attributes": {
+        "name": "3D Secure User",
+        "given_name": "3D",
+        "family_name": "Secure"
+      },
+      "groups": [],
+      "planId": "free",
+      "billingInterval": "month"
     }
   ]
 }

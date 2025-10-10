@@ -1,0 +1,188 @@
+{
+  "fixtures": [
+    {
+      "name": "free_product",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "Free",
+        "description": "Perfect for getting started with basic usage",
+        "metadata": {
+          "app_plan_id": "free",
+          "currency": "usd",
+          "monthly_price": "0",
+          "yearly_price": "0",
+          "features": "1 project|1 team member|1 GB storage|Community support"
+        }
+      }
+    },
+    {
+      "name": "starter_product",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "Starter",
+        "description": "Great for small teams and early projects",
+        "metadata": {
+          "app_plan_id": "starter",
+          "currency": "usd",
+          "monthly_price": "595",
+          "yearly_price": "6500",
+          "features": "5 projects|Up to 3 team members|10 GB storage|Email support"
+        }
+      }
+    },
+    {
+      "name": "pro_product",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "Pro",
+        "description": "Advanced features for growing teams",
+        "metadata": {
+          "app_plan_id": "pro",
+          "currency": "usd",
+          "monthly_price": "2900",
+          "yearly_price": "31000",
+          "features": "Unlimited projects|Up to 10 team members|100 GB storage|Priority support|Advanced analytics"
+        }
+      }
+    },
+    {
+      "name": "enterprise_product",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "Enterprise",
+        "description": "Full-scale solution for large organizations",
+        "metadata": {
+          "app_plan_id": "enterprise",
+          "currency": "usd",
+          "monthly_price": "9900",
+          "yearly_price": "106800",
+          "features": "Unlimited everything|Unlimited team members|1TB storage|24/7 dedicated support|Advanced analytics|Custom integrations|SLA guarantee"
+        }
+      }
+    },
+    {
+      "name": "free_monthly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${free_product:id}",
+        "unit_amount": 0,
+        "currency": "usd",
+        "recurring": {
+          "interval": "month"
+        },
+        "lookup_key": "free-monthly-v2",
+        "nickname": "Free monthly"
+      }
+    },
+    {
+      "name": "free_yearly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${free_product:id}",
+        "unit_amount": 0,
+        "currency": "usd",
+        "recurring": {
+          "interval": "year"
+        },
+        "lookup_key": "free-yearly-v2",
+        "nickname": "Free yearly"
+      }
+    },
+    {
+      "name": "starter_monthly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${starter_product:id}",
+        "unit_amount": 595,
+        "currency": "usd",
+        "recurring": {
+          "interval": "month"
+        },
+        "lookup_key": "starter-monthly-v2",
+        "nickname": "Starter monthly"
+      }
+    },
+    {
+      "name": "starter_yearly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${starter_product:id}",
+        "unit_amount": 6500,
+        "currency": "usd",
+        "recurring": {
+          "interval": "year"
+        },
+        "lookup_key": "starter-yearly-v2",
+        "nickname": "Starter yearly"
+      }
+    },
+    {
+      "name": "pro_monthly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${pro_product:id}",
+        "unit_amount": 2900,
+        "currency": "usd",
+        "recurring": {
+          "interval": "month"
+        },
+        "lookup_key": "pro-monthly-v2",
+        "nickname": "Pro monthly"
+      }
+    },
+    {
+      "name": "pro_yearly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${pro_product:id}",
+        "unit_amount": 31000,
+        "currency": "usd",
+        "recurring": {
+          "interval": "year"
+        },
+        "lookup_key": "pro-yearly-v2",
+        "nickname": "Pro yearly"
+      }
+    },
+    {
+      "name": "enterprise_monthly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${enterprise_product:id}",
+        "unit_amount": 9900,
+        "currency": "usd",
+        "recurring": {
+          "interval": "month"
+        },
+        "lookup_key": "enterprise-monthly-v2",
+        "nickname": "Enterprise monthly"
+      }
+    },
+    {
+      "name": "enterprise_yearly_price",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${enterprise_product:id}",
+        "unit_amount": 106800,
+        "currency": "usd",
+        "recurring": {
+          "interval": "year"
+        },
+        "lookup_key": "enterprise-yearly-v2",
+        "nickname": "Enterprise yearly"
+      }
+    }
+  ]
+}
