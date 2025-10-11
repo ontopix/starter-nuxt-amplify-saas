@@ -28,12 +28,15 @@
     "landing:generate": "pnpm --filter @starter-nuxt-amplify-saas/landing run generate",
     "amplify:generate-graphql-client-code": "pnpm --filter @starter-nuxt-amplify-saas/amplify run generate-graphql-client-code",
     "amplify:generate-outputs": "pnpm --filter @starter-nuxt-amplify-saas/amplify run generate-outputs",
-    "billing:stripe:sync": "tsx scripts/billing-stripe-sync.ts layers/billing/billing-plans.json",
     "billing:stripe:login": "stripe login",
     "billing:stripe:listen": "pnpm --filter @starter-nuxt-amplify-saas/billing run stripe:listen",
-    "saas:test:auth": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:auth",
-    "saas:test:auth:headed": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:auth:headed",
-    "saas:test:auth:setup": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:auth:setup"
+    "// --- E2E Testing ---": "",
+    "saas:test:e2e": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e",
+    "saas:test:e2e:auth": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:auth",
+    "saas:test:e2e:billing": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:billing",
+    "saas:test:e2e:headed": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:headed",
+    "saas:test:e2e:ui": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:ui",
+    "saas:test:e2e:clean": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:clean"
   },
   "devDependencies": {
     "@aws-amplify/backend-cli": "^1.8.0",

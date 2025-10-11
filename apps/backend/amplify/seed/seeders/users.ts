@@ -153,6 +153,66 @@ async function createUserSubscription(client: any, userId: string, planId: strin
   }
 }
 
+async function handleExistingUser(client: any, user: SeedUser): Promise<void> {
+  try {
+    console.log(`ℹ️  Creating database records for existing user: ${user.username}`);
+
+    // Create a placeholder UserProfile with a seed Stripe customer ID
+    // This will be updated when the user actually logs in
+    const seedStripeCustomerId = `cus_seed_${user.username.replace('@', '_').replace('+', '_')}`;
+
+    // Use the username as userId for now - this will be updated when user logs in
+    const userId = user.username;
+
+    // Check if UserProfile already exists
+    const { data: existingProfile } = await client.models.UserProfile.get({ userId });
+
+    if (!existingProfile) {
+      await client.models.UserProfile.create({
+        userId: userId,
+        stripeCustomerId: seedStripeCustomerId,
+      });
+      console.log(`✅ Created UserProfile for existing user: ${user.username}`);
+    } else {
+      console.log(`ℹ️  UserProfile already exists for: ${user.username}`);
+    }
+
+    // Create UserSubscription if planId is specified
+    if (user.planId) {
+      console.log(`🔄 Creating subscription for user: ${user.username} with planId: ${user.planId}`);
+
+      try {
+        // Check if subscription already exists
+        const { data: existingSubscription } = await client.models.UserSubscription.get({ userId });
+
+        if (!existingSubscription) {
+          const subscriptionData = {
+            userId: userId,
+            planId: user.planId,
+            stripeCustomerId: seedStripeCustomerId, // Use the same customer ID as UserProfile
+            status: 'active',
+            currentPeriodStart: new Date().toISOString(), // Required field
+            billingInterval: user.billingInterval || 'month',
+          };
+
+          console.log(`🔄 Creating subscription with data:`, subscriptionData);
+
+          const result = await client.models.UserSubscription.create(subscriptionData);
+          console.log(`✅ Created UserSubscription for existing user: ${user.username}`, result);
+        } else {
+          console.log(`ℹ️  UserSubscription already exists for: ${user.username}`);
+        }
+      } catch (subscriptionError) {
+        console.error(`❌ Error creating subscription for ${user.username}:`, subscriptionError);
+      }
+    } else {
+      console.log(`ℹ️  No planId specified for user: ${user.username}`);
+    }
+  } catch (error) {
+    console.warn(`⚠️  Could not create records for existing user ${user.username}:`, error);
+  }
+}
+
 async function seedUser(client: any, user: SeedUser): Promise<void> {
   let isNewUser = false;
 
@@ -161,7 +221,7 @@ async function seedUser(client: any, user: SeedUser): Promise<void> {
     await createAndSignUpUser({
       username: user.username,
       password: user.password,
-      signInAfterCreation: true,
+      signInAfterCreation: false,
       signInFlow: 'Password',
       userAttributes: user.attributes
     });
@@ -169,8 +229,7 @@ async function seedUser(client: any, user: SeedUser): Promise<void> {
     isNewUser = true;
   } catch (err) {
     if ((err as Error).name === 'UsernameExistsError') {
-      await signInUser({ username: user.username, password: user.password, signInFlow: 'Password' });
-      console.log(`✅ Signed in existing user: ${user.username}`);
+      console.log(`ℹ️  User already exists: ${user.username}`);
       isNewUser = false;
     } else {
       throw err;
@@ -190,80 +249,87 @@ async function seedUser(client: any, user: SeedUser): Promise<void> {
     }
   }
 
-  // For existing users, ensure UserProfile exists with real Stripe customer
+  // For existing users, we need to create UserProfile and UserSubscription
+  // but we can't authenticate, so we'll use a different approach
   if (!isNewUser) {
-    try {
-      // Get current user info
-      const currentUser = await auth.getCurrentUser();
-      const userId = currentUser.userId;
-
-      // Check if UserProfile exists and has a real Stripe customer ID
-      const { data: existingProfile } = await client.models.UserProfile.get({ userId });
-
-      if (!existingProfile) {
-        // Create Stripe customer
-        const stripeSecretKey = await ensureStripeSecret();
-        const stripe = createStripeClient(stripeSecretKey);
-
-        const name = user.attributes?.name ||
-                     (user.attributes?.given_name && user.attributes?.family_name
-                       ? `${user.attributes.given_name} ${user.attributes.family_name}`
-                       : user.attributes?.given_name || user.attributes?.family_name || '');
-
-        const stripeCustomer = await stripe.customers.create({
-          email: user.username,
-          name: name,
-          metadata: {
-            userId: userId
-          }
-        });
-
-        console.log(`✅ Created Stripe customer ${stripeCustomer.id} for user: ${user.username}`);
-
-        await client.models.UserProfile.create({
-          userId: userId,
-          stripeCustomerId: stripeCustomer.id,
-        });
-        console.log(`✅ Created UserProfile for existing user: ${user.username}`);
-      } else if (existingProfile.stripeCustomerId.startsWith('cus_seed_')) {
-        // Update existing profile with real Stripe customer
-        const stripeSecretKey = await ensureStripeSecret();
-        const stripe = createStripeClient(stripeSecretKey);
-
-        const name = user.attributes?.name ||
-                     (user.attributes?.given_name && user.attributes?.family_name
-                       ? `${user.attributes.given_name} ${user.attributes.family_name}`
-                       : user.attributes?.given_name || user.attributes?.family_name || '');
-
-        const stripeCustomer = await stripe.customers.create({
-          email: user.username,
-          name: name,
-          metadata: {
-            userId: userId
-          }
-        });
-
-        console.log(`✅ Created Stripe customer ${stripeCustomer.id} for user: ${user.username}`);
-
-        await client.models.UserProfile.update({
-          userId: userId,
-          stripeCustomerId: stripeCustomer.id,
-        });
-        console.log(`✅ Updated UserProfile with real Stripe customer for user: ${user.username}`);
-      }
-    } catch (error) {
-      console.warn(`⚠️  Could not create UserProfile for ${user.username}:`, error);
-    }
+    console.log(`ℹ️  Processing existing user: ${user.username}`);
+    // We'll handle this case differently - create records without authentication
+    await handleExistingUser(client, user);
+    return;
   }
 
-  // Create subscription if planId is specified
-  if (user.planId && user.billingInterval) {
-    // Wait a bit for UserProfile to be created by post-confirmation
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Get current user info for subscription creation
+  // Only process new users
+  try {
+    // Get current user info
     const currentUser = await auth.getCurrentUser();
-    await createUserSubscription(client, currentUser.userId, user.planId, user.billingInterval, user.paymentMethod);
+    const userId = currentUser.userId;
+
+    // Check if UserProfile exists and has a real Stripe customer ID
+    const { data: existingProfile } = await client.models.UserProfile.get({ userId });
+
+    if (!existingProfile) {
+      // Create Stripe customer
+      const stripeSecretKey = await ensureStripeSecret();
+      const stripe = createStripeClient(stripeSecretKey);
+
+      const name = user.attributes?.name ||
+                   (user.attributes?.given_name && user.attributes?.family_name
+                     ? `${user.attributes.given_name} ${user.attributes.family_name}`
+                     : user.attributes?.given_name || user.attributes?.family_name || '');
+
+      const stripeCustomer = await stripe.customers.create({
+        email: user.username,
+        name: name,
+        metadata: {
+          userId: userId
+        }
+      });
+
+      console.log(`✅ Created Stripe customer ${stripeCustomer.id} for user: ${user.username}`);
+
+      await client.models.UserProfile.create({
+        userId: userId,
+        stripeCustomerId: stripeCustomer.id,
+      });
+      console.log(`✅ Created UserProfile for existing user: ${user.username}`);
+    } else if (existingProfile.stripeCustomerId.startsWith('cus_seed_')) {
+      // Update existing profile with real Stripe customer
+      const stripeSecretKey = await ensureStripeSecret();
+      const stripe = createStripeClient(stripeSecretKey);
+
+      const name = user.attributes?.name ||
+                   (user.attributes?.given_name && user.attributes?.family_name
+                     ? `${user.attributes.given_name} ${user.attributes.family_name}`
+                     : user.attributes?.given_name || user.attributes?.family_name || '');
+
+      const stripeCustomer = await stripe.customers.create({
+        email: user.username,
+        name: name,
+        metadata: {
+          userId: userId
+        }
+      });
+
+      console.log(`✅ Created Stripe customer ${stripeCustomer.id} for user: ${user.username}`);
+
+      await client.models.UserProfile.update({
+        userId: userId,
+        stripeCustomerId: stripeCustomer.id,
+      });
+      console.log(`✅ Updated UserProfile with real Stripe customer for user: ${user.username}`);
+    }
+
+    // Create subscription if planId is specified
+    if (user.planId && user.billingInterval) {
+      // Wait a bit for UserProfile to be created by post-confirmation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Get current user info for subscription creation
+      const currentUser = await auth.getCurrentUser();
+      await createUserSubscription(client, currentUser.userId, user.planId, user.billingInterval, user.paymentMethod);
+    }
+  } catch (error) {
+    console.warn(`⚠️  Could not create UserProfile for ${user.username}:`, error);
   }
 
   try {

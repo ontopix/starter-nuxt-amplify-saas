@@ -1,25 +1,24 @@
 import { expect } from '@playwright/test'
 import Imap from 'node-imap'
 import { simpleParser } from 'mailparser'
+import fs from 'fs'
+import path from 'path'
 
 // ============================================================================
 // Test Data
 // ============================================================================
 
-export function generateTestUser() {
-  const timestamp = Date.now()
-  const shortId = timestamp.toString().slice(-6)
-  return {
-    email: `test+${timestamp}@ontopix.ai`,
-    firstName: 'Test',
-    lastName: `User${shortId}`,
-    password: 'TestPassword123!'
-  }
-}
 
 export function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
+
+// ============================================================================
+// User Management
+// ============================================================================
+
+import { TestCache } from '../utils/cache.js'
+import { SelectorHelper } from '../utils/selectors.js'
 
 // ============================================================================
 // Gmail Helpers
@@ -126,39 +125,101 @@ export class AuthHelpers {
     await this.page.goto(`${this.baseURL}${path}`)
   }
 
+  /**
+   * Find the first visible selector from a list of candidates
+   */
+  async findFirstVisibleSelector(selectors, timeout = 10000) {
+    for (const selector of selectors) {
+      try {
+        const element = this.page.locator(selector)
+        await element.waitFor({ state: 'visible', timeout: 2000 })
+        console.log(`✓ Found element with selector: ${selector}`)
+        return element
+      } catch (error) {
+        console.log(`✗ Selector not found: ${selector}`)
+        continue
+      }
+    }
+    throw new Error(`None of the selectors were found: ${selectors.join(', ')}`)
+  }
+
   async signup({ email, firstName, lastName, password }) {
     console.log(`Starting signup for: ${email} (${firstName} ${lastName})`)
 
     await this.goto('/auth/signup')
     console.log('Navigated to signup page')
 
-    // Fill form fields with validation
+    // Fill form fields with flexible selectors
     try {
-      const firstNameInput = this.page.locator('input[placeholder="Enter your first name"]')
-      await firstNameInput.waitFor({ timeout: 5000 })
+      // First Name - try multiple selectors
+      const firstNameSelectors = [
+        'input[name="firstName"]',
+        'input[id="firstName"]',
+        'input[placeholder*="first name" i]',
+        'input[data-testid="firstName"]',
+        'input[aria-label*="first name" i]',
+        'form input:first-of-type'
+      ]
+
+      let firstNameInput = await this.findFirstVisibleSelector(firstNameSelectors)
       await firstNameInput.fill(firstName)
       console.log('Filled first name')
 
-      const lastNameInput = this.page.locator('input[placeholder="Enter your last name"]')
-      await lastNameInput.waitFor({ timeout: 5000 })
+      // Last Name
+      const lastNameSelectors = [
+        'input[name="lastName"]',
+        'input[id="lastName"]',
+        'input[placeholder*="last name" i]',
+        'input[data-testid="lastName"]',
+        'input[aria-label*="last name" i]'
+      ]
+
+      let lastNameInput = await this.findFirstVisibleSelector(lastNameSelectors)
       await lastNameInput.fill(lastName)
       console.log('Filled last name')
 
-      const emailInput = this.page.locator('input[placeholder="Enter your email"]')
-      await emailInput.waitFor({ timeout: 5000 })
+      // Email
+      const emailSelectors = [
+        'input[name="email"]',
+        'input[id="email"]',
+        'input[type="email"]',
+        'input[placeholder*="email" i]',
+        'input[data-testid="email"]',
+        'input[aria-label*="email" i]'
+      ]
+
+      let emailInput = await this.findFirstVisibleSelector(emailSelectors)
       await emailInput.fill(email)
       console.log('Filled email')
 
-      const passwordInput = this.page.locator('input[placeholder="Enter your password"]')
-      await passwordInput.waitFor({ timeout: 5000 })
+      // Password
+      const passwordSelectors = [
+        'input[name="password"]',
+        'input[id="password"]',
+        'input[type="password"]',
+        'input[placeholder*="password" i]',
+        'input[data-testid="password"]',
+        'input[aria-label*="password" i]'
+      ]
+
+      let passwordInput = await this.findFirstVisibleSelector(passwordSelectors)
       await passwordInput.fill(password)
       console.log('Filled password')
 
-      // Click submit button
-      const submitButton = this.page.locator('button:has-text("Create account")')
-      await submitButton.waitFor({ timeout: 5000 })
+      // Submit button - try multiple texts and selectors
+      const submitSelectors = [
+        'button[type="submit"]',
+        'button:has-text("Create account")',
+        'button:has-text("Sign up")',
+        'button:has-text("Register")',
+        'button[data-testid="signup-submit"]',
+        'input[type="submit"]',
+        'form button:last-of-type'
+      ]
+
+      let submitButton = await this.findFirstVisibleSelector(submitSelectors)
       await submitButton.click()
-      console.log('Clicked Create account button')
+      console.log('Clicked submit button')
 
       // Wait for form submission to complete
       await wait(2000)
@@ -290,20 +351,48 @@ export class AuthHelpers {
     console.log('Navigated to login page')
 
     try {
-      const emailInput = this.page.locator('input[placeholder="Enter your email"]')
-      await emailInput.waitFor({ timeout: 5000 })
+      // Email field - flexible selectors
+      const emailSelectors = [
+        'input[name="email"]',
+        'input[id="email"]',
+        'input[type="email"]',
+        'input[placeholder*="email" i]',
+        'input[data-testid="email"]',
+        'input[aria-label*="email" i]'
+      ]
+
+      let emailInput = await this.findFirstVisibleSelector(emailSelectors)
       await emailInput.fill(email)
       console.log('Filled email')
 
-      const passwordInput = this.page.locator('input[placeholder="Enter your password"]')
-      await passwordInput.waitFor({ timeout: 5000 })
+      // Password field - flexible selectors
+      const passwordSelectors = [
+        'input[name="password"]',
+        'input[id="password"]',
+        'input[type="password"]',
+        'input[placeholder*="password" i]',
+        'input[data-testid="password"]',
+        'input[aria-label*="password" i]'
+      ]
+
+      let passwordInput = await this.findFirstVisibleSelector(passwordSelectors)
       await passwordInput.fill(password)
       console.log('Filled password')
 
-      const submitButton = this.page.locator('button:has-text("Sign in")')
-      await submitButton.waitFor({ timeout: 5000 })
+      // Submit button - flexible selectors
+      const submitSelectors = [
+        'button[type="submit"]',
+        'button:has-text("Sign in")',
+        'button:has-text("Login")',
+        'button:has-text("Log in")',
+        'button[data-testid="login-submit"]',
+        'input[type="submit"]',
+        'form button:last-of-type'
+      ]
+
+      let submitButton = await this.findFirstVisibleSelector(submitSelectors)
       await submitButton.click()
-      console.log('Clicked Sign in button')
+      console.log('Clicked login button')
 
       // Wait for login to process
       await wait(3000)
@@ -407,5 +496,45 @@ export class AuthHelpers {
     } catch (e) {
       // Logout not found, ignore
     }
+  }
+
+  /**
+   * Create a new user with cache support
+   */
+  async createUser(options = { useCache: true }) {
+    const cacheKey = 'newly-created-user'
+
+    // Try to use cached user if enabled
+    if (options.useCache) {
+      const cachedUser = TestCache.get(cacheKey)
+      if (cachedUser) {
+        console.log(`Using cached user: ${cachedUser.email}`)
+        return cachedUser
+      }
+    }
+
+    // Generate new user
+    const timestamp = Date.now()
+    const shortId = timestamp.toString().slice(-6)
+    const newUser = {
+      email: `test+signup${shortId}@ontopix.ai`,
+      password: 'TestPassword123!',
+      firstName: 'Signup',
+      lastName: `User${shortId}`,
+      createdAt: new Date().toISOString()
+    }
+
+    // Perform signup
+    await this.signup(newUser)
+    console.log('Signup completed, starting verification')
+
+    await this.verifyEmail(newUser.email)
+    console.log('Email verification completed')
+
+    // Cache the user for future use
+    TestCache.set(cacheKey, newUser)
+    console.log(`User cached: ${newUser.email}`)
+
+    return newUser
   }
 }

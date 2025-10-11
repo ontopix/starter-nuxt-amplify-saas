@@ -8,11 +8,14 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test:auth": "playwright test tests/e2e",
-    "test:auth:headed": "playwright test tests/e2e --headed",
-    "test:auth:debug": "playwright test tests/e2e --debug",
-    "test:auth:ui": "playwright test tests/e2e --ui",
-    "test:auth:setup": "playwright install chromium"
+    "test:e2e": "playwright test tests/e2e/specs/",
+    "test:e2e:auth": "playwright test tests/e2e/specs/auth.spec.js",
+    "test:e2e:billing": "playwright test tests/e2e/specs/billing.spec.js",
+    "test:e2e:headed": "playwright test tests/e2e/specs/ --headed",
+    "test:e2e:debug": "playwright test tests/e2e/specs/ --debug",
+    "test:e2e:ui": "playwright test tests/e2e/specs/ --ui",
+    "test:e2e:setup": "playwright install chromium",
+    "test:e2e:clean": "rm -rf tests/e2e/.cache/"
   },
   "engines": {
     "node": ">=20.19.0"

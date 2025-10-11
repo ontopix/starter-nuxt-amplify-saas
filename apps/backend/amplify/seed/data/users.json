@@ -4,37 +4,31 @@
       "username": "test+free1@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "name": "Free User1",
+        "email": "test+free1@ontopix.ai",
         "given_name": "Free",
         "family_name": "User1"
       },
-      "groups": [],
-      "planId": "free",
-      "billingInterval": "month"
+      "planId": "free"
     },
     {
       "username": "test+free2@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "name": "Free User2",
+        "email": "test+free2@ontopix.ai",
         "given_name": "Free",
         "family_name": "User2"
       },
-      "groups": [],
-      "planId": "free",
-      "billingInterval": "month"
+      "planId": "free"
     },
     {
       "username": "test+pro1@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "name": "Pro User1",
+        "email": "test+pro1@ontopix.ai",
         "given_name": "Pro",
         "family_name": "User1"
       },
-      "groups": [],
       "planId": "pro",
-      "billingInterval": "month",
       "paymentMethod": {
         "type": "card",
         "card": {
@@ -49,20 +43,18 @@
       "username": "test+pro2@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "name": "Pro User2",
+        "email": "test+pro2@ontopix.ai",
         "given_name": "Pro",
         "family_name": "User2"
       },
-      "groups": [],
       "planId": "pro",
-      "billingInterval": "month",
       "paymentMethod": {
         "type": "card",
         "card": {
-          "number": "4000056655665556",
-          "exp_month": 10,
-          "exp_year": 2026,
-          "cvc": "456"
+          "number": "4242424242424242",
+          "exp_month": 12,
+          "exp_year": 2025,
+          "cvc": "123"
         }
       }
     },
@@ -70,20 +62,18 @@
       "username": "test+enterprise1@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "name": "Enterprise User1",
+        "email": "test+enterprise1@ontopix.ai",
         "given_name": "Enterprise",
         "family_name": "User1"
       },
-      "groups": [],
       "planId": "enterprise",
-      "billingInterval": "month",
       "paymentMethod": {
         "type": "card",
         "card": {
-          "number": "5555555555554444",
-          "exp_month": 8,
-          "exp_year": 2027,
-          "cvc": "789"
+          "number": "4242424242424242",
+          "exp_month": 12,
+          "exp_year": 2025,
+          "cvc": "123"
         }
       }
     },
@@ -91,58 +81,20 @@
       "username": "test+enterprise2@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "name": "Enterprise User2",
+        "email": "test+enterprise2@ontopix.ai",
         "given_name": "Enterprise",
         "family_name": "User2"
       },
-      "groups": [],
       "planId": "enterprise",
-      "billingInterval": "month",
       "paymentMethod": {
         "type": "card",
         "card": {
-          "number": "378282246310005",
-          "exp_month": 6,
-          "exp_year": 2028,
-          "cvc": "321"
+          "number": "4242424242424242",
+          "exp_month": 12,
+          "exp_year": 2025,
+          "cvc": "123"
         }
       }
-    },
-    {
-      "username": "test+expired@ontopix.ai",
-      "password": "TestPassword123!",
-      "attributes": {
-        "name": "Expired Card User",
-        "given_name": "Expired",
-        "family_name": "Card"
-      },
-      "groups": [],
-      "planId": "free",
-      "billingInterval": "month"
-    },
-    {
-      "username": "test+declined@ontopix.ai",
-      "password": "TestPassword123!",
-      "attributes": {
-        "name": "Declined Card User",
-        "given_name": "Declined",
-        "family_name": "Card"
-      },
-      "groups": [],
-      "planId": "free",
-      "billingInterval": "month"
-    },
-    {
-      "username": "test+3dsecure@ontopix.ai",
-      "password": "TestPassword123!",
-      "attributes": {
-        "name": "3D Secure User",
-        "given_name": "3D",
-        "family_name": "Secure"
-      },
-      "groups": [],
-      "planId": "free",
-      "billingInterval": "month"
     }
   ]
 }

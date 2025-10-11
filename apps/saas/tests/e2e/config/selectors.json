@@ -1,0 +1,92 @@
+{
+  "auth": {
+    "emailInput": [
+      "input[name='email']",
+      "input[type='email']",
+      "input[placeholder*='email']",
+      "#email"
+    ],
+    "passwordInput": [
+      "input[name='password']",
+      "input[type='password']",
+      "input[placeholder*='password']",
+      "#password"
+    ],
+    "submitButton": [
+      "button[type='submit']",
+      "button:has-text('Sign')",
+      "button:has-text('Log')"
+    ],
+    "loginSuccess": [
+      "text='Welcome'",
+      "text='Successfully logged in'",
+      "text='Login successful'",
+      "[role='alert']:has-text('Success')"
+    ],
+    "loginError": [
+      "text='Incorrect username or password'",
+      "text='Invalid email or password'",
+      "text='Error'",
+      "[role='alert']",
+      ".error-message",
+      ".toast-error"
+    ],
+    "signupSuccess": [
+      "text='Account created'",
+      "text='Verification email sent'",
+      "text='Please check your email'",
+      "[role='alert']:has-text('Success')"
+    ],
+    "verificationSuccess": [
+      "text='Account verified successfully'",
+      "text='Email verified'",
+      "text='Verification successful'",
+      "[role='alert']:has-text('verified')"
+    ],
+    "verificationError": [
+      "text='Invalid verification code'",
+      "text='Verification failed'",
+      "[role='alert']:has-text('Error')"
+    ]
+  },
+  "billing": {
+    "currentPlan": [
+      "[data-testid='current-plan']",
+      ".current-plan",
+      "text=/Current Plan/i"
+    ],
+    "changePlanButton": [
+      "button:has-text('Change Plan')",
+      "button:has-text('Manage Subscription')",
+      "[data-testid='change-plan-btn']"
+    ],
+    "addPaymentButton": [
+      "button:has-text('Add Payment Method')",
+      "button:has-text('Add Card')",
+      "[data-testid='add-payment-method']"
+    ]
+  },
+  "stripe": {
+    "cardNumber": [
+      "input[name='cardnumber']",
+      "input[placeholder*='card number']",
+      "[data-testid='cardNumber']"
+    ],
+    "cardExpiry": [
+      "input[name='exp-date']",
+      "input[placeholder*='MM']",
+      "[data-testid='cardExpiry']"
+    ],
+    "cardCvc": [
+      "input[name='cvc']",
+      "input[placeholder*='CVC']",
+      "[data-testid='cardCvc']"
+    ],
+    "submitButton": [
+      "button[data-testid='hosted-payment-submit-button']",
+      "button:has-text('Subscribe')",
+      "button:has-text('Pay')",
+      "button[type='submit']"
+    ]
+  }
+}

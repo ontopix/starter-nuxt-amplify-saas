@@ -1,0 +1,30 @@
+{
+  "successCards": {
+    "visa": {
+      "number": "4242424242424242",
+      "brand": "visa",
+      "description": "Basic successful Visa payment"
+    },
+    "visaDebit": {
+      "number": "4000056655665556",
+      "brand": "visa",
+      "description": "Visa debit successful payment"
+    },
+    "mastercard": {
+      "number": "5555555555554444",
+      "brand": "mastercard",
+      "description": "Mastercard successful payment"
+    },
+    "amex": {
+      "number": "378282246310005",
+      "brand": "amex",
+      "description": "American Express successful payment"
+    }
+  },
+  "testData": {
+    "defaultExpiry": "12/28",
+    "defaultCvc": "123",
+    "amexCvc": "1234",
+    "defaultName": "Test User"
+  }
+}
