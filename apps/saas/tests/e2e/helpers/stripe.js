@@ -65,12 +65,7 @@ export class StripeHelpers {
    * Wait for Stripe Checkout to fully load
    */
   async waitForCheckoutLoad() {
-    const checkoutSelectors = [
-      'form[data-testid="checkout-form"]',
-      '#payment-form',
-      '[data-testid="card-element"]',
-      'input[name="cardnumber"]'
-    ]
+    const checkoutSelectors = SelectorHelper.get('stripe', 'checkoutForm')
 
     let loaded = false
     for (const selector of checkoutSelectors) {
@@ -96,12 +91,7 @@ export class StripeHelpers {
    * Fill email field in checkout
    */
   async fillEmailField(email) {
-    const emailSelectors = [
-      'input[data-testid="email"]',
-      'input[name="email"]',
-      'input[type="email"]',
-      '#email'
-    ]
+    const emailSelectors = SelectorHelper.get('stripe', 'emailInput')
 
     for (const selector of emailSelectors) {
       try {
@@ -123,13 +113,7 @@ export class StripeHelpers {
    * Fill card number field
    */
   async fillCardNumber(cardNumber) {
-    const cardSelectors = [
-      'input[data-testid="cardNumber"]',
-      'input[placeholder*="card"]',
-      'input[name="cardnumber"]',
-      '[data-testid="card-number-element"] input',
-      '#card-number'
-    ]
+    const cardSelectors = SelectorHelper.get('stripe', 'cardNumber')
 
     for (const selector of cardSelectors) {
       try {
@@ -152,13 +136,7 @@ export class StripeHelpers {
    * Fill expiry date field
    */
   async fillExpiryDate(expiryDate) {
-    const expirySelectors = [
-      'input[data-testid="cardExpiry"]',
-      'input[placeholder*="MM"]',
-      'input[name="exp-date"]',
-      '[data-testid="card-expiry-element"] input',
-      '#card-expiry'
-    ]
+    const expirySelectors = SelectorHelper.get('stripe', 'cardExpiry')
 
     for (const selector of expirySelectors) {
       try {
@@ -181,13 +159,7 @@ export class StripeHelpers {
    * Fill CVC field
    */
   async fillCVC(cvc) {
-    const cvcSelectors = [
-      'input[data-testid="cardCvc"]',
-      'input[placeholder*="CVC"]',
-      'input[name="cvc"]',
-      '[data-testid="card-cvc-element"] input',
-      '#card-cvc'
-    ]
+    const cvcSelectors = SelectorHelper.get('stripe', 'cardCvc')
 
     for (const selector of cvcSelectors) {
       try {
@@ -210,13 +182,7 @@ export class StripeHelpers {
    * Fill cardholder name field
    */
   async fillCardholderName(name) {
-    const nameSelectors = [
-      'input[data-testid="billingName"]',
-      'input[placeholder*="name"]',
-      'input[name="billing-name"]',
-      'input[name="cardholder-name"]',
-      '#cardholder-name'
-    ]
+    const nameSelectors = SelectorHelper.get('stripe', 'cardholderName')
 
     for (const selector of nameSelectors) {
       try {
@@ -245,12 +211,13 @@ export class StripeHelpers {
     }
 
     try {
+      const billingAddressSelectors = SelectorHelper.get('stripe', 'billingAddress')
       const addressFields = [
-        { selector: 'input[name="billing-address-line1"]', value: address.line1 },
-        { selector: 'input[name="billing-address-line2"]', value: address.line2 },
-        { selector: 'input[name="billing-address-city"]', value: address.city },
-        { selector: 'input[name="billing-address-state"]', value: address.state },
-        { selector: 'input[name="billing-address-zip"]', value: address.postal_code }
+        { selector: billingAddressSelectors.line1, value: address.line1 },
+        { selector: billingAddressSelectors.line2, value: address.line2 },
+        { selector: billingAddressSelectors.city, value: address.city },
+        { selector: billingAddressSelectors.state, value: address.state },
+        { selector: billingAddressSelectors.zip, value: address.postal_code }
       ]
 
       for (const field of addressFields) {
@@ -284,16 +251,12 @@ export class StripeHelpers {
    * Select country in billing address
    */
   async selectCountry(countryCode) {
-    const countrySelectors = [
-      'select[name="billing-address-country"]',
-      'select[data-testid="country"]',
-      '#billing-country'
-    ]
+    const countrySelectors = SelectorHelper.get('stripe', 'billingAddress.country')
 
     for (const selector of countrySelectors) {
       try {
         const countrySelect = this.page.locator(selector).first()
-        if (await countrySelect.isVisible({ timeout: 1000 })) {
+      if (await countrySelect.isVisible({ timeout: 1000 })) {
           await countrySelect.selectOption(countryCode)
           console.log(`✅ Selected country: ${countryCode}`)
           return
@@ -310,12 +273,7 @@ export class StripeHelpers {
    * Submit the checkout form
    */
   async submitCheckoutForm() {
-    const submitSelectors = [
-      'button[data-testid="hosted-payment-submit-button"]',
-      'button:has-text("Subscribe")',
-      'button:has-text("Pay")',
-      'button[type="submit"]'
-    ]
+    const submitSelectors = SelectorHelper.get('stripe', 'submitButton')
 
     for (const selector of submitSelectors) {
       try {
@@ -344,11 +302,7 @@ export class StripeHelpers {
 
     try {
       // Wait for 3DS challenge to appear
-      const challengeSelectors = [
-        '#threeds-challenge',
-        '[data-testid="3ds-challenge"]',
-        'iframe[name*="3ds"]'
-      ]
+      const challengeSelectors = SelectorHelper.get('stripe', 'threeDSecure.challenge')
 
       let challengeFound = false
       for (const selector of challengeSelectors) {
@@ -384,11 +338,7 @@ export class StripeHelpers {
    * Complete 3D Secure authentication
    */
   async complete3DSecure() {
-    const completeSelectors = [
-      'button:has-text("Complete")',
-      'button:has-text("Authorize")',
-      'button:has-text("Continue")'
-    ]
+    const completeSelectors = SelectorHelper.get('stripe', 'threeDSecure.completeButton')
 
     for (const selector of completeSelectors) {
       try {
@@ -411,11 +361,7 @@ export class StripeHelpers {
    * Fail 3D Secure authentication (for testing failure scenarios)
    */
   async fail3DSecure() {
-    const failSelectors = [
-      'button:has-text("Fail")',
-      'button:has-text("Cancel")',
-      'button:has-text("Decline")'
-    ]
+    const failSelectors = SelectorHelper.get('stripe', 'threeDSecure.failButton')
 
     for (const selector of failSelectors) {
       try {
@@ -465,12 +411,7 @@ export class StripeHelpers {
    * Check for and handle checkout errors
    */
   async checkForCheckoutErrors() {
-    const errorSelectors = [
-      '.error-message',
-      '[role="alert"]',
-      '.alert-error',
-      '[data-testid="error-message"]'
-    ]
+    const errorSelectors = SelectorHelper.get('stripe', 'errorSelectors')
 
     for (const selector of errorSelectors) {
       try {
@@ -507,14 +448,7 @@ export class StripeHelpers {
       }
 
       // Look for plan selection options
-      const planSelectors = [
-        `[data-testid="${targetPlan}-plan"]`,
-        `text="${targetPlan}"`,
-        `text="${targetPlan.charAt(0).toUpperCase() + targetPlan.slice(1)}"`,
-        'button:has-text("Select")',
-        'button:has-text("Choose")',
-        'button:has-text("Switch")'
-      ]
+      const planSelectors = SelectorHelper.get('stripe', 'portal.planSelection')
 
       let planFound = false
       for (const selector of planSelectors) {
@@ -540,12 +474,7 @@ export class StripeHelpers {
 
       // Look for confirmation button
       await this.page.waitForTimeout(2000)
-      const confirmSelectors = [
-        'button:has-text("Confirm")',
-        'button:has-text("Update")',
-        'button:has-text("Save")',
-        'button:has-text("Continue")'
-      ]
+      const confirmSelectors = SelectorHelper.get('stripe', 'portal.confirmButton')
 
       for (const selector of confirmSelectors) {
         try {
@@ -593,7 +522,7 @@ export class StripeHelpers {
         }
       }
 
-      // Look for specific text content
+      // Look for specific text content using centralized selectors
       const textSelectors = [
         'text="subscription"',
         'text="plan"',
@@ -622,12 +551,7 @@ export class StripeHelpers {
    */
   async returnToApp() {
     try {
-      const returnSelectors = [
-        'text="Return to"',
-        'button:has-text("Return")',
-        'a:has-text("Return")',
-        '[data-testid="return-button"]'
-      ]
+      const returnSelectors = SelectorHelper.get('stripe', 'portal.returnButton')
 
       for (const selector of returnSelectors) {
         try {

@@ -1,32 +1,85 @@
 {
   "auth": {
+    "firstNameInput": [
+      "input[name='firstName']",
+      "input[id='firstName']",
+      "input[placeholder*='first name' i]",
+      "input[data-testid='firstName']",
+      "input[aria-label*='first name' i]",
+      "form input:first-of-type"
+    ],
+    "lastNameInput": [
+      "input[name='lastName']",
+      "input[id='lastName']",
+      "input[placeholder*='last name' i]",
+      "input[data-testid='lastName']",
+      "input[aria-label*='last name' i]"
+    ],
     "emailInput": [
       "input[name='email']",
+      "input[id='email']",
       "input[type='email']",
-      "input[placeholder*='email']",
-      "#email"
+      "input[placeholder*='email' i]",
+      "input[data-testid='email']",
+      "input[aria-label*='email' i]"
     ],
     "passwordInput": [
       "input[name='password']",
+      "input[id='password']",
       "input[type='password']",
-      "input[placeholder*='password']",
-      "#password"
+      "input[placeholder*='password' i]",
+      "input[data-testid='password']",
+      "input[aria-label*='password' i]"
     ],
-    "submitButton": [
+    "signupSubmitButton": [
       "button[type='submit']",
-      "button:has-text('Sign')",
-      "button:has-text('Log')"
+      "button:has-text('Create account')",
+      "button:has-text('Sign up')",
+      "button:has-text('Register')",
+      "button[data-testid='signup-submit']",
+      "input[type='submit']",
+      "form button:last-of-type"
+    ],
+    "loginSubmitButton": [
+      "button[type='submit']",
+      "button:has-text('Sign in')",
+      "button:has-text('Login')",
+      "button:has-text('Log in')",
+      "button[data-testid='login-submit']",
+      "input[type='submit']",
+      "form button:last-of-type"
+    ],
+    "verificationCodeInput": [
+      "input[autocomplete='one-time-code']",
+      "input[name='code']",
+      "input[placeholder*='code']",
+      "input[placeholder*='Code']",
+      "input[placeholder*='verification']"
+    ],
+    "verificationSubmitButton": [
+      "button:has-text('Verify Account')",
+      "button:has-text('Verify')",
+      "button:has-text('Confirm')",
+      "button[type='submit']"
+    ],
+    "logoutButton": [
+      "button:has-text('Logout')",
+      "button:has-text('Sign out')"
     ],
     "loginSuccess": [
       "text='Welcome'",
       "text='Successfully logged in'",
       "text='Login successful'",
+      "text='Logged in successfully'",
       "[role='alert']:has-text('Success')"
     ],
     "loginError": [
       "text='Incorrect username or password'",
       "text='Invalid email or password'",
       "text='Error'",
+      "text='Failed to sign in'",
+      "text='NotAuthorizedException'",
+      "text='UserNotFoundException'",
       "[role='alert']",
       ".error-message",
       ".toast-error"
@@ -36,6 +89,14 @@
       "text='Verification email sent'",
       "text='Please check your email'",
       "[role='alert']:has-text('Success')"
+    ],
+    "signupError": [
+      "text='error'",
+      "text='failed'",
+      "text='invalid'",
+      "[role='alert']",
+      ".error",
+      ".alert-error"
     ],
     "verificationSuccess": [
       "text='Account verified successfully'",
@@ -47,46 +108,232 @@
       "text='Invalid verification code'",
       "text='Verification failed'",
       "[role='alert']:has-text('Error')"
+    ],
+    "authenticatedElements": [
+      "text='Dashboard'",
+      "text='Settings'",
+      "text='Profile'",
+      "text='Logout'",
+      "text='Sign out'",
+      "[data-testid='user-menu']",
+      "nav:has-text('Dashboard')",
+      "button:has-text('Sign out')"
     ]
   },
   "billing": {
     "currentPlan": [
       "[data-testid='current-plan']",
+      "[data-testid='plan-name']",
       ".current-plan",
       "text=/Current Plan/i"
     ],
     "changePlanButton": [
       "button:has-text('Change Plan')",
       "button:has-text('Manage Subscription')",
+      "button:has-text('Current Plan')",
       "[data-testid='change-plan-btn']"
     ],
     "addPaymentButton": [
       "button:has-text('Add Payment Method')",
       "button:has-text('Add Card')",
       "[data-testid='add-payment-method']"
+    ],
+    "upgradeButton": [
+      "button:has-text('Upgrade')",
+      "button:has-text('Subscribe')"
+    ],
+    "downgradeButton": [
+      "button:has-text('Downgrade')",
+      "button:has-text('Cancel')"
     ]
   },
   "stripe": {
+    "checkoutForm": [
+      "form[data-testid='checkout-form']",
+      "#payment-form",
+      "[data-testid='card-element']",
+      "input[name='cardnumber']"
+    ],
+    "emailInput": [
+      "input[data-testid='email']",
+      "input[name='email']",
+      "input[type='email']",
+      "#email"
+    ],
     "cardNumber": [
+      "input[data-testid='cardNumber']",
+      "input[placeholder*='card']",
       "input[name='cardnumber']",
-      "input[placeholder*='card number']",
-      "[data-testid='cardNumber']"
+      "[data-testid='card-number-element'] input",
+      "#card-number"
     ],
     "cardExpiry": [
-      "input[name='exp-date']",
+      "input[data-testid='cardExpiry']",
       "input[placeholder*='MM']",
-      "[data-testid='cardExpiry']"
+      "input[name='exp-date']",
+      "[data-testid='card-expiry-element'] input",
+      "#card-expiry"
     ],
     "cardCvc": [
-      "input[name='cvc']",
+      "input[data-testid='cardCvc']",
       "input[placeholder*='CVC']",
-      "[data-testid='cardCvc']"
+      "input[name='cvc']",
+      "[data-testid='card-cvc-element'] input",
+      "#card-cvc"
     ],
+    "cardholderName": [
+      "input[data-testid='billingName']",
+      "input[placeholder*='name']",
+      "input[name='billing-name']",
+      "input[name='cardholder-name']",
+      "#cardholder-name"
+    ],
+    "billingAddress": {
+      "line1": "input[name='billing-address-line1']",
+      "line2": "input[name='billing-address-line2']",
+      "city": "input[name='billing-address-city']",
+      "state": "input[name='billing-address-state']",
+      "zip": "input[name='billing-address-zip']",
+      "country": [
+        "select[name='billing-address-country']",
+        "select[data-testid='country']",
+        "#billing-country"
+      ]
+    },
     "submitButton": [
       "button[data-testid='hosted-payment-submit-button']",
       "button:has-text('Subscribe')",
       "button:has-text('Pay')",
       "button[type='submit']"
+    ],
+    "threeDSecure": {
+      "challenge": [
+        "#threeds-challenge",
+        "[data-testid='3ds-challenge']",
+        "iframe[name*='3ds']"
+      ],
+      "completeButton": [
+        "button:has-text('Complete')",
+        "button:has-text('Authorize')",
+        "button:has-text('Continue')"
+      ],
+      "failButton": [
+        "button:has-text('Fail')",
+        "button:has-text('Cancel')",
+        "button:has-text('Decline')"
+      ]
+    },
+    "portal": {
+      "planSelection": [
+        "button:has-text('Select')",
+        "button:has-text('Choose')",
+        "button:has-text('Switch')"
+      ],
+      "confirmButton": [
+        "button:has-text('Confirm')",
+        "button:has-text('Update')",
+        "button:has-text('Save')",
+        "button:has-text('Continue')"
+      ],
+      "returnButton": [
+        "text='Return to'",
+        "button:has-text('Return')",
+        "a:has-text('Return')",
+        "[data-testid='return-button']"
+      ]
+    },
+    "checkoutIndicators": [
+      "form[data-testid='checkout-form']",
+      "#payment-form",
+      "[data-testid='card-element']",
+      "input[data-testid='cardNumber']",
+      "iframe[title*='Secure']"
+    ],
+    "portalIndicators": [
+      "text='Customer portal'",
+      "text='Subscription'",
+      "text='Billing'",
+      "button:has-text('Update')"
+    ],
+    "errorSelectors": [
+      ".error-message",
+      "[role='alert']",
+      ".alert-error",
+      "[data-testid='error-message']"
+    ]
+  },
+  "assertions": {
+    "successIndicators": {
+      "subscriptionCreated": [
+        "text='Subscription successful'",
+        "text='Welcome to Pro'",
+        "text='Welcome to Enterprise'",
+        "text='Payment successful'"
+      ],
+      "planChanged": [
+        "text='Plan updated successfully'",
+        "text='Your subscription has been updated'",
+        "text='Plan changed successfully'"
+      ],
+      "paymentAdded": [
+        "text='Payment method added'",
+        "text='Card added successfully'",
+        "text='Payment method updated'"
+      ]
+    },
+    "errorMessages": {
+      "cardDeclined": "Your card was declined",
+      "insufficientFunds": "Your card has insufficient funds",
+      "expiredCard": "Your card has expired",
+      "invalidCvc": "Your card's security code is invalid"
+    },
+    "planIndicators": {
+      "free": [
+        "text='Free Plan'",
+        "text='Free Plan Active'",
+        "text='No payment method required'",
+        "text='Upgrade to add a payment method'"
+      ],
+      "pro": [
+        "text='Pro Plan'",
+        "text='Pro Subscription'"
+      ],
+      "enterprise": [
+        "text='Enterprise Plan'",
+        "text='Enterprise Subscription'"
+      ]
+    },
+    "paymentMethodIndicators": [
+      "[data-testid='payment-method']",
+      "[data-testid='credit-card']",
+      "text='•••• ••••'",
+      "text='****'",
+      ".payment-method-card",
+      "text='Visa'",
+      "text='Mastercard'",
+      "text='American Express'"
+    ],
+    "noPaymentIndicators": [
+      "text='No payment method'",
+      "text='No card on file'",
+      "text='Add a payment method'",
+      "text='No payment methods saved'"
+    ],
+    "invoiceIndicators": [
+      "[data-testid='invoice']",
+      "[data-testid='invoice-item']",
+      ".invoice-row",
+      "text='Invoice #'",
+      "text='$'",
+      "text='Paid'",
+      "text='Pending'",
+      "text='Due'"
+    ],
+    "noInvoiceIndicators": [
+      "text='No invoices'",
+      "text='No billing history'",
+      "text='No charges'",
+      "text='No payment history'"
     ]
   }
 }

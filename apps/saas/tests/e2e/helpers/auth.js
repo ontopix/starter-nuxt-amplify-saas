@@ -143,81 +143,48 @@ export class AuthHelpers {
     throw new Error(`None of the selectors were found: ${selectors.join(', ')}`)
   }
 
+  /**
+   * Find element using centralized selectors
+   */
+  async findElementByCategory(category, name, options = {}) {
+    try {
+      return await SelectorHelper.findElement(this.page, category, name, options)
+    } catch (error) {
+      console.log(`✗ Element not found: ${category}.${name}`)
+      throw error
+    }
+  }
+
   async signup({ email, firstName, lastName, password }) {
     console.log(`Starting signup for: ${email} (${firstName} ${lastName})`)
 
     await this.goto('/auth/signup')
     console.log('Navigated to signup page')
 
-    // Fill form fields with flexible selectors
+    // Fill form fields using centralized selectors
     try {
-      // First Name - try multiple selectors
-      const firstNameSelectors = [
-        'input[name="firstName"]',
-        'input[id="firstName"]',
-        'input[placeholder*="first name" i]',
-        'input[data-testid="firstName"]',
-        'input[aria-label*="first name" i]',
-        'form input:first-of-type'
-      ]
-
-      let firstNameInput = await this.findFirstVisibleSelector(firstNameSelectors)
+      // First Name
+      let firstNameInput = await this.findElementByCategory('auth', 'firstNameInput')
       await firstNameInput.fill(firstName)
       console.log('Filled first name')
 
       // Last Name
-      const lastNameSelectors = [
-        'input[name="lastName"]',
-        'input[id="lastName"]',
-        'input[placeholder*="last name" i]',
-        'input[data-testid="lastName"]',
-        'input[aria-label*="last name" i]'
-      ]
-
-      let lastNameInput = await this.findFirstVisibleSelector(lastNameSelectors)
+      let lastNameInput = await this.findElementByCategory('auth', 'lastNameInput')
       await lastNameInput.fill(lastName)
       console.log('Filled last name')
 
       // Email
-      const emailSelectors = [
-        'input[name="email"]',
-        'input[id="email"]',
-        'input[type="email"]',
-        'input[placeholder*="email" i]',
-        'input[data-testid="email"]',
-        'input[aria-label*="email" i]'
-      ]
-
-      let emailInput = await this.findFirstVisibleSelector(emailSelectors)
+      let emailInput = await this.findElementByCategory('auth', 'emailInput')
       await emailInput.fill(email)
       console.log('Filled email')
 
       // Password
-      const passwordSelectors = [
-        'input[name="password"]',
-        'input[id="password"]',
-        'input[type="password"]',
-        'input[placeholder*="password" i]',
-        'input[data-testid="password"]',
-        'input[aria-label*="password" i]'
-      ]
-
-      let passwordInput = await this.findFirstVisibleSelector(passwordSelectors)
+      let passwordInput = await this.findElementByCategory('auth', 'passwordInput')
       await passwordInput.fill(password)
       console.log('Filled password')
 
-      // Submit button - try multiple texts and selectors
-      const submitSelectors = [
-        'button[type="submit"]',
-        'button:has-text("Create account")',
-        'button:has-text("Sign up")',
-        'button:has-text("Register")',
-        'button[data-testid="signup-submit"]',
-        'input[type="submit"]',
-        'form button:last-of-type'
-      ]
-
-      let submitButton = await this.findFirstVisibleSelector(submitSelectors)
+      // Submit button
+      let submitButton = await this.findElementByCategory('auth', 'signupSubmitButton')
       await submitButton.click()
       console.log('Clicked submit button')
 
@@ -225,15 +192,7 @@ export class AuthHelpers {
       await wait(2000)
 
       // Check for immediate errors
-      const errorSelectors = [
-        'text="error"',
-        'text="failed"',
-        'text="invalid"',
-        '[role="alert"]',
-        '.error',
-        '.alert-error'
-      ]
-
+      const errorSelectors = SelectorHelper.get('auth', 'signupError')
       for (const selector of errorSelectors) {
         try {
           const errorElement = this.page.locator(selector)
@@ -280,13 +239,8 @@ export class AuthHelpers {
       }
     } else {
       console.log('Using single code input field')
-      // Try multiple possible selectors for the code input
-      const codeSelectors = [
-        'input[name="code"]',
-        'input[placeholder*="code"]',
-        'input[placeholder*="Code"]',
-        'input[placeholder*="verification"]'
-      ]
+      // Use centralized selectors for verification code input
+      const codeSelectors = SelectorHelper.get('auth', 'verificationCodeInput')
 
       let codeInput = null
       for (const selector of codeSelectors) {
@@ -308,13 +262,8 @@ export class AuthHelpers {
       }
     }
 
-    // Click submit button
-    const submitSelectors = [
-      'button:has-text("Verify Account")',
-      'button:has-text("Verify")',
-      'button:has-text("Confirm")',
-      'button[type="submit"]'
-    ]
+    // Click submit button using centralized selectors
+    const submitSelectors = SelectorHelper.get('auth', 'verificationSubmitButton')
 
     let submitButton = null
     for (const selector of submitSelectors) {
@@ -351,46 +300,18 @@ export class AuthHelpers {
     console.log('Navigated to login page')
 
     try {
-      // Email field - flexible selectors
-      const emailSelectors = [
-        'input[name="email"]',
-        'input[id="email"]',
-        'input[type="email"]',
-        'input[placeholder*="email" i]',
-        'input[data-testid="email"]',
-        'input[aria-label*="email" i]'
-      ]
-
-      let emailInput = await this.findFirstVisibleSelector(emailSelectors)
+      // Email field using centralized selectors
+      let emailInput = await this.findElementByCategory('auth', 'emailInput')
       await emailInput.fill(email)
       console.log('Filled email')
 
-      // Password field - flexible selectors
-      const passwordSelectors = [
-        'input[name="password"]',
-        'input[id="password"]',
-        'input[type="password"]',
-        'input[placeholder*="password" i]',
-        'input[data-testid="password"]',
-        'input[aria-label*="password" i]'
-      ]
-
-      let passwordInput = await this.findFirstVisibleSelector(passwordSelectors)
+      // Password field using centralized selectors
+      let passwordInput = await this.findElementByCategory('auth', 'passwordInput')
       await passwordInput.fill(password)
       console.log('Filled password')
 
-      // Submit button - flexible selectors
-      const submitSelectors = [
-        'button[type="submit"]',
-        'button:has-text("Sign in")',
-        'button:has-text("Login")',
-        'button:has-text("Log in")',
-        'button[data-testid="login-submit"]',
-        'input[type="submit"]',
-        'form button:last-of-type'
-      ]
-
-      let submitButton = await this.findFirstVisibleSelector(submitSelectors)
+      // Submit button using centralized selectors
+      let submitButton = await this.findElementByCategory('auth', 'loginSubmitButton')
       await submitButton.click()
       console.log('Clicked login button')
 
@@ -400,15 +321,8 @@ export class AuthHelpers {
       const currentUrl = this.page.url()
       console.log(`URL after login submission: ${currentUrl}`)
 
-      // Check for login errors (useful for debugging failed login tests)
-      const errorSelectors = [
-        'text="Invalid email or password"',
-        'text="Error"',
-        'text="Failed to sign in"',
-        'text="NotAuthorizedException"',
-        'text="UserNotFoundException"'
-      ]
-
+      // Check for login errors using centralized selectors
+      const errorSelectors = SelectorHelper.get('auth', 'loginError')
       for (const selector of errorSelectors) {
         try {
           const errorElement = this.page.locator(selector)
@@ -443,21 +357,9 @@ export class AuthHelpers {
       return false
     }
 
-    // Try to find elements that indicate successful login
+    // Try to find elements that indicate successful login using centralized selectors
     try {
-      // Look for common authenticated elements (user menu, dashboard content, etc.)
-      const authElements = [
-        'text="Dashboard"',
-        'text="Settings"',
-        'text="Profile"',
-        'text="Logout"',
-        'text="Sign out"',
-        '[data-testid="user-menu"]',
-        'nav:has-text("Dashboard")',
-        'button:has-text("Sign out")',
-        'text="Logged in successfully"'  // Toast that appears on successful login
-      ]
-
+      const authElements = SelectorHelper.get('auth', 'authenticatedElements')
       for (const selector of authElements) {
         try {
           const element = this.page.locator(selector).first()
@@ -489,10 +391,20 @@ export class AuthHelpers {
 
   async logout() {
     try {
-      const logoutButton = this.page.locator('button:has-text("Logout"), button:has-text("Sign out")').first()
-      if (await logoutButton.isVisible({ timeout: 5000 })) {
-        await logoutButton.click()
+      const logoutSelectors = SelectorHelper.get('auth', 'logoutButton')
+      for (const selector of logoutSelectors) {
+        try {
+          const logoutButton = this.page.locator(selector).first()
+          if (await logoutButton.isVisible({ timeout: 5000 })) {
+            await logoutButton.click()
+            console.log('Clicked logout button')
+            return
+          }
+        } catch (e) {
+          // Continue to next selector
+        }
       }
+      console.log('No logout button found')
     } catch (e) {
       // Logout not found, ignore
     }

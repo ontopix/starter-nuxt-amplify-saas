@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test'
+import { SelectorHelper } from '../utils/selectors.js'
 
 /**
  * Common assertion helpers for E2E tests
@@ -112,26 +113,24 @@ export class AssertionHelpers {
       { selector: 'text="Current Subscription"', textMatch: null }
     ]
 
-    // Add plan-specific indicators
+    // Add plan-specific indicators using centralized selectors
     if (planId === 'free') {
+      const freeSelectors = SelectorHelper.get('assertions', 'planIndicators.free')
       return [
         ...baseSelectors,
-        { selector: 'text="Free Plan"', textMatch: null },
-        { selector: 'text="Free Plan Active"', textMatch: null },
-        { selector: 'text="No payment method required"', textMatch: null },
-        { selector: 'text="Upgrade to add a payment method"', textMatch: null }
+        ...freeSelectors.map(selector => ({ selector, textMatch: null }))
       ]
     } else if (planId === 'pro') {
+      const proSelectors = SelectorHelper.get('assertions', 'planIndicators.pro')
       return [
         ...baseSelectors,
-        { selector: 'text="Pro Plan"', textMatch: null },
-        { selector: 'text="Pro Subscription"', textMatch: null }
+        ...proSelectors.map(selector => ({ selector, textMatch: null }))
       ]
     } else if (planId === 'enterprise') {
+      const enterpriseSelectors = SelectorHelper.get('assertions', 'planIndicators.enterprise')
       return [
         ...baseSelectors,
-        { selector: 'text="Enterprise Plan"', textMatch: null },
-        { selector: 'text="Enterprise Subscription"', textMatch: null }
+        ...enterpriseSelectors.map(selector => ({ selector, textMatch: null }))
       ]
     }
 
@@ -148,13 +147,8 @@ export class AssertionHelpers {
     const webhookDelay = this.validation.timing?.webhooks?.processingDelay || 5000
     await this.page.waitForTimeout(webhookDelay)
 
-    // Check for success indicators
-    const successIndicators = this.validation.validation?.successIndicators?.subscription_created || [
-      'text="Subscription successful"',
-      'text="Welcome to Pro"',
-      'text="Welcome to Enterprise"',
-      'text="Payment successful"'
-    ]
+    // Check for success indicators using centralized selectors
+    const successIndicators = SelectorHelper.get('assertions', 'successIndicators.subscriptionCreated')
 
     let successFound = false
     for (const indicator of successIndicators) {
@@ -191,12 +185,8 @@ export class AssertionHelpers {
     const webhookDelay = this.validation.timing?.webhooks?.processingDelay || 5000
     await this.page.waitForTimeout(webhookDelay)
 
-    // Check for plan change success indicators
-    const changeIndicators = this.validation.validation?.successIndicators?.plan_changed || [
-      'text="Plan updated successfully"',
-      'text="Your subscription has been updated"',
-      'text="Plan changed successfully"'
-    ]
+    // Check for plan change success indicators using centralized selectors
+    const changeIndicators = SelectorHelper.get('assertions', 'successIndicators.planChanged')
 
     let changeFound = false
     for (const indicator of changeIndicators) {
@@ -224,11 +214,7 @@ export class AssertionHelpers {
   async assertPaymentMethodAdded() {
     console.log('🔍 Verifying payment method was added...')
 
-    const paymentIndicators = this.validation.validation?.successIndicators?.payment_added || [
-      'text="Payment method added"',
-      'text="Card added successfully"',
-      'text="Payment method updated"'
-    ]
+    const paymentIndicators = SelectorHelper.get('assertions', 'successIndicators.paymentAdded')
 
     let paymentFound = false
     for (const indicator of paymentIndicators) {
@@ -307,13 +293,17 @@ export class AssertionHelpers {
 
     // Check upgrade/downgrade options visibility
     if (planExpectations.showUpgradeOptions !== undefined) {
-      const upgradeExists = await this.page.locator('text="Upgrade", text="Subscribe"').first().isVisible({ timeout: 2000 })
+      const upgradeSelectors = SelectorHelper.get('billing', 'upgradeButton')
+      const upgradeSelector = upgradeSelectors.map(s => `text="${s.replace('button:has-text(\'', '').replace('\')', '')}"`).join(', ')
+      const upgradeExists = await this.page.locator(upgradeSelector).first().isVisible({ timeout: 2000 })
       expect(upgradeExists).toBe(planExpectations.showUpgradeOptions)
       console.log(`✅ Upgrade options visibility correct: ${upgradeExists}`)
     }
 
     if (planExpectations.showDowngradeOptions !== undefined) {
-      const downgradeExists = await this.page.locator('text="Downgrade", text="Cancel"').first().isVisible({ timeout: 2000 })
+      const downgradeSelectors = SelectorHelper.get('billing', 'downgradeButton')
+      const downgradeSelector = downgradeSelectors.map(s => `text="${s.replace('button:has-text(\'', '').replace('\')', '')}"`).join(', ')
+      const downgradeExists = await this.page.locator(downgradeSelector).first().isVisible({ timeout: 2000 })
       expect(downgradeExists).toBe(planExpectations.showDowngradeOptions)
       console.log(`✅ Downgrade options visibility correct: ${downgradeExists}`)
     }
@@ -327,20 +317,9 @@ export class AssertionHelpers {
   async assertPaymentError(expectedError = null) {
     console.log('🔍 Verifying payment error appears...')
 
-    const errorMessages = this.validation.validation?.errorMessages || {
-      card_declined: "Your card was declined",
-      insufficient_funds: "Your card has insufficient funds",
-      expired_card: "Your card has expired",
-      invalid_cvc: "Your card's security code is invalid"
-    }
+    const errorMessages = SelectorHelper.get('assertions', 'errorMessages')
 
-    const errorSelectors = [
-      '.error-message',
-      '[role="alert"]',
-      '.alert-error',
-      '[data-testid="error-message"]',
-      '.toast-error'
-    ]
+    const errorSelectors = SelectorHelper.get('stripe', 'errorSelectors')
 
     let errorFound = false
     let errorText = ''
@@ -404,13 +383,7 @@ export class AssertionHelpers {
   async assertStripeCheckoutLoaded() {
     console.log('🔍 Verifying Stripe Checkout loaded...')
 
-    const checkoutIndicators = [
-      'form[data-testid="checkout-form"]',
-      '#payment-form',
-      '[data-testid="card-element"]',
-      'input[data-testid="cardNumber"]',
-      'iframe[title*="Secure"]'
-    ]
+    const checkoutIndicators = SelectorHelper.get('stripe', 'checkoutIndicators')
 
     let checkoutFound = false
     for (const indicator of checkoutIndicators) {
@@ -441,12 +414,7 @@ export class AssertionHelpers {
     expect(currentUrl).toContain('billing.stripe.com')
 
     // Check page content
-    const portalIndicators = [
-      'text="Customer portal"',
-      'text="Subscription"',
-      'text="Billing"',
-      'button:has-text("Update")'
-    ]
+    const portalIndicators = SelectorHelper.get('stripe', 'portalIndicators')
 
     let portalFound = false
     for (const indicator of portalIndicators) {
@@ -557,16 +525,7 @@ export class AssertionHelpers {
   async assertNoPaymentMethods() {
     console.log('🔍 Verifying no payment methods are present...')
 
-    const paymentMethodIndicators = [
-      '[data-testid="payment-method"]',
-      '[data-testid="credit-card"]',
-      'text="•••• ••••"',
-      'text="****"',
-      '.payment-method-card',
-      'text="Visa"',
-      'text="Mastercard"',
-      'text="American Express"'
-    ]
+    const paymentMethodIndicators = SelectorHelper.get('assertions', 'paymentMethodIndicators')
 
     let paymentMethodFound = false
     for (const indicator of paymentMethodIndicators) {
@@ -583,12 +542,7 @@ export class AssertionHelpers {
     }
 
     // Also check for "No payment method" or similar messages
-    const noPaymentIndicators = [
-      'text="No payment method"',
-      'text="No card on file"',
-      'text="Add a payment method"',
-      'text="No payment methods saved"'
-    ]
+    const noPaymentIndicators = SelectorHelper.get('assertions', 'noPaymentIndicators')
 
     let noPaymentMessageFound = false
     for (const indicator of noPaymentIndicators) {
@@ -615,16 +569,7 @@ export class AssertionHelpers {
   async assertNoInvoices() {
     console.log('🔍 Verifying no invoices are present...')
 
-    const invoiceIndicators = [
-      '[data-testid="invoice"]',
-      '[data-testid="invoice-item"]',
-      '.invoice-row',
-      'text="Invoice #"',
-      'text="$"',
-      'text="Paid"',
-      'text="Pending"',
-      'text="Due"'
-    ]
+    const invoiceIndicators = SelectorHelper.get('assertions', 'invoiceIndicators')
 
     let invoiceFound = false
     for (const indicator of invoiceIndicators) {
@@ -645,12 +590,7 @@ export class AssertionHelpers {
     }
 
     // Also check for "No invoices" or similar messages
-    const noInvoiceIndicators = [
-      'text="No invoices"',
-      'text="No billing history"',
-      'text="No charges"',
-      'text="No payment history"'
-    ]
+    const noInvoiceIndicators = SelectorHelper.get('assertions', 'noInvoiceIndicators')
 
     let noInvoiceMessageFound = false
     for (const indicator of noInvoiceIndicators) {
@@ -677,7 +617,9 @@ export class AssertionHelpers {
   async assertPaymentMethodExists(lastFour) {
     console.log(`🔍 Verifying payment method ending in ${lastFour} exists...`)
 
+    const basePaymentSelectors = SelectorHelper.get('assertions', 'paymentMethodIndicators')
     const paymentSelectors = [
+      ...basePaymentSelectors,
       `text="•••• •••• •••• ${lastFour}"`,
       `text="****${lastFour}"`,
       `[data-testid="payment-method"]:has-text("${lastFour}")`,
