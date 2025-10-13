@@ -18,7 +18,8 @@ export function wait(ms) {
 // ============================================================================
 
 import { TestCache } from '../utils/cache.js'
-import { SelectorHelper } from '../utils/selectors.js'
+import { Selectors } from '../utils/selectors.js'
+// Removed TestDataManager dependency; inline minimal data generation below
 
 // ============================================================================
 // Gmail Helpers
@@ -148,7 +149,7 @@ export class AuthHelpers {
    */
   async findElementByCategory(category, name, options = {}) {
     try {
-      return await SelectorHelper.findElement(this.page, category, name, options)
+      return await Selectors.findElement(this.page, category, name, options)
     } catch (error) {
       console.log(`✗ Element not found: ${category}.${name}`)
       throw error
@@ -192,7 +193,7 @@ export class AuthHelpers {
       await wait(2000)
 
       // Check for immediate errors
-      const errorSelectors = SelectorHelper.get('auth', 'signupError')
+      const errorSelectors = Selectors.get('auth', 'signupError')
       for (const selector of errorSelectors) {
         try {
           const errorElement = this.page.locator(selector)
@@ -226,64 +227,16 @@ export class AuthHelpers {
 
     console.log(`Found verification code: ${code}`)
 
-    // Try different input methods for verification code
-    const otpInputs = this.page.locator('input[autocomplete="one-time-code"]')
-    const count = await otpInputs.count()
-
-    if (count >= 4) {
-      console.log(`Found ${count} OTP inputs, filling individually`)
-      const digits = code.split('')
-      for (let i = 0; i < Math.min(digits.length, count); i++) {
-        await otpInputs.nth(i).fill(digits[i])
-        await wait(100) // Small delay between inputs
-      }
-    } else {
-      console.log('Using single code input field')
-      // Use centralized selectors for verification code input
-      const codeSelectors = SelectorHelper.get('auth', 'verificationCodeInput')
-
-      let codeInput = null
-      for (const selector of codeSelectors) {
-        try {
-          codeInput = this.page.locator(selector).first()
-          if (await codeInput.isVisible({ timeout: 1000 })) {
-            console.log(`Found code input with selector: ${selector}`)
-            break
-          }
-        } catch (e) {
-          // Continue to next selector
-        }
-      }
-
-      if (codeInput) {
-        await codeInput.fill(code)
-      } else {
-        throw new Error('Could not find verification code input field')
-      }
-    }
+    // Use centralized selectors for verification code input (single, deterministic path)
+    const codeSelectors = Selectors.get('auth', 'verificationCodeInput')
+    const codeInput = await this.findFirstVisibleSelector(codeSelectors)
+    await codeInput.fill(code)
 
     // Click submit button using centralized selectors
-    const submitSelectors = SelectorHelper.get('auth', 'verificationSubmitButton')
-
-    let submitButton = null
-    for (const selector of submitSelectors) {
-      try {
-        submitButton = this.page.locator(selector).first()
-        if (await submitButton.isVisible({ timeout: 1000 })) {
-          console.log(`Found submit button with selector: ${selector}`)
-          break
-        }
-      } catch (e) {
-        // Continue to next selector
-      }
-    }
-
-    if (submitButton) {
-      await submitButton.click()
-      console.log('Clicked verification submit button')
-    } else {
-      console.log('No submit button found, verification might be automatic')
-    }
+    const submitSelectors = Selectors.get('auth', 'verificationSubmitButton')
+    const submitButton = await this.findFirstVisibleSelector(submitSelectors)
+    await submitButton.click()
+    console.log('Clicked verification submit button')
 
     // Wait for verification to complete - the toast will be checked by the test
     console.log('Waiting for verification to complete...')
@@ -322,16 +275,19 @@ export class AuthHelpers {
       console.log(`URL after login submission: ${currentUrl}`)
 
       // Check for login errors using centralized selectors
-      const errorSelectors = SelectorHelper.get('auth', 'loginError')
+      const errorSelectors = Selectors.get('auth', 'loginError')
       for (const selector of errorSelectors) {
         try {
           const errorElement = this.page.locator(selector)
           if (await errorElement.isVisible({ timeout: 1000 })) {
             const errorText = await errorElement.textContent()
             console.log(`Login error detected: ${errorText}`)
-            break
+            throw new Error(`Login failed: ${errorText}. Please check credentials (TEST_USER/TEST_PASS).`)
           }
         } catch (e) {
+          if (e.message.includes('Login failed')) {
+            throw e
+          }
           // Continue checking other selectors
         }
       }
@@ -359,7 +315,7 @@ export class AuthHelpers {
 
     // Try to find elements that indicate successful login using centralized selectors
     try {
-      const authElements = SelectorHelper.get('auth', 'authenticatedElements')
+      const authElements = Selectors.get('auth', 'authenticatedElements')
       for (const selector of authElements) {
         try {
           const element = this.page.locator(selector).first()
@@ -391,7 +347,7 @@ export class AuthHelpers {
 
   async logout() {
     try {
-      const logoutSelectors = SelectorHelper.get('auth', 'logoutButton')
+      const logoutSelectors = Selectors.get('auth', 'logoutButton')
       for (const selector of logoutSelectors) {
         try {
           const logoutButton = this.page.locator(selector).first()
@@ -411,7 +367,7 @@ export class AuthHelpers {
   }
 
   /**
-   * Create a new user with cache support
+   * Create a new user with cache support and improved data management
    */
   async createUser(options = { useCache: true }) {
     const cacheKey = 'newly-created-user'
@@ -425,28 +381,64 @@ export class AuthHelpers {
       }
     }
 
-    // Generate new user
-    const timestamp = Date.now()
-    const shortId = timestamp.toString().slice(-6)
-    const newUser = {
-      email: `test+signup${shortId}@ontopix.ai`,
-      password: 'TestPassword123!',
-      firstName: 'Signup',
-      lastName: `User${shortId}`,
-      createdAt: new Date().toISOString()
+    // Generate/load user data (env-first unless forceNew)
+    const useEnv = !options.forceNew
+    const envUser = process.env.TEST_USER
+    const envPass = process.env.TEST_PASS
+    let userData
+
+    if (useEnv && envUser && envPass) {
+      userData = {
+        email: envUser,
+        password: envPass,
+        firstName: 'Test',
+        lastName: 'User',
+        source: 'environment',
+        isReusable: true
+      }
+    } else {
+      const timestamp = Date.now()
+      const shortId = timestamp.toString().slice(-6)
+      userData = {
+        email: `test+signup${shortId}@ontopix.ai`,
+        password: 'TestPassword123!',
+        firstName: 'Signup',
+        lastName: `User${shortId}`,
+        source: 'generated',
+        isReusable: false,
+        createdAt: new Date().toISOString()
+      }
     }
 
-    // Perform signup
-    await this.signup(newUser)
+    // If using environment user, don't perform signup
+    if (userData.source === 'environment') {
+      console.log(`Using environment user: ${userData.email}`)
+      TestCache.set(cacheKey, userData)
+      return userData
+    }
+
+    // Perform signup for generated users
+    console.log(`Creating new user: ${userData.email}`)
+    await this.signup(userData)
     console.log('Signup completed, starting verification')
 
-    await this.verifyEmail(newUser.email)
+    await this.verifyEmail(userData.email)
     console.log('Email verification completed')
 
     // Cache the user for future use
-    TestCache.set(cacheKey, newUser)
-    console.log(`User cached: ${newUser.email}`)
+    TestCache.set(cacheKey, userData)
+    console.log(`User cached: ${userData.email}`)
 
-    return newUser
+    return userData
   }
+
+  /**
+   * Get or create journey-specific user data
+   */
+  // Removed getJourneyUser: flows use TestDataManager + spec-level logic
+
+  /**
+   * Enhanced user data preparation with better environment handling
+   */
+  // Removed prepareUserData: use TestDataManager.createUserData directly
 }

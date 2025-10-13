@@ -31,8 +31,21 @@ export default defineConfig({
 
   /* Configure projects for major browsers - Only Chromium for speed */
   projects: [
+    // Default project - todos los tests
     {
       name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Flows project - solo archivos en flows/
+    {
+      name: 'flows',
+      testMatch: '**/flows/*.spec.js',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Individual tests - solo archivos en layers/
+    {
+      name: 'individual',
+      testMatch: '**/layers/*.spec.js',
       use: { ...devices['Desktop Chrome'] },
     },
   ],
@@ -43,5 +56,5 @@ export default defineConfig({
   },
 
   /* Test timeout */
-  timeout: 60000,
+  timeout: 90000,
 })

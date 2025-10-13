@@ -140,11 +140,25 @@
     ],
     "upgradeButton": [
       "button:has-text('Upgrade')",
-      "button:has-text('Subscribe')"
+      "button:has-text('Subscribe')",
+      "button:has-text('Upgrade to Pro')"
     ],
     "downgradeButton": [
       "button:has-text('Downgrade')",
       "button:has-text('Cancel')"
+    ],
+    "subscriptionStatus": [
+      "[data-testid='subscription-status']",
+      ".subscription-status",
+      "text=/Active Subscription/i",
+      "text=/Subscription Active/i"
+    ],
+    "manageSubscriptionButton": [
+      "button:has-text('Change Plan')",
+      "button:has-text('Manage Subscription')",
+      "button:has-text('Billing Portal')",
+      "button:has-text('Customer Portal')",
+      "[data-testid='manage-subscription']"
     ]
   },
   "stripe": {
@@ -161,23 +175,23 @@
       "#email"
     ],
     "cardNumber": [
+      "input[name='cardnumber']",
       "input[data-testid='cardNumber']",
       "input[placeholder*='card']",
-      "input[name='cardnumber']",
       "[data-testid='card-number-element'] input",
       "#card-number"
     ],
     "cardExpiry": [
+      "input[name='exp-date']",
       "input[data-testid='cardExpiry']",
       "input[placeholder*='MM']",
-      "input[name='exp-date']",
       "[data-testid='card-expiry-element'] input",
       "#card-expiry"
     ],
     "cardCvc": [
+      "input[name='cvc']",
       "input[data-testid='cardCvc']",
       "input[placeholder*='CVC']",
-      "input[name='cvc']",
       "[data-testid='card-cvc-element'] input",
       "#card-cvc"
     ],
@@ -242,6 +256,28 @@
         "[data-testid='return-button']"
       ]
     },
+    "iframeSelectors": [
+      "iframe[title*='card number']",
+      "iframe[title*='Secure card number']",
+      "iframe[title*='card']",
+      "iframe[src*='stripe']",
+      "iframe[src*='js.stripe.com']"
+    ],
+    "cardNumberIframe": [
+      "iframe[title*='card number']",
+      "iframe[title*='Secure card number']",
+      "iframe[title*='card']"
+    ],
+    "cardExpiryIframe": [
+      "iframe[title*='expiry']",
+      "iframe[title*='expiration']",
+      "iframe[title*='date']"
+    ],
+    "cardCvcIframe": [
+      "iframe[title*='cvc']",
+      "iframe[title*='cvv']",
+      "iframe[title*='security']"
+    ],
     "checkoutIndicators": [
       "form[data-testid='checkout-form']",
       "#payment-form",
@@ -259,7 +295,17 @@
       ".error-message",
       "[role='alert']",
       ".alert-error",
-      "[data-testid='error-message']"
+      "[data-testid='error-message']",
+      "text='Your card was declined'",
+      "text='Payment failed'",
+      "text='There was an error'"
+    ],
+    "successSelectors": [
+      "text='Payment successful'",
+      "text='Payment completed'",
+      "text='Thank you for your payment'",
+      "[data-testid='payment-success']",
+      "[role='alert']:has-text('Success')"
     ]
   },
   "assertions": {
@@ -292,15 +338,36 @@
         "text='Free Plan'",
         "text='Free Plan Active'",
         "text='No payment method required'",
-        "text='Upgrade to add a payment method'"
+        "text='Upgrade to add a payment method'",
+        "[data-testid='plan-free']",
+        "text=/free/i"
       ],
       "pro": [
         "text='Pro Plan'",
-        "text='Pro Subscription'"
+        "text='Pro Subscription'",
+        "text='Pro Plan Active'",
+        "[data-testid='plan-pro']",
+        "text=/pro/i"
       ],
       "enterprise": [
         "text='Enterprise Plan'",
-        "text='Enterprise Subscription'"
+        "text='Enterprise Subscription'",
+        "text='Enterprise Plan Active'",
+        "[data-testid='plan-enterprise']"
+      ]
+    },
+    "subscriptionIndicators": {
+      "active": [
+        "text='Active Subscription'",
+        "text='Subscription Active'",
+        "text='Current Plan:'",
+        "[data-testid='subscription-active']",
+        ".subscription-active"
+      ],
+      "inactive": [
+        "text='No Active Subscription'",
+        "text='Subscription Inactive'",
+        "[data-testid='subscription-inactive']"
       ]
     },
     "paymentMethodIndicators": [
@@ -312,6 +379,11 @@
       "text='Visa'",
       "text='Mastercard'",
       "text='American Express'"
+    ],
+    "proFeatureIndicators": [
+      "[data-testid='pro-feature']",
+      "text='Pro Features'",
+      ".pro-badge"
     ],
     "noPaymentIndicators": [
       "text='No payment method'",

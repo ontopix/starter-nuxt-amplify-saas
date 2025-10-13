@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { AuthHelpers } from '../helpers/auth.js'
-import { StripeHelpers } from '../helpers/stripe.js'
-import { AssertionHelpers } from '../helpers/assertions.js'
-import { DataManager } from '../helpers/data-management.js'
-import { TestCache } from '../utils/cache.js'
-import { SelectorHelper } from '../utils/selectors.js'
+import { AuthHelpers } from '../../helpers/auth.js'
+import { StripeHelpers } from '../../helpers/stripe.js'
+import { AssertionHelpers } from '../../helpers/assertions.js'
+import { TestCache } from '../../utils/cache.js'
+import { Selectors } from '../../utils/selectors.js'
 
 test.describe.serial('Billing Layer Tests - New User Flow', () => {
   let auth

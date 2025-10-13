@@ -36,7 +36,8 @@
     "saas:test:e2e:billing": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:billing",
     "saas:test:e2e:headed": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:headed",
     "saas:test:e2e:ui": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:ui",
-    "saas:test:e2e:clean": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:clean"
+    "saas:test:e2e:clean": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:clean",
+    "saas:test:e2e:setup": "pnpm --filter @starter-nuxt-amplify-saas/saas run test:e2e:setup"
   },
   "devDependencies": {
     "@aws-amplify/backend-cli": "^1.8.0",

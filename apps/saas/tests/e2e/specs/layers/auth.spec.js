@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
-import { AuthHelpers } from '../helpers/auth.js'
-import { TestCache } from '../utils/cache.js'
-import { SelectorHelper } from '../utils/selectors.js'
+import { AuthHelpers } from '../../helpers/auth.js'
+import { TestCache } from '../../utils/cache.js'
+import { Selectors } from '../../utils/selectors.js'
 
 test.describe.serial('Auth Layer Tests', () => {
   let auth
@@ -23,7 +23,7 @@ test.describe.serial('Auth Layer Tests', () => {
     testUser = await auth.createUser({ useCache: false })
 
     // Use configured selectors for verification success
-    const found = await SelectorHelper.hasElement(page, 'auth', 'verificationSuccess', { timeout: 10000 })
+    const found = await Selectors.hasElement(page, 'auth', 'verificationSuccess', { timeout: 10000 })
     expect(found).toBe(true)
 
     console.log(`✅ User created and cached: ${testUser.email}`)
@@ -54,10 +54,10 @@ test.describe.serial('Auth Layer Tests', () => {
     await page.waitForTimeout(2000)
 
     // Use configured selectors for login error
-    const found = await SelectorHelper.hasElement(page, 'auth', 'loginError', { timeout: 2000 })
+    const found = await Selectors.hasElement(page, 'auth', 'loginError', { timeout: 2000 })
 
     if (found) {
-      const element = await SelectorHelper.findElement(page, 'auth', 'loginError')
+      const element = await Selectors.findElement(page, 'auth', 'loginError')
       const text = await element.textContent()
       console.log(`✅ Found login error: "${text}"`)
     }

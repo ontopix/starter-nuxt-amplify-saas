@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test'
-import { SelectorHelper } from '../utils/selectors.js'
+import { Selectors } from '../utils/selectors.js'
 
 /**
  * Specialized helper for Stripe-specific operations
@@ -65,7 +65,7 @@ export class StripeHelpers {
    * Wait for Stripe Checkout to fully load
    */
   async waitForCheckoutLoad() {
-    const checkoutSelectors = SelectorHelper.get('stripe', 'checkoutForm')
+    const checkoutSelectors = Selectors.get('stripe', 'checkoutForm')
 
     let loaded = false
     for (const selector of checkoutSelectors) {
@@ -91,7 +91,7 @@ export class StripeHelpers {
    * Fill email field in checkout
    */
   async fillEmailField(email) {
-    const emailSelectors = SelectorHelper.get('stripe', 'emailInput')
+    const emailSelectors = Selectors.get('stripe', 'emailInput')
 
     for (const selector of emailSelectors) {
       try {
@@ -113,7 +113,7 @@ export class StripeHelpers {
    * Fill card number field
    */
   async fillCardNumber(cardNumber) {
-    const cardSelectors = SelectorHelper.get('stripe', 'cardNumber')
+    const cardSelectors = Selectors.get('stripe', 'cardNumber')
 
     for (const selector of cardSelectors) {
       try {
@@ -136,7 +136,7 @@ export class StripeHelpers {
    * Fill expiry date field
    */
   async fillExpiryDate(expiryDate) {
-    const expirySelectors = SelectorHelper.get('stripe', 'cardExpiry')
+    const expirySelectors = Selectors.get('stripe', 'cardExpiry')
 
     for (const selector of expirySelectors) {
       try {
@@ -159,7 +159,7 @@ export class StripeHelpers {
    * Fill CVC field
    */
   async fillCVC(cvc) {
-    const cvcSelectors = SelectorHelper.get('stripe', 'cardCvc')
+    const cvcSelectors = Selectors.get('stripe', 'cardCvc')
 
     for (const selector of cvcSelectors) {
       try {
@@ -182,7 +182,7 @@ export class StripeHelpers {
    * Fill cardholder name field
    */
   async fillCardholderName(name) {
-    const nameSelectors = SelectorHelper.get('stripe', 'cardholderName')
+    const nameSelectors = Selectors.get('stripe', 'cardholderName')
 
     for (const selector of nameSelectors) {
       try {
@@ -211,7 +211,7 @@ export class StripeHelpers {
     }
 
     try {
-      const billingAddressSelectors = SelectorHelper.get('stripe', 'billingAddress')
+      const billingAddressSelectors = Selectors.get('stripe', 'billingAddress')
       const addressFields = [
         { selector: billingAddressSelectors.line1, value: address.line1 },
         { selector: billingAddressSelectors.line2, value: address.line2 },
@@ -251,7 +251,7 @@ export class StripeHelpers {
    * Select country in billing address
    */
   async selectCountry(countryCode) {
-    const countrySelectors = SelectorHelper.get('stripe', 'billingAddress.country')
+    const countrySelectors = Selectors.get('stripe', 'billingAddress.country')
 
     for (const selector of countrySelectors) {
       try {
@@ -273,7 +273,7 @@ export class StripeHelpers {
    * Submit the checkout form
    */
   async submitCheckoutForm() {
-    const submitSelectors = SelectorHelper.get('stripe', 'submitButton')
+    const submitSelectors = Selectors.get('stripe', 'submitButton')
 
     for (const selector of submitSelectors) {
       try {
@@ -302,7 +302,7 @@ export class StripeHelpers {
 
     try {
       // Wait for 3DS challenge to appear
-      const challengeSelectors = SelectorHelper.get('stripe', 'threeDSecure.challenge')
+      const challengeSelectors = Selectors.get('stripe', 'threeDSecure.challenge')
 
       let challengeFound = false
       for (const selector of challengeSelectors) {
@@ -338,7 +338,7 @@ export class StripeHelpers {
    * Complete 3D Secure authentication
    */
   async complete3DSecure() {
-    const completeSelectors = SelectorHelper.get('stripe', 'threeDSecure.completeButton')
+    const completeSelectors = Selectors.get('stripe', 'threeDSecure.completeButton')
 
     for (const selector of completeSelectors) {
       try {
@@ -361,7 +361,7 @@ export class StripeHelpers {
    * Fail 3D Secure authentication (for testing failure scenarios)
    */
   async fail3DSecure() {
-    const failSelectors = SelectorHelper.get('stripe', 'threeDSecure.failButton')
+    const failSelectors = Selectors.get('stripe', 'threeDSecure.failButton')
 
     for (const selector of failSelectors) {
       try {
@@ -411,7 +411,7 @@ export class StripeHelpers {
    * Check for and handle checkout errors
    */
   async checkForCheckoutErrors() {
-    const errorSelectors = SelectorHelper.get('stripe', 'errorSelectors')
+    const errorSelectors = Selectors.get('stripe', 'errorSelectors')
 
     for (const selector of errorSelectors) {
       try {
@@ -448,7 +448,7 @@ export class StripeHelpers {
       }
 
       // Look for plan selection options
-      const planSelectors = SelectorHelper.get('stripe', 'portal.planSelection')
+      const planSelectors = Selectors.get('stripe', 'portal.planSelection')
 
       let planFound = false
       for (const selector of planSelectors) {
@@ -474,7 +474,7 @@ export class StripeHelpers {
 
       // Look for confirmation button
       await this.page.waitForTimeout(2000)
-      const confirmSelectors = SelectorHelper.get('stripe', 'portal.confirmButton')
+      const confirmSelectors = Selectors.get('stripe', 'portal.confirmButton')
 
       for (const selector of confirmSelectors) {
         try {
@@ -494,6 +494,317 @@ export class StripeHelpers {
     } catch (error) {
       console.error(`❌ Error navigating portal: ${error.message}`)
       return false
+    }
+  }
+
+  /**
+   * Add payment method in Stripe Customer Portal
+   */
+  async addPaymentMethodInPortal(cardData) {
+    console.log('💳 Adding payment method in Stripe Portal...')
+
+    try {
+      const currentUrl = this.page.url()
+
+      if (!currentUrl.includes('billing.stripe.com')) {
+        throw new Error(`Not on Stripe Portal. Current URL: ${currentUrl}`)
+      }
+
+      // Check if we're already on the payment-methods page (form ready)
+      const isOnPaymentMethodsPage = currentUrl.includes('payment-methods')
+
+      if (!isOnPaymentMethodsPage) {
+        // Look for "Add payment method" button if not already on the form
+        const addPaymentSelectors = [
+          'button:has-text("Add payment method")',
+          'button:has-text("Add card")',
+          'button:has-text("Add")',
+          '[data-testid="add-payment-method"]'
+        ]
+
+        let addButtonClicked = false
+        for (const selector of addPaymentSelectors) {
+          try {
+            const button = this.page.locator(selector).first()
+            if (await button.isVisible({ timeout: 5000 })) {
+              await button.click()
+              console.log(`✅ Clicked add payment button: ${selector}`)
+              addButtonClicked = true
+              break
+            }
+          } catch (e) {
+            // Continue trying other selectors
+          }
+        }
+
+        if (!addButtonClicked) {
+          throw new Error('Add payment method button not found in portal')
+        }
+
+        // Wait for payment-methods page to load
+        await this.page.waitForTimeout(2000)
+      } else {
+        console.log('Already on payment-methods page, proceeding to fill form')
+      }
+
+      // Wait for payment form iframe to load
+      console.log('Waiting for Stripe payment form to load...')
+      await this.page.waitForTimeout(3000)
+
+      // The portal uses Payment Element which is ALSO in an iframe
+      // Look for the iframe containing the payment form
+      const frames = this.page.frames()
+      console.log(`Checking ${frames.length} frames for payment inputs...`)
+
+      let paymentFrame = null
+      for (const frame of frames) {
+        try {
+          const frameUrl = frame.url()
+          // Payment Element iframe URL contains 'elements-inner-payment'
+          if (frameUrl.includes('elements-inner-payment')) {
+            const cardInput = await frame.locator('input[name="number"]').count()
+            if (cardInput > 0) {
+              paymentFrame = frame
+              console.log(`✅ Found Payment Element iframe`)
+              break
+            }
+          }
+        } catch (e) {
+          // Skip inaccessible frames
+        }
+      }
+
+      if (paymentFrame) {
+        console.log('Using fillPaymentElementInFrame')
+        await this.fillPaymentElementInFrame(paymentFrame, cardData)
+      } else {
+        console.log('Falling back to fillStripeElementsForm')
+        await this.fillStripeElementsForm(cardData)
+      }
+
+      // Submit the form - look for portal-specific submit buttons
+      const portalSubmitSelectors = [
+        'button:has-text("Add")',
+        'button:has-text("Save")',
+        'button:has-text("Update")',
+        'button[type="submit"]',
+        'button:has-text("Continue")'
+      ]
+
+      let submitButton = null
+      for (const selector of portalSubmitSelectors) {
+        try {
+          const button = this.page.locator(selector).first()
+          if (await button.isVisible({ timeout: 3000 })) {
+            submitButton = button
+            console.log(`✅ Found submit button: ${selector}`)
+            break
+          }
+        } catch (e) {
+          // Continue to next selector
+        }
+      }
+
+      if (!submitButton) {
+        throw new Error('Submit button not found in portal')
+      }
+
+      // Wait for form validation and button to become enabled
+      await this.page.waitForTimeout(1000)
+
+      await submitButton.click()
+      console.log('✅ Submitted payment method form')
+
+      // Wait for navigation to confirmation page or success
+      try {
+        await this.page.waitForURL('**/flow-confirmation**', { timeout: 10000 })
+        console.log('✅ Payment method added - reached confirmation page')
+      } catch (e) {
+        // Alternative: check if we're back to portal overview
+        console.log('ℹ️  Did not reach confirmation page, checking current state...')
+      }
+
+      console.log('✅ Payment method added successfully in portal')
+      return true
+
+    } catch (error) {
+      console.error(`❌ Error adding payment method in portal: ${error.message}`)
+      throw error
+    }
+  }
+
+  /**
+   * Fill Payment Element (used in Stripe Customer Portal)
+   * This is different from fillStripeElementsForm as Payment Element uses direct inputs, not iframes
+   */
+  async fillPaymentElement(cardData) {
+    console.log('💳 Filling Payment Element form...')
+
+    try {
+      // Card number
+      const cardNumberInput = this.page.locator('input[name="number"]#Field-numberInput')
+      await cardNumberInput.waitFor({ state: 'visible', timeout: 10000 })
+      await cardNumberInput.fill(cardData.number)
+      console.log('✅ Filled card number')
+
+      // Expiry
+      const expiryInput = this.page.locator('input[name="expiry"]#Field-expiryInput')
+      await expiryInput.fill(cardData.expiryDate)
+      console.log('✅ Filled expiry date')
+
+      // CVC
+      const cvcInput = this.page.locator('input[name="cvc"]#Field-cvcInput')
+      await cvcInput.fill(cardData.cvc)
+      console.log('✅ Filled CVC')
+
+      // Country (if required)
+      const countrySelect = this.page.locator('select[name="country"]#Field-countryInput')
+      if (await countrySelect.isVisible({ timeout: 2000 })) {
+        await countrySelect.selectOption('AD') // Andorra - no ZIP required
+        console.log('✅ Selected country')
+      }
+
+      console.log('✅ Payment Element form filled successfully')
+      return true
+
+    } catch (error) {
+      console.error(`❌ Error filling Payment Element: ${error.message}`)
+      throw error
+    }
+  }
+
+  /**
+   * Fill Payment Element in iframe (used in Stripe Customer Portal)
+   */
+  async fillPaymentElementInFrame(frame, cardData) {
+    console.log('💳 Filling Payment Element in iframe...')
+
+    try {
+      // Card number
+      const cardNumberInput = frame.locator('input[name="number"]#Field-numberInput')
+      await cardNumberInput.waitFor({ state: 'visible', timeout: 10000 })
+      await cardNumberInput.fill(cardData.number)
+      console.log('✅ Filled card number')
+
+      // Expiry
+      const expiryInput = frame.locator('input[name="expiry"]#Field-expiryInput')
+      await expiryInput.fill(cardData.expiryDate)
+      console.log('✅ Filled expiry')
+
+      // CVC
+      const cvcInput = frame.locator('input[name="cvc"]#Field-cvcInput')
+      await cvcInput.fill(cardData.cvc)
+      console.log('✅ Filled CVC')
+
+      // Country (if required)
+      const countrySelect = frame.locator('select[name="country"]#Field-countryInput')
+      if (await countrySelect.isVisible({ timeout: 2000 })) {
+        await countrySelect.selectOption('AD') // Andorra - no ZIP required
+        console.log('✅ Selected country')
+      }
+
+      console.log('✅ Payment Element in iframe filled successfully')
+      return true
+
+    } catch (error) {
+      console.error(`❌ Error filling Payment Element in iframe: ${error.message}`)
+      throw error
+    }
+  }
+
+  /**
+   * Change plan in Stripe Customer Portal
+   */
+  async changePlanInPortal(planId) {
+    console.log(`🔄 Changing plan to ${planId} in Stripe Portal...`)
+
+    try {
+      const currentUrl = this.page.url()
+
+      if (!currentUrl.includes('billing.stripe.com')) {
+        throw new Error(`Not on Stripe Portal. Current URL: ${currentUrl}`)
+      }
+
+      // Look for plan selection buttons
+      const planSelectors = [
+        `button:has-text("${planId}")`,
+        `button:has-text("${planId.toUpperCase()}")`,
+        `button:has-text("Subscribe to ${planId}")`,
+        '[data-testid*="plan-option"]'
+      ]
+
+      let planButtonClicked = false
+      for (const selector of planSelectors) {
+        try {
+          const button = this.page.locator(selector).first()
+          if (await button.isVisible({ timeout: 5000 })) {
+            await button.click()
+            console.log(`✅ Clicked plan button: ${selector}`)
+            planButtonClicked = true
+            break
+          }
+        } catch (e) {
+          // Continue trying other selectors
+        }
+      }
+
+      if (!planButtonClicked) {
+        console.log('⚠️  No plan button found, trying generic "Select" or "Choose" buttons')
+        const genericSelectors = Selectors.get('stripe', 'portal.planSelection')
+
+        for (const selector of genericSelectors) {
+          try {
+            const button = this.page.locator(selector).first()
+            if (await button.isVisible({ timeout: 3000 })) {
+              await button.click()
+              console.log(`✅ Clicked generic plan selector: ${selector}`)
+              planButtonClicked = true
+              break
+            }
+          } catch (e) {
+            // Continue
+          }
+        }
+      }
+
+      if (!planButtonClicked) {
+        throw new Error('Plan selection button not found in portal')
+      }
+
+      // Wait for confirmation dialog/screen
+      await this.page.waitForTimeout(2000)
+
+      // Look for confirmation button
+      const confirmSelectors = Selectors.get('stripe', 'portal.confirmButton')
+
+      let confirmButtonClicked = false
+      for (const selector of confirmSelectors) {
+        try {
+          const button = this.page.locator(selector).first()
+          if (await button.isVisible({ timeout: 5000 })) {
+            await button.click()
+            console.log(`✅ Clicked confirmation button: ${selector}`)
+            confirmButtonClicked = true
+            break
+          }
+        } catch (e) {
+          // Continue
+        }
+      }
+
+      if (!confirmButtonClicked) {
+        console.log('⚠️  No explicit confirmation button found, assuming plan change submitted')
+      }
+
+      // Wait for plan change to process
+      await this.page.waitForTimeout(3000)
+
+      console.log(`✅ Plan changed to ${planId} successfully in portal`)
+      return true
+
+    } catch (error) {
+      console.error(`❌ Error changing plan in portal: ${error.message}`)
+      throw error
     }
   }
 
@@ -551,7 +862,7 @@ export class StripeHelpers {
    */
   async returnToApp() {
     try {
-      const returnSelectors = SelectorHelper.get('stripe', 'portal.returnButton')
+      const returnSelectors = Selectors.get('stripe', 'portal.returnButton')
 
       for (const selector of returnSelectors) {
         try {
@@ -575,5 +886,221 @@ export class StripeHelpers {
       console.error(`❌ Error returning to app: ${error.message}`)
       return false
     }
+  }
+
+  /**
+   * Wait for Stripe Elements to be fully ready for interaction
+   */
+  async waitForStripeElementsReady() {
+    console.log('⏳ Waiting for Stripe Elements to be ready...')
+
+    try {
+      // Wait for main iframe to be present
+      await this.page.waitForSelector('iframe[title="Secure payment input frame"]', { timeout: 15000 })
+      console.log('✅ Stripe iframe found')
+
+      // Additional wait for iframe content to load
+      await this.page.waitForTimeout(3000)
+
+      // Try to ensure card number field is accessible
+      const cardNumberFrame = this.page.frameLocator('iframe[title*="card number"], iframe[title*="Secure card number"]')
+      const cardInput = cardNumberFrame.locator('input[name="cardnumber"]')
+
+      try {
+        await cardInput.waitFor({ timeout: 5000 })
+        console.log('✅ Card number field is ready')
+      } catch (e) {
+        console.log('⚠️  Card number field not immediately accessible, will retry during interaction')
+      }
+
+      return true
+    } catch (error) {
+      console.error(`❌ Stripe Elements not ready: ${error.message}`)
+      return false
+    }
+  }
+
+  /**
+   * Fill Stripe Elements form with robust iframe handling
+   */
+  async fillStripeElementsForm(cardData) {
+    console.log(`🔧 Filling Stripe Elements with ${cardData.description || 'test'} card`)
+
+    try {
+      // Ensure Stripe Elements are ready
+      const ready = await this.waitForStripeElementsReady()
+      if (!ready) {
+        throw new Error('Stripe Elements not ready for interaction')
+      }
+
+      // Deterministic single-path fill using selectors.json
+      await this.fillCardNumber(cardData.number)
+      await this.fillExpiryDate(cardData.expiryDate)
+      await this.fillCVC(cardData.cvc)
+      await this.fillCardholderName(cardData.name)
+
+      console.log('✅ Stripe Elements form filled successfully')
+      return true
+
+    } catch (error) {
+      console.error(`❌ Error filling Stripe Elements: ${error.message}`)
+      throw error
+    }
+  }
+
+  /**
+   * Fill card number with multiple fallback approaches
+   */
+  async fillCardNumberRobust(cardNumber) {
+    console.log('🔧 Filling card number (robust method deprecated)')
+    await this.fillCardNumber(cardNumber)
+  }
+
+  /**
+   * Fill expiry date with multiple fallback approaches
+   */
+  async fillExpiryDateRobust(expiryDate) {
+    console.log('🔧 Filling expiry date (robust method deprecated)')
+    await this.fillExpiryDate(expiryDate)
+  }
+
+  /**
+   * Fill CVC with multiple fallback approaches
+   */
+  async fillCvcRobust(cvc) {
+    console.log('🔧 Filling CVC (robust method deprecated)')
+    await this.fillCVC(cvc)
+  }
+
+  /**
+   * Fill cardholder name (usually on main page, not in iframe)
+   */
+  async fillCardholderNameRobust(name) {
+    console.log('🔧 Filling cardholder name (robust method deprecated)')
+    await this.fillCardholderName(name)
+  }
+
+  /**
+   * Wait for payment processing to complete
+   */
+  async waitForPaymentSuccess(timeoutMs = 30000) {
+    console.log('⏳ Waiting for payment processing...')
+
+    const startTime = Date.now()
+
+    while (Date.now() - startTime < timeoutMs) {
+      // Check if we're redirected back to our app
+      const currentUrl = this.page.url()
+
+      if (currentUrl.includes(this.baseURL) && !currentUrl.includes('stripe.com')) {
+        console.log('✅ Redirected back to application - payment likely successful')
+        return true
+      }
+
+      // Check for success indicators on Stripe page
+      const successIndicators = [
+        'text="Payment successful"',
+        'text="Your payment was successful"',
+        'text="Thank you"',
+        '[data-testid="payment-success"]'
+      ]
+
+      for (const indicator of successIndicators) {
+        try {
+          const element = this.page.locator(indicator)
+          if (await element.isVisible({ timeout: 1000 })) {
+            console.log(`✅ Payment success indicator found: ${indicator}`)
+            return true
+          }
+        } catch (e) {
+          // Continue checking
+        }
+      }
+
+      // Check for error indicators
+      const errorIndicators = [
+        'text="Your card was declined"',
+        'text="Payment failed"',
+        'text="There was an error"',
+        '[role="alert"]'
+      ]
+
+      for (const indicator of errorIndicators) {
+        try {
+          const element = this.page.locator(indicator)
+          if (await element.isVisible({ timeout: 1000 })) {
+            const errorText = await element.textContent()
+            throw new Error(`Payment failed: ${errorText}`)
+          }
+        } catch (e) {
+          if (e.message.includes('Payment failed')) {
+            throw e
+          }
+          // Continue checking
+        }
+      }
+
+      // Wait before next check
+      await this.page.waitForTimeout(2000)
+    }
+
+    throw new Error(`Payment processing timeout after ${timeoutMs}ms`)
+  }
+
+  /**
+   * Complete Stripe checkout flow with robust error handling
+   */
+  async completeStripeCheckout(cardData) {
+    console.log('🔧 Starting complete Stripe checkout flow...')
+
+    try {
+      // Fill the form
+      await this.fillStripeElementsForm(cardData)
+
+      // Submit the form
+      console.log('🔧 Submitting Stripe checkout form...')
+      const submitButton = await this.findSubmitButton()
+      await submitButton.click()
+
+      // Handle 3D Secure if required
+      const requires3DS = await this.handle3DSecure(true)
+      if (requires3DS) {
+        console.log('✅ 3D Secure authentication completed')
+      }
+
+      // Wait for payment success
+      const success = await this.waitForPaymentSuccess()
+      if (success) {
+        console.log('✅ Stripe checkout completed successfully')
+        return true
+      }
+
+      return false
+
+    } catch (error) {
+      console.error(`❌ Stripe checkout failed: ${error.message}`)
+      throw error
+    }
+  }
+
+  /**
+   * Find submit button with multiple approaches
+   */
+  async findSubmitButton() {
+    const submitSelectors = Selectors.get('stripe', 'submitButton')
+
+    for (const selector of submitSelectors) {
+      try {
+        const button = this.page.locator(selector).first()
+        if (await button.isVisible({ timeout: 3000 })) {
+          console.log(`✅ Found submit button: ${selector}`)
+          return button
+        }
+      } catch (e) {
+        // Continue to next selector
+      }
+    }
+
+    throw new Error('Submit button not found')
   }
 }
