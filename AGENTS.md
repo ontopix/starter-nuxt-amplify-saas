@@ -1,27 +1,61 @@
 ## AGENTS.md — AI Agent & Contributor Operational Guide
 
-This document is the single source of truth for working with this repository.
+This document is the **single source of truth** for working with this repository. It provides clear guidelines for AI agents, ensuring consistency, security, and scalability in code analysis, generation, or modification.
 
-## 🚨 CRITICAL INSTRUCTIONS - READ BEFORE ANY TASK
+## CRITICAL INSTRUCTIONS - READ BEFORE ANY TASK
 
 **ALL agents and contributors MUST consult these instructions before performing any task:**
-
-### Consistency Validation
-1. **ALWAYS** validate that any instruction does NOT contradict the instructions, patterns, or architecture documented in this file.
-2. **IF CONTRADICTION EXISTS**: Immediately inform the user about the detected inconsistency and the specific sections that would be affected
-3. **DO NOT proceed** with contradictory changes without explicit user confirmation
-
-### Conflict Resolution Protocol
-- If the user confirms to proceed **despite the contradiction**:
-  1. Apply the requested changes
-  2. **MANDATORY**: Simultaneously update this document to maintain coherence
-  3. Document the changes made in both locations
 
 ### Coherence Principle
 This document must remain the single source of truth. Any deviation must result in an immediate update of these instructions to prevent future inconsistencies.
 
-## Repository Architecture
+### Consistency Validation
+1. **ALWAYS** validate that any instruction does NOT contradict the instructions, patterns, or architecture documented in this file.
+2. **IF CONTRADICTION EXISTS**, immediately inform the user about the detected inconsistency and the specific sections affected. If unsure, ask.
+3. **DO NOT PROCEED** with contradictory changes without explicit user confirmation.
+4. **IF THE USER CONFIRMS TO PROCEED** despite the contradiction, apply the changes by adding a comment with the prefix "EXCEPTION:".
 
+## Tech Stack
+- **Package Manager**: pnpm@10.13.1 (use `corepack enable`).
+- **Runtime**: Node.js ≥20.19 (Amplify Console: Node 22 override).
+- **Frontend**: Nuxt 4.x + TypeScript.
+- **Backend**: AWS Amplify Gen2 (Cognito, DynamoDB, AppSync).
+- **Billing**: Stripe (portal-first approach).
+- **UI**: Nuxt UI Pro + TailwindCSS.
+
+## Architecture
+
+This repository is a pnpm monorepo that composes Nuxt 4 apps from Nuxt Layers and an AWS Amplify Gen2 backend. The architecture optimizes for reuse, SSR safety, and clean contracts between layers and apps.
+
+### Monorepo
+- Managed with `pnpm` and workspaces.
+- Share code via packages.
+- Prefer package imports (@starter-nuxt-amplify-saas/<layer>) over relative paths (../..).
+- Strict TypeScript typing enforced across all workspaces.
+- Align with Node ≥20.19; use `corepack enable` for pnpm.
+
+### Apps (apps/)
+- There two types of applications: frontend and backend.
+- Frontend applications are based on Nuxt 4 and can be composed by using the layers.
+- Backend applications are based on Amplify Gen2.
+- The `amplify` layer (layers/amplify/) provides client/server integration between Nuxt and Amplify.
+
+### Nuxt Layers (layers/)
+- Use Nuxt Layers for reusable code. Each layer provides composables, components, plugins, and optionally server routes or utilities.
+
+**Adding a New Layer**:
+1. Create `layers/<name>/` with `nuxt.config.ts`, `package.json`, and minimal structure.
+2. Expose APIs via composables, components, and, if needed, namespaced `server/api` routes.
+3. Document in `layers/<name>/README.md` and reference in `AGENTS.md` if it introduces new patterns.
+
+**Layers Overview**:
+- `amplify`: provides client/server integration between Nuxt and Amplify.
+- `auth`: provides authentication functionality including sign-in, sign-up, email verification, session management, route protection, and user profile management with GraphQL integration.
+- `billing`: provides Stripe integration with subscription management and customer portal.
+- `i18n`: provides internationalization functionality including multi-language support and formatting utilities.
+- `uix`: provides UI components and theme.
+
+### Repository Structure
 ```
 starter-nuxt-amplify-saas/
 ├── apps/
@@ -41,17 +75,138 @@ starter-nuxt-amplify-saas/
 └── package.json            # Workspace root with top-level scripts
 ```
 
-## Tech Stack
+## Patterns
 
-- **Package Manager**: pnpm@10.13.1 (use `corepack enable`)
-- **Runtime**: Node.js ≥20.19 (Amplify Console: Node 22 override)
-- **Frontend**: Nuxt 4.x + TypeScript
-- **Backend**: AWS Amplify Gen2 (Cognito, DynamoDB, AppSync)
-- **Billing**: Stripe (portal-first approach)
-- **UI**: Nuxt UI Pro + TailwindCSS
+This section outlines standardized patterns for consistency, scalability, and maintainability across the repository. Update this section for any new or modified patterns.
+
+### Layers Patterns
+
+Guidelines for designing and maintaining Nuxt Layers in this monorepo.
+
+**Standard structure (per layer):**
+
+```text
+layers/<layer>/
+  nuxt.config.ts          # Layer config (runtimeConfig, i18n merge, module opts)
+  package.json           # Name: @starter-nuxt-amplify-saas/<layer>
+  README.md              # Public API, usage, caveats
+  components/            # Reusable UI components (dual-mode: controlled/autonomous)
+  composables/           # SSR-safe composables (useState-based; init guards)
+  plugins/               # Client/server plugins (prefix with 01., 02. to enforce order)
+  server/
+    api/<layer>/...      # Namespaced routes to avoid collisions
+    utils/               # Server-only helpers (no client globals)
+  utils/                 # Shared helpers (isomorphic if needed)
+  types/                 # d.ts module augmentation and public types
+  i18n/locales/{en,es}/  # Layer-local translations (merged in nuxt.config)
+  assets/                # Optional assets (e.g., uix theme tokens)
+```
+
+**Key Principles & Guidelines:**
+- Encapsulation: Each layer owns its namespace and internal logic.
+- Composition: Apps extend multiple layers using the extends field on `nuxt.config.ts` (e.g., `@starter-nuxt-amplify-saas/<layer>`).
+- SSR Safety: Use `useState` or shared state and per-request isolation.
+- Internal API: Server routes and utilities are namespaced per layer to avoid collisions.
+- UI: Prefer Nuxt UI Pro and in-house components in `layers/uix`.
+- Server Routes: Always namespaced under `server/api/<layer>/...` to avoid collisions.
+- Plugins: Separate client/server plugins (`*.client.ts` / `*.server.ts`).
+- Plugins: Use numeric prefixes (e.g., `01.amplify.client.ts`) to ensure ordering when a dependency must load first (e.g., Amplify before auth/billing).
+- Internationalization: Each layer may contribute locales; merge them in `nuxt.config` of the layer. Scope keys by feature to avoid collisions.
+- Types: Provide `.d.ts` files for module augmentation (e.g., `types/amplify.d.ts`).
+- Export public TypeScript types for component props/emits and composable return types.
+- Configuration: Layer `nuxt.config.ts` can define `runtimeConfig` (server) and `public.runtimeConfig` (client). Never hardcode secrets.
+- Document required environment variables in the layer README (e.g., Stripe keys for `billing`).
+
+### Composables Patterns
+
+Guidelines for designing and maintaining Nuxt Composables in this repository.
+
+**Standard Template (per composable):**
+
+```ts
+import { createSharedComposable } from '@vueuse/core' // Import if needed for shared instance
+
+// Base state: Use useState for SSR-safe, serializable shared state
+const useXState = () => ({
+  data: useState<any>('x:data', () => null), // Main data (e.g., fetched resource)
+  loading: useState<boolean>('x:loading', () => false), // Global loading flag
+  error: useState<string | null>('x:error', () => null) // Error message
+  // Optional: Add guards like initialized: useState<boolean>('x:initialized', () => false)
+})
+
+// Core logic: Environment-agnostic where possible, branched when needed
+const _useX = () => {
+  const s = useXState()
+
+  // Shared action: Logic that runs identically on server/client
+  const action = async () => {
+    s.loading.value = true
+    try {
+      // Example: Fetch data or perform computation
+      // s.data.value = await someUniversalFetch()
+    } catch (e: any) {
+      s.error.value = e?.message ?? 'Unknown error'
+    } finally {
+      s.loading.value = false
+    }
+  }
+
+  // Differentiated action: Branch based on environment
+  const actionDifferentiated = async () => {
+    s.loading.value = true
+    try {
+      if (import.meta.server) {
+        // Server-only: e.g., access Nitro event, database queries without client exposure
+      }
+      if (import.meta.client) {
+        // Client-only: e.g., browser APIs like localStorage, DOM interactions
+      }
+    } catch (e: any) {
+      s.error.value = e?.message ?? 'Unknown error'
+    } finally {
+      s.loading.value = false
+    }
+  }
+
+  return { ...s, action, actionDifferentiated }
+}
+
+// Client-shared export: Use createSharedComposable for efficiency on client
+export const useX = createSharedComposable(_useX)
+
+// Server-only export: Isolated instance per request (throw error if called on client)
+export const useXServer = () => {
+  if (import.meta.client) throw new Error('useXServer is server-only')
+  return _useX()
+}
+```
+
+**Key Principles & Guidelines:**
+- SSR Safety: Prioritize useState for serializable state to avoid hydration mismatches. Avoid non-serializable values (e.g., functions, classes).
+- Environment Differentiation: Use import.meta.server and import.meta.client to branch logic where necessary, keeping the API consistent.
+- Shared Instance: Wrap with createSharedComposable to share a single instance across client-side components, reducing redundant computations.
+- Server Isolation: Provide a server-only variant (useXServer) for per-request isolation in API routes or server plugins.
+- Error Handling: Always include loading and error states; wrap actions in try/catch/finally for robust UX.
+- Initialization Guards: For async operations, add initialized or inFlight flags to prevent duplicate fetches (not shown in template but recommended for complex composables).
+
+**Usage Notes:**
+- Use `useX` for client-side components, composables and plugins.
+- Use `useX` for server-side components, composables.
+- Use `useXServer` for server API routes (`server/api/`) or server plugins.
+
+### API Server Patterns
+
+Guidelines for designing and maintaining API Server (`server/api/`) in this repository.
+
+**Key Principles & Guidelines:**
+- Auth wrappers come from the `amplify` layer utils when using Amplify resources.
+  - `withAmplifyAuth(event, fn)` for authenticated routes.
+  - `withAmplifyPublic(fn)` for public routes (no auth, safe reads only).
+  - Prefer server clients from `@starter-nuxt-amplify-saas/amplify/server/utils/amplify` (e.g., `getServerUserPoolDataClient`).
+- Validate inputs and return normalized `{ success, data?, error? }` shapes. Use `createError` for HTTP errors.
+- Keep third-party SDK initialization (e.g., Stripe) inside handlers, reading keys from `runtimeConfig` provided by the layer.
 
 ## Quick Start
-
 ```bash
 corepack enable
 pnpm install
@@ -117,24 +272,6 @@ pnpm saas:dev
 3. **Fix**: Edit code
 4. **Document**: Update relevant README if behavior changes
 
-## Security & Guardrails
-
-### ⚠️ HIGH RISK OPERATIONS
-- `pnpm backend:sandbox:init` → **Deploys AWS resources, incurs costs**
-- `tsx scripts/billing-stripe-sync.ts` → **Creates products/prices in Stripe**
-- Schema changes in `apps/backend/amplify/data/resource.ts` → **May affect data**
-
-### 🔒 Security Rules
-- **Never commit secrets** to version control
-- **Use test Stripe keys** for development (`STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`)
-- **Dev AWS account only** for sandbox operations
-- **Clean up resources** with `pnpm backend:sandbox:delete` when done
-
-### 💰 Cost Management
-- Sandbox creates: Cognito User Pool, DynamoDB tables, AppSync API
-- Clean up with `pnpm backend:sandbox:delete`
-- Monitor AWS costs in development account
-
 ## Contribution Standards
 
 ### Git Conventions
@@ -151,76 +288,6 @@ pnpm saas:dev
   - Composables: `useX`
   - Pages: `kebab-case`
   - API routes: `kebab-case`
-
-### UI Component Pattern: Controlled vs Autonomous (Nuxt 4)
-
-All reusable components should work in two modes without branching code across the app:
-
-- **Controlled mode (preferred by pages)**: Parent passes `props` and handles actions via `emits`.
-- **Autonomous mode (sensible defaults)**: If required `props` are not provided, the component derives data and actions from its layer composable (backed by Nuxt `useState`).
-
-Rules:
-- **Dual-mode contract**
-  - Components accept optional `props` for data and `loading` flags.
-  - Components expose a boolean `controlled?: boolean` (default `false`). When `true`, the component must not perform side-effects and should only emit events.
-  - Runtime decision:
-    - If `controlled === true` OR the relevant `props` are present → use `props` and `emit` events only.
-    - Otherwise → read state/actions from the composable (autonomous mode).
-
-- **Composable state (shared via useState)**
-  - Use Nuxt `useState` to share state across mounts in the same client session. Include:
-    - Data: e.g. `subscription`, `invoices`.
-    - Loading: e.g. `subscriptionLoading`, `invoicesLoading`, `isPortalLoading`.
-    - Errors: e.g. `subscriptionError`, `invoicesError`.
-    - Guards: `initialized` and `inFlight` (per resource/action) to prevent duplicate fetches and concurrent races.
-  - Initialize once with `ensureInitialized()` in `onMounted`. Never fetch on every component mount.
-  - Only store serializable values in `useState` (no functions/classes) to remain SSR-safe.
-  - Reference: Nuxt 4 state management with `useState` [docs](https://nuxt.com/docs/4.x/getting-started/state-management).
-
-- **Per-action loading (button-local)**
-  - Never bind a global loading flag to multiple buttons. Each button manages a local `ref(false)` for its own spinner, and only falls back to global loading when appropriate.
-
-- **Events and side-effects**
-  - In controlled mode, always `emit` (e.g. `openPortal`, `loadMore`). Parent performs side-effects.
-  - In autonomous mode, call composable methods directly.
-
-- **SSR considerations**
-  - `useState` is per-request on the server and shared on the client after hydration.
-  - Avoid using `window`/`document` in setup; gate client-only work in event handlers or `onMounted`.
-
-- **No Providers or Pinia by default**
-  - Do not introduce context providers or Pinia stores for this use case.
-  - If a future feature requires cross-user scoping or advanced devtools, revisit and update this document before adopting a new state layer.
-
-Example (sketch):
-
-```ts
-// Inside a component's <script setup>
-const props = withDefaults(defineProps<{ data?: T | null; loading?: boolean; controlled?: boolean }>(), {
-  loading: false,
-  controlled: false
-})
-const emit = defineEmits<{ action: [] }>()
-
-const billing = useBilling() // composable with useState + init guards
-
-const effectiveData = computed(() => props.data ?? billing.someData.value ?? null)
-const localLoading = ref(false)
-const effectiveLoading = computed(() => props.loading || localLoading.value)
-
-const handleClick = async () => {
-  if (props.controlled || props.data !== undefined) {
-    emit('action')
-    return
-  }
-  try {
-    localLoading.value = true
-    await billing.someAction()
-  } finally {
-    localLoading.value = false
-  }
-}
-```
 
 ### Pull Requests
 - Keep PRs small and atomic
@@ -265,14 +332,6 @@ pnpm backend:sandbox:seed:users
 pnpm saas:dev
 ```
 
-**Success criteria**:
-- Visit `http://localhost:3000` → see login/signup
-- Can register and login
-- `/debug` page shows diagnostics
-- Billing plans visible in UI
-
-## References
-
 ### Internal Documentation
 - **Project setup & deployment**: `README.md`
 - **Layer documentation**: `layers/*/README.md`
@@ -304,7 +363,3 @@ pnpm saas:dev
 - **TypeScript Handbook**: https://www.typescriptlang.org/docs/
 - **Zod Validation**: https://zod.dev/
 - **TailwindCSS**: https://tailwindcss.com/docs
-
----
-
-**Note**: No test runner or linter is currently configured. This document will be updated when testing infrastructure is added.
