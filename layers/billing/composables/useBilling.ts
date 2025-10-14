@@ -1,3 +1,5 @@
+import { createSharedComposable } from '@vueuse/core'
+
 export interface StripePortalOptions {
   flow_type?: 'subscription_update' | 'subscription_cancel' | 'payment_method_update' | 'subscription_update_confirm'
   return_url?: string
@@ -18,50 +20,50 @@ interface InvoicesData {
   totalCount: number
 }
 
-export const useBilling = () => {
-  // Shared state (SSR-friendly) using Nuxt useState
-  const isPortalLoading = useState<boolean>('billing:isPortalLoading', () => false)
-
-  const subscription = useState<SubscriptionData | null>('billing:subscription', () => null)
-  const invoices = useState<InvoicesData | null>('billing:invoices', () => null)
-
-  const subscriptionLoading = useState<boolean>('billing:subscriptionLoading', () => false)
-  const invoicesLoading = useState<boolean>('billing:invoicesLoading', () => false)
-
-  const subscriptionError = useState<string | null>('billing:subscriptionError', () => null)
-  const invoicesError = useState<string | null>('billing:invoicesError', () => null)
-
-  // Initialization and concurrency guards
-  const initialized = useState<boolean>('billing:initialized', () => false)
-  const inFlight = useState<Record<string, boolean>>('billing:inFlight', () => ({
+// Base state: Use useState for SSR-safe, serializable shared state
+const useBillingState = () => ({
+  isPortalLoading: useState<boolean>('billing:isPortalLoading', () => false),
+  subscription: useState<SubscriptionData | null>('billing:subscription', () => null),
+  invoices: useState<InvoicesData | null>('billing:invoices', () => null),
+  subscriptionLoading: useState<boolean>('billing:subscriptionLoading', () => false),
+  invoicesLoading: useState<boolean>('billing:invoicesLoading', () => false),
+  subscriptionError: useState<string | null>('billing:subscriptionError', () => null),
+  invoicesError: useState<string | null>('billing:invoicesError', () => null),
+  initialized: useState<boolean>('billing:initialized', () => false),
+  inFlight: useState<Record<string, boolean>>('billing:inFlight', () => ({
     init: false,
     subscription: false,
     invoices: false,
     portal: false
   }))
+})
+
+// Core logic: Environment-agnostic where possible
+const _useBilling = () => {
+  const s = useBillingState()
 
   // Computed loading state
   const isLoading = computed(() =>
-    isPortalLoading.value || subscriptionLoading.value || invoicesLoading.value
+    s.isPortalLoading.value || s.subscriptionLoading.value || s.invoicesLoading.value
   )
 
   // Computed error state
   const error = computed(() =>
-    subscriptionError.value || invoicesError.value
+    s.subscriptionError.value || s.invoicesError.value
   )
 
   // Computed subscription state helpers
   const hasActivePaidSubscription = computed(() => {
-    return subscription.value?.subscription?.status === 'active' &&
-           subscription.value?.plan?.price > 0
+    return s.subscription.value?.subscription?.status === 'active' &&
+           s.subscription.value?.plan?.price > 0
   })
 
   const currentPlanId = computed(() => {
-    return subscription.value?.subscription?.planId || 'free'
+    return s.subscription.value?.subscription?.planId || 'free'
   })
 
   const isFreePlan = computed(() => {
-    return currentPlanId.value === 'free' || subscription.value?.plan?.price === 0
+    return currentPlanId.value === 'free' || s.subscription.value?.plan?.price === 0
   })
 
   // Create Stripe Customer Portal URL (no navigation)
@@ -83,13 +85,71 @@ export const useBilling = () => {
     return response.data.url as string
   }
 
+  // Create Stripe Customer Portal session (returns full response)
+  const createPortalSession = async (returnUrl?: string) => {
+    const response = await $fetch('/api/billing/portal', {
+      method: 'POST',
+      body: {
+        flow_type: 'subscription_update',
+        return_url: returnUrl
+      }
+    })
+
+    return response
+  }
+
+  // Create Stripe Checkout session
+  // Supports two calling styles:
+  // 1) createCheckoutSession({ priceId, planId, billingInterval })
+  // 2) createCheckoutSession(priceId) — derives planId + interval by fetching plans
+  const createCheckoutSession = async (
+    arg1: { priceId: string, planId: string, billingInterval: 'monthly' | 'yearly' } | string,
+    planIdMaybe?: string,
+    billingIntervalMaybe?: 'monthly' | 'yearly'
+  ) => {
+    let priceId: string
+    let planId: string
+    let billingInterval: 'monthly' | 'yearly'
+
+    if (typeof arg1 === 'string') {
+      priceId = arg1
+
+      // Derive planId and interval from public plans API
+      const plansResp = await $fetch('/api/billing/plans') as any
+      const plans = plansResp?.data?.plans || []
+      const match = plans.find((p: any) => p.stripeMonthlyPriceId === priceId || p.stripeYearlyPriceId === priceId)
+
+      if (!match) {
+        throw new Error('Unknown priceId; not found in available plans')
+      }
+
+      planId = match.id
+      billingInterval = match.stripeYearlyPriceId === priceId ? 'yearly' : 'monthly'
+    } else {
+      priceId = arg1.priceId
+      planId = arg1.planId
+      billingInterval = arg1.billingInterval
+    }
+
+    const response = await $fetch('/api/billing/checkout', {
+      method: 'POST',
+      body: {
+        priceId,
+        planId,
+        billingInterval
+      }
+    })
+
+    return response
+  }
+
   // Portal functionality (navigate and refresh)
   const openPortal = async (options: StripePortalOptions = {}) => {
-    if (isPortalLoading.value || inFlight.value.portal) return
+    if (s.isPortalLoading.value || s.inFlight.value.portal) return
 
     try {
-      isPortalLoading.value = true
-      inFlight.value.portal = true
+      s.isPortalLoading.value = true
+      s.inFlight.value.portal = true
 
       const url = await createPortalUrl(options)
 
@@ -110,50 +170,50 @@ export const useBilling = () => {
         color: 'red'
       })
     } finally {
-      isPortalLoading.value = false
-      inFlight.value.portal = false
+      s.isPortalLoading.value = false
+      s.inFlight.value.portal = false
     }
   }
 
   // Data fetching methods
   const fetchSubscription = async () => {
-    if (subscriptionLoading.value || inFlight.value.subscription) return
+    if (s.subscriptionLoading.value || s.inFlight.value.subscription) return
 
     try {
-      subscriptionLoading.value = true
-      inFlight.value.subscription = true
-      subscriptionError.value = null
+      s.subscriptionLoading.value = true
+      s.inFlight.value.subscription = true
+      s.subscriptionError.value = null
 
       const response = await $fetch('/api/billing/subscription')
 
       if (response.success) {
-        subscription.value = response.data
+        s.subscription.value = response.data
       } else {
         throw new Error('Failed to fetch subscription data')
       }
 
     } catch (error: any) {
       console.error('Subscription fetch error:', error)
-      subscriptionError.value = error.data?.message || error.message || 'Failed to fetch subscription'
+      s.subscriptionError.value = error.data?.message || error.message || 'Failed to fetch subscription'
 
       useToast().add({
         title: 'Subscription Error',
-        description: subscriptionError.value,
+        description: s.subscriptionError.value,
         color: 'red'
       })
     } finally {
-      subscriptionLoading.value = false
-      inFlight.value.subscription = false
+      s.subscriptionLoading.value = false
+      s.inFlight.value.subscription = false
     }
   }
 
   const fetchInvoices = async (options: { limit?: number, startingAfter?: string } = {}) => {
-    if (invoicesLoading.value || inFlight.value.invoices) return
+    if (s.invoicesLoading.value || s.inFlight.value.invoices) return
 
     try {
-      invoicesLoading.value = true
-      inFlight.value.invoices = true
-      invoicesError.value = null
+      s.invoicesLoading.value = true
+      s.inFlight.value.invoices = true
+      s.invoicesError.value = null
 
       const query = new URLSearchParams()
       if (options.limit) query.append('limit', options.limit.toString())
@@ -162,13 +222,13 @@ export const useBilling = () => {
       const response = await $fetch(`/api/billing/invoices?${query.toString()}`)
 
       if (response.success) {
-        if (options.startingAfter && invoices.value) {
+        if (options.startingAfter && s.invoices.value) {
           // Append to existing invoices (pagination)
-          invoices.value.invoices.push(...response.data.invoices)
-          invoices.value.hasMore = response.data.hasMore
+          s.invoices.value.invoices.push(...response.data.invoices)
+          s.invoices.value.hasMore = response.data.hasMore
         } else {
           // Replace invoices (initial load)
-          invoices.value = response.data
+          s.invoices.value = response.data
         }
       } else {
         throw new Error('Failed to fetch invoices')
@@ -176,16 +236,16 @@ export const useBilling = () => {
 
     } catch (error: any) {
       console.error('Invoices fetch error:', error)
-      invoicesError.value = error.data?.message || error.message || 'Failed to fetch invoices'
+      s.invoicesError.value = error.data?.message || error.message || 'Failed to fetch invoices'
 
       useToast().add({
         title: 'Invoices Error',
-        description: invoicesError.value,
+        description: s.invoicesError.value,
         color: 'red'
       })
     } finally {
-      invoicesLoading.value = false
-      inFlight.value.invoices = false
+      s.invoicesLoading.value = false
+      s.inFlight.value.invoices = false
     }
   }
 
@@ -195,7 +255,7 @@ export const useBilling = () => {
   }
 
   const refreshInvoices = async () => {
-    invoices.value = null // Clear existing data
+    s.invoices.value = null // Clear existing data
     await fetchInvoices()
   }
 
@@ -238,9 +298,9 @@ export const useBilling = () => {
 
   // Load more invoices (pagination)
   const loadMoreInvoices = async () => {
-    if (!invoices.value?.hasMore || invoicesLoading.value) return
+    if (!s.invoices.value?.hasMore || s.invoicesLoading.value) return
 
-    const lastInvoice = invoices.value.invoices.slice(-1)[0]
+    const lastInvoice = s.invoices.value.invoices.slice(-1)[0]
     if (lastInvoice) {
       await fetchInvoices({
         limit: 10,
@@ -251,42 +311,44 @@ export const useBilling = () => {
 
   // Ensure one-time initialization
   const ensureInitialized = async () => {
-    if (initialized.value || inFlight.value.init) return
+    if (s.initialized.value || s.inFlight.value.init) return
     try {
-      inFlight.value.init = true
+      s.inFlight.value.init = true
       await Promise.all([
         fetchSubscription(),
         fetchInvoices({ limit: 10 })
       ])
-      initialized.value = true
+      s.initialized.value = true
     } finally {
-      inFlight.value.init = false
+      s.inFlight.value.init = false
     }
   }
 
   // Auto-fetch once on first mount in client
-  onMounted(() => {
-    // Initialize data only once per client session
-    // No-ops on subsequent mounts thanks to guards
-    void ensureInitialized()
-  })
+  if (import.meta.client) {
+    onMounted(() => {
+      // Initialize data only once per client session
+      // No-ops on subsequent mounts thanks to guards
+      void ensureInitialized()
+    })
+  }
 
   return {
-    // Data
-    subscription: readonly(subscription),
-    invoices: readonly(invoices),
+    // Data (readonly state from useState)
+    subscription: readonly(s.subscription),
+    invoices: readonly(s.invoices),
 
     // Loading states
     isLoading: readonly(isLoading),
-    subscriptionLoading: readonly(subscriptionLoading),
-    invoicesLoading: readonly(invoicesLoading),
-    isPortalLoading: readonly(isPortalLoading),
-    initialized: readonly(initialized),
+    subscriptionLoading: readonly(s.subscriptionLoading),
+    invoicesLoading: readonly(s.invoicesLoading),
+    isPortalLoading: readonly(s.isPortalLoading),
+    initialized: readonly(s.initialized),
 
     // Error states
     error: readonly(error),
-    subscriptionError: readonly(subscriptionError),
-    invoicesError: readonly(invoicesError),
+    subscriptionError: readonly(s.subscriptionError),
+    invoicesError: readonly(s.invoicesError),
 
     // Subscription state helpers
     hasActivePaidSubscription: readonly(hasActivePaidSubscription),
@@ -295,6 +357,8 @@ export const useBilling = () => {
 
     // Portal methods
     createPortalUrl,
+    createPortalSession,
+    createCheckoutSession,
     openPortal,
     updateSubscription,
     cancelSubscription,
@@ -307,6 +371,16 @@ export const useBilling = () => {
     refreshSubscription,
     refreshInvoices,
     refreshAll,
-    loadMoreInvoices
+    loadMoreInvoices,
+    ensureInitialized
   }
+}
+
+// Client-shared export: Use createSharedComposable for efficiency on client
+export const useBilling = createSharedComposable(_useBilling)
+
+// Server-only export: Isolated instance per request (throw error if called on client)
+export const useBillingServer = () => {
+  if (import.meta.client) throw new Error('useBillingServer is server-only')
+  return _useBilling()
 }

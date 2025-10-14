@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { createSharedComposable } from '@vueuse/core'
 import { getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth/server'
 import { generateClient } from 'aws-amplify/data/server'
@@ -7,30 +7,18 @@ import * as mutations from '../../amplify/utils/graphql/mutations'
 import { withAmplifyAuth, withAmplifyPublic } from '../../amplify/server/utils/amplify'
 import { handleAuthError } from '../utils'
 
-// Create state factory function
-const useUserState = () => {
-  const isAuthenticated = ref(false)
-  const authStep = ref('initial')
-  const authSession = ref(null)
-  const tokens = ref(null)
-  const currentUser = ref(null)
-  const userAttributes = ref(null)
-  const userProfile = ref(null)
-  const loading = ref(false)
-  const error = ref(null)
-
-  return {
-    isAuthenticated,
-    authStep,
-    authSession,
-    tokens,
-    currentUser,
-    userAttributes,
-    userProfile,
-    loading,
-    error
-  }
-}
+// Base state: Use useState for SSR-safe, serializable shared state
+const useUserState = () => ({
+  isAuthenticated: useState<boolean>('user:isAuthenticated', () => false),
+  authStep: useState<string>('user:authStep', () => 'initial'),
+  authSession: useState<any>('user:authSession', () => null),
+  tokens: useState<any>('user:tokens', () => null),
+  currentUser: useState<any>('user:currentUser', () => null),
+  userAttributes: useState<any>('user:userAttributes', () => null),
+  userProfile: useState<any>('user:userProfile', () => null),
+  loading: useState<boolean>('user:loading', () => false),
+  error: useState<string | null>('user:error', () => null)
+})
 
 /**
  * Composable for managing user authentication and profile data using AWS Amplify
@@ -95,6 +83,43 @@ const _useUser = () => {
   const userState = useUserState()
 
   /**
+   * Serialize tokens to plain object (remove functions)
+   */
+  const serializeTokens = (tokens: any) => {
+    if (!tokens) return null
+    return {
+      accessToken: tokens.accessToken?.toString() || null,
+      idToken: tokens.idToken?.toString() || null,
+      signInDetails: tokens.signInDetails || null
+    }
+  }
+
+  /**
+   * Serialize auth session to plain object (remove functions)
+   */
+  const serializeAuthSession = (authSession: any) => {
+    if (!authSession) return null
+    return {
+      tokens: serializeTokens(authSession.tokens),
+      credentials: authSession.credentials || null,
+      identityId: authSession.identityId || null,
+      userSub: authSession.userSub || null
+    }
+  }
+
+  /**
+   * Serialize current user to plain object (remove functions)
+   */
+  const serializeCurrentUser = (currentUser: any) => {
+    if (!currentUser) return null
+    return {
+      username: currentUser.username || null,
+      userId: currentUser.userId || null,
+      signInDetails: currentUser.signInDetails || null
+    }
+  }
+
+  /**
    * Sign up a new user and handle multi-step flow
    */
   const signUp = async (data) => {
@@ -131,7 +156,7 @@ const _useUser = () => {
 
     try {
       const result = await useNuxtApp().$Amplify.Auth.signIn(credentials)
-      userState.currentUser.value = result.user
+      userState.currentUser.value = serializeCurrentUser(result.user)
 
       // Handle auth challenges
       if (result.challengeName) {
@@ -377,15 +402,15 @@ const _useUser = () => {
       if (import.meta.client) {
         // Get current auth session
         const authSession = await useNuxtApp().$Amplify.Auth.fetchAuthSession()
-        userState.authSession.value = authSession
+        userState.authSession.value = serializeAuthSession(authSession)
         userState.isAuthenticated.value = authSession.tokens !== undefined
 
         if (userState.isAuthenticated.value) {
-          userState.tokens.value = authSession.tokens
+          userState.tokens.value = serializeTokens(authSession.tokens)
 
           // Get current user
           const currentUser = await useNuxtApp().$Amplify.Auth.getCurrentUser()
-          userState.currentUser.value = currentUser
+          userState.currentUser.value = serializeCurrentUser(currentUser)
 
           // Get user attributes
           const userAttributes = await useNuxtApp().$Amplify.Auth.fetchUserAttributes()
@@ -399,13 +424,15 @@ const _useUser = () => {
         const authSession = await withAmplifyAuth(event, contextSpec =>
           fetchAuthSession(contextSpec)
         )
-        userState.authSession.value = authSession
+        userState.authSession.value = serializeAuthSession(authSession)
         userState.isAuthenticated.value = authSession.tokens !== undefined
 
         if (userState.isAuthenticated.value) {
-          userState.tokens.value = authSession.tokens
-          userState.currentUser.value = await withAmplifyAuth(event, contextSpec =>
-            getCurrentUser(contextSpec)
+          userState.tokens.value = serializeTokens(authSession.tokens)
+          userState.currentUser.value = serializeCurrentUser(
+            await withAmplifyAuth(event, contextSpec =>
+              getCurrentUser(contextSpec)
+            )
           )
           userState.userAttributes.value = await withAmplifyAuth(event, contextSpec =>
             fetchUserAttributes(contextSpec)
@@ -440,16 +467,8 @@ const _useUser = () => {
   }
 
   return {
-    // Readonly refs
-    isAuthenticated: import.meta.client ? computed(() => userState.isAuthenticated.value) : userState.isAuthenticated,
-    authStep: import.meta.client ? computed(() => userState.authStep.value) : userState.authStep,
-    userAttributes: import.meta.client ? computed(() => userState.userAttributes.value) : userState.userAttributes,
-    userProfile: import.meta.client ? computed(() => userState.userProfile.value) : userState.userProfile,
-    authSession: import.meta.client ? computed(() => userState.authSession.value) : userState.authSession,
-    tokens: import.meta.client ? computed(() => userState.tokens.value) : userState.tokens,
-    currentUser: import.meta.client ? computed(() => userState.currentUser.value) : userState.currentUser,
-    loading: import.meta.client ? computed(() => userState.loading.value) : userState.loading,
-    error: import.meta.client ? computed(() => userState.error.value) : userState.error,
+    // State (already reactive via useState)
+    ...userState,
     // Methods
     signUp,
     signIn,
