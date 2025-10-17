@@ -1,0 +1,31 @@
+version: '3'
+
+tasks:
+  clean.nuxt:
+    desc: "Clean the project from Nuxt related files"
+    cmds:
+      - find . -type d \( -name ".nuxt" -o -name ".playground" -o -name ".output" -o -name "dist" \) -exec rm -rf {} +
+  clean.amplify:
+    desc: "Clean the project from Nuxt related files"
+    cmds:
+      - find . -type d \( -name ".amplify" \) -exec rm -rf {} +
+  clean.test:
+    desc: "Clean the project from test related files"
+    cmds:
+      - find . -type d \( -name "test-results" \) -exec rm -rf {} +
+  clean.logs:
+    desc: "Clean the project from logs"
+    cmds:
+      - find . -type f \( -name "*.log" \) -exec rm -rf {} +
+  clean.node:
+    desc: "Clean the project from node_modules"
+    cmds:
+      - find . -type d \( -name "node_modules" \) -exec rm -rf {} +
+  clean:
+    desc: "Clean the project"
+    deps:
+      - clean.nuxt
+      - clean.amplify
+      - clean.test
+      - clean.logs
+      - clean.node
