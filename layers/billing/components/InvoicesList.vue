@@ -163,9 +163,10 @@ const showSkeleton = computed(() => {
   if (props.controlled || props.invoices !== undefined) {
     return !!props.invoicesLoading && (props.invoices?.length ?? 0) === 0
   }
-  // Avoid empty-state flash before first load finishes
-  if (!billing.initialized.value) return true
-  return billing.invoicesLoading.value && effectiveInvoices.value.length === 0
+  // Show skeleton ONLY if we don't have data yet AND we're loading
+  // Hide skeleton as soon as we have data (even empty array) or initialization completes
+  const hasData = billing.invoices.value !== null
+  return !hasData && (billing.invoicesLoading.value || !billing.initialized.value)
 })
 
 const handleDownload = (invoiceId: string) => {

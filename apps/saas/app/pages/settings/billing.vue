@@ -12,7 +12,7 @@
     <div class="space-y-6">
       <CurrentSubscription />
       <PaymentMethod />
-      <BillingHistory />
+      <InvoicesList />
     </div>
   </div>
 </template>
@@ -26,5 +26,12 @@ definePageMeta({
 useSeoMeta({
   title: 'Billing Settings',
   description: 'Manage your subscription and billing information'
+})
+
+// Initialize billing data once when page mounts
+const billing = useBilling()
+
+onMounted(async () => {
+  await billing.ensureInitialized()
 })
 </script>

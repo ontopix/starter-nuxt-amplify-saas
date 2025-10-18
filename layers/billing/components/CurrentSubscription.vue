@@ -52,13 +52,22 @@
         </div>
       </div>
 
-      <UButton
-        variant="outline"
-        @click="handleClick"
+      <!-- Slot para custom actions con fallback por defecto -->
+      <slot
+        name="actions"
+        :subscription="effectiveSubscription"
         :loading="effectiveLoading"
+        :openPortal="handleClick"
       >
-        Change Plan
-      </UButton>
+        <!-- Botón por defecto si no se usa el slot -->
+        <UButton
+          variant="outline"
+          @click="handleClick"
+          :loading="effectiveLoading"
+        >
+          Change Plan
+        </UButton>
+      </slot>
     </div>
   </UCard>
 </template>
@@ -106,6 +115,11 @@ const emit = defineEmits<{
 
 // Dual-mode: props first, fallback to useBilling
 const billing = useBilling()
+
+onMounted(() => {
+  console.log('[CurrentSubscription] Mounted')
+})
+
 const effectiveSubscription = computed<Subscription | null>(() => {
   if (props.subscription) return props.subscription
   const s = billing.subscription.value
@@ -129,10 +143,9 @@ const showSkeleton = computed(() => {
   if (props.controlled || props.subscription !== undefined) {
     return !!props.loading && !props.subscription
   }
-  // Avoid empty-state flash before first load finishes
-  if (!billing.initialized.value) return true
-  // Autonomous: while subscription is loading and not yet available
-  return billing.subscriptionLoading.value && !effectiveSubscription.value
+  // Autonomous: Show skeleton ONLY if we don't have data yet AND we're loading
+  // Hide skeleton as soon as data is available, even if not fully initialized
+  return !effectiveSubscription.value && (billing.subscriptionLoading.value || !billing.initialized.value)
 })
 
 const handleClick = async () => {

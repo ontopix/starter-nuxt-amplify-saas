@@ -29,24 +29,173 @@ The Billing layer integrates Stripe with Nuxt 3, providing:
 
 ```
 layers/billing/
+├── components/           # UI components for pricing display
+│   ├── PricingPlan.vue   # Single plan card component
+│   ├── PricingPlans.vue  # Multiple plans side-by-side
+│   ├── PricingTable.vue  # Feature comparison table
+│   ├── CurrentSubscription.vue  # Current subscription details
+│   ├── PaymentMethod.vue        # Payment method management
+│   └── InvoicesList.vue         # Invoices list with downloads
 ├── composables/          # Reactive billing state management
 │   └── useBilling.ts     # Main billing composable with auth integration
 ├── server/               # Server-side billing utilities
 │   └── api/billing/      # Billing API endpoints
+│       ├── plans.get.ts         # Get available plans
 │       ├── subscription.get.ts  # Get user subscription data
 │       ├── portal.post.ts       # Create Customer Portal session
+│       ├── checkout.post.ts     # Create Checkout session
 │       └── webhook.post.ts      # Handle Stripe webhooks
 ├── utils/                # Helper functions
 │   └── index.ts          # Billing utilities and plan management
-├── billing-plans.json    # Simple plan configuration
 └── nuxt.config.ts        # Layer configuration
 ```
+
+## Components
+
+The billing layer provides several UI components that wrap Nuxt UI Pro components with automatic data fetching and billing integration.
+
+### Pricing Components
+
+Three pricing display components that automatically fetch plan data from `/api/billing/plans`:
+
+#### `<PricingPlan>`
+
+Display a single subscription plan card with pricing and features.
+
+**Usage (Autonomous Mode):**
+```vue
+<template>
+  <!-- Fetches plans and displays the first one -->
+  <PricingPlan />
+
+  <!-- Fetches plans and displays a specific plan -->
+  <PricingPlan plan-id="pro" interval="yearly" />
+</template>
+```
+
+**Usage (Pass-Through Mode):**
+```vue
+<template>
+  <!-- Pass all props directly to UPricingPlan -->
+  <PricingPlan
+    title="Pro Plan"
+    price="$29"
+    billing-cycle="/month"
+    :features="['Feature 1', 'Feature 2']"
+  />
+</template>
+```
+
+**Props:**
+- All props from Nuxt UI's `<UPricingPlan>` (pass-through mode)
+- `planId?: string` - Specific plan ID to display (autonomous mode)
+- `interval?: 'monthly' | 'yearly'` - Billing interval (default: 'monthly')
+- `ctaLabel?: string` - Call-to-action button label
+- `selectedPlanId?: string` - Highlight plan as selected
+- `controlled?: boolean` - Emit events instead of handling checkout
+
+#### `<PricingPlans>`
+
+Display multiple subscription plans side-by-side for comparison.
+
+**Usage (Autonomous Mode):**
+```vue
+<template>
+  <!-- Fetches and displays all active plans -->
+  <PricingPlans />
+
+  <!-- With custom interval and styling -->
+  <PricingPlans
+    interval="yearly"
+    orientation="horizontal"
+    compact
+  />
+</template>
+```
+
+**Usage (Pass-Through Mode):**
+```vue
+<script setup>
+const customPlans = [
+  { id: 'starter', name: 'Starter', price: 900, interval: 'monthly' },
+  { id: 'pro', name: 'Pro', price: 2900, interval: 'monthly' }
+]
+</script>
+
+<template>
+  <!-- Use custom plan data -->
+  <PricingPlans :plans="customPlans" />
+</template>
+```
+
+**Props:**
+- All props from Nuxt UI's `<UPricingPlans>` (pass-through mode)
+- `plans?: InputPlan[]` - Custom plan data (pass-through mode)
+- `interval?: 'monthly' | 'yearly'` - Billing interval (default: 'monthly')
+- `orientation?: 'horizontal' | 'vertical'` - Layout orientation
+- `compact?: boolean` - Compact display mode
+- `scale?: boolean` - Scale middle plan (visual emphasis)
+- `ctaLabel?: string` - Call-to-action button label
+- `selectedPlanId?: string` - Highlight plan as selected
+- `controlled?: boolean` - Emit events instead of handling checkout
+
+#### `<PricingTable>`
+
+Display subscription plans in a feature comparison table format.
+
+**Usage (Autonomous Mode):**
+```vue
+<template>
+  <!-- Fetches and displays all plans in table format -->
+  <PricingTable />
+
+  <!-- Vertical orientation for mobile -->
+  <PricingTable orientation="vertical" />
+</template>
+```
+
+**Usage (Pass-Through Mode):**
+```vue
+<template>
+  <!-- Pass custom plans to UPricingTable -->
+  <PricingTable :plans="customPlans" orientation="horizontal" />
+</template>
+```
+
+**Props:**
+- All props from Nuxt UI's `<UPricingTable>` (pass-through mode)
+- `plans?: any[]` - Custom plan data (pass-through mode)
+- `interval?: 'monthly' | 'yearly'` - Billing interval (default: 'monthly')
+- `orientation?: 'horizontal' | 'vertical'` - Table orientation
+- `compact?: boolean` - Compact display mode
+- `scale?: boolean` - Scale emphasis
+- `ctaLabel?: string` - Call-to-action button label
+- `selectedPlanId?: string` - Highlight plan as selected
+- `controlled?: boolean` - Emit events instead of handling checkout
+
+### Subscription Management Components
+
+Components for managing active subscriptions:
+
+#### `<CurrentSubscription>`
+
+Display current subscription details. See detailed documentation in PRD.
+
+#### `<PaymentMethod>`
+
+Display and manage payment method. See detailed documentation in PRD.
+
+#### `<InvoicesList>`
+
+List and download user invoices. See detailed documentation in PRD.
 
 ## Composables
 
 ### `useBilling()`
 
 The main billing composable providing reactive subscription state and portal access. Built on top of the auth layer's user profile for seamless integration.
+
+> **Important:** The composable does NOT auto-initialize. You must explicitly call `ensureInitialized()` in your component's `onMounted` hook or when needed. This provides better control over data loading and prevents unnecessary API calls.
 
 #### Reactive State
 
@@ -76,31 +225,29 @@ interface BillingState {
 ```vue
 <script setup>
 const {
-  currentPlan,
-  availablePlans,
-  isActive,
-  status,
+  subscription,
+  invoices,
   isLoading,
+  subscriptionLoading,
+  invoicesLoading,
   error,
-  createPortalSession,
-  fetchSubscription
+  hasActivePaidSubscription,
+  currentPlanId,
+  isFreePlan,
+  ensureInitialized,
+  openPortal,
+  refreshSubscription
 } = useBilling()
 
-// Initialize billing data
+// Initialize billing data once when component mounts
 onMounted(async () => {
-  await fetchSubscription()
+  await ensureInitialized()
 })
 
 // Open Stripe Customer Portal for all subscription management
 const handleManageSubscription = async () => {
   try {
-    const result = await createPortalSession('/settings/billing')
-
-    if (result.success) {
-      window.location.href = result.data.url
-    } else {
-      console.error('Portal creation failed:', result.error)
-    }
+    await openPortal({ flow_type: 'subscription_update' })
   } catch (err) {
     console.error('Portal error:', error.value)
   }
@@ -109,14 +256,14 @@ const handleManageSubscription = async () => {
 
 <template>
   <div v-if="isLoading">Loading subscription...</div>
-  <div v-else-if="isActive">
-    <p>Current Plan: {{ currentPlan?.name }}</p>
-    <p>Price: ${{ currentPlan?.price }}/month</p>
-    <p>Status: {{ status }}</p>
+  <div v-else-if="hasActivePaidSubscription">
+    <p>Current Plan: {{ subscription?.plan?.name }}</p>
+    <p>Price: ${{ subscription?.plan?.price }}/{{ subscription?.plan?.interval }}</p>
+    <p>Status: {{ subscription?.subscription?.status }}</p>
     <button @click="handleManageSubscription">Manage Subscription</button>
   </div>
   <div v-else>
-    <p>No active subscription</p>
+    <p>No active subscription ({{ currentPlanId }})</p>
     <!-- Show available plans for upgrade -->
   </div>
 </template>
@@ -285,25 +432,26 @@ definePageMeta({
 })
 
 const {
-  currentPlan,
-  availablePlans,
-  isActive,
-  status,
-  createPortalSession,
-  fetchSubscription,
+  subscription,
+  hasActivePaidSubscription,
+  currentPlanId,
+  openPortal,
+  ensureInitialized,
+  refreshSubscription,
   isLoading,
   error
 } = useBilling()
 
+// Initialize billing data once when page mounts
 onMounted(async () => {
-  await fetchSubscription()
+  await ensureInitialized()
 })
 
-const openPortal = async () => {
-  const result = await createPortalSession()
-  if (result.success) {
-    // Redirect to Stripe Customer Portal
-    window.location.href = result.data.url
+const handleOpenPortal = async () => {
+  try {
+    await openPortal({ flow_type: 'subscription_update' })
+  } catch (err) {
+    console.error('Portal error:', err)
   }
 }
 </script>
@@ -314,24 +462,24 @@ const openPortal = async () => {
 
     <div v-else-if="error" class="error">
       {{ error }}
-      <button @click="fetchSubscription">Retry</button>
+      <button @click="refreshSubscription">Retry</button>
     </div>
 
-    <div v-else-if="isActive" class="active-subscription">
+    <div v-else-if="hasActivePaidSubscription" class="active-subscription">
       <div class="subscription-info">
-        <h2>{{ currentPlan?.name }} Plan</h2>
-        <p class="price">${{ currentPlan?.price }}/month</p>
-        <p class="status">Status: {{ status }}</p>
+        <h2>{{ subscription?.plan?.name }} Plan</h2>
+        <p class="price">${{ subscription?.plan?.price }}/{{ subscription?.plan?.interval }}</p>
+        <p class="status">Status: {{ subscription?.subscription?.status }}</p>
 
         <ul class="features">
-          <li v-for="feature in currentPlan?.features" :key="feature">
+          <li v-for="feature in subscription?.plan?.features" :key="feature">
             {{ feature }}
           </li>
         </ul>
       </div>
 
       <div class="billing-actions">
-        <button @click="openPortal" class="btn-primary">
+        <button @click="handleOpenPortal" class="btn-primary">
           Manage Subscription
         </button>
         <p class="portal-info">
@@ -343,6 +491,7 @@ const openPortal = async () => {
 
     <div v-else class="no-subscription">
       <h2>No Active Subscription</h2>
+      <p>Current plan: {{ currentPlanId }}</p>
       <p>Choose a plan to get started with premium features.</p>
       <NuxtLink to="/pricing" class="btn-primary">
         View Plans

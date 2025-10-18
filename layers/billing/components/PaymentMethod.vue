@@ -98,9 +98,9 @@ const showSkeleton = computed(() => {
   if (props.controlled || props.paymentMethod !== undefined) {
     return !!props.loading && !props.paymentMethod
   }
-  // Avoid empty-state flash: keep skeleton until first initialization completes
-  if (!billing.initialized.value) return true
-  return billing.subscriptionLoading.value && !effectivePaymentMethod.value
+  // Show skeleton ONLY if we don't have data yet AND we're loading
+  // Hide skeleton as soon as data is available, even if not fully initialized
+  return !effectivePaymentMethod.value && (billing.subscriptionLoading.value || !billing.initialized.value)
 })
 
 const handleClick = async () => {

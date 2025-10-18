@@ -311,7 +311,11 @@ const _useBilling = () => {
 
   // Ensure one-time initialization
   const ensureInitialized = async () => {
-    if (s.initialized.value || s.inFlight.value.init) return
+    if (s.initialized.value || s.inFlight.value.init) {
+      console.log('[useBilling] Already initialized or in flight, skipping')
+      return
+    }
+    console.log('[useBilling] Starting initialization...')
     try {
       s.inFlight.value.init = true
       await Promise.all([
@@ -319,18 +323,16 @@ const _useBilling = () => {
         fetchInvoices({ limit: 10 })
       ])
       s.initialized.value = true
+      console.log('[useBilling] Initialization complete')
     } finally {
       s.inFlight.value.init = false
     }
   }
 
-  // Auto-fetch once on first mount in client
-  if (import.meta.client) {
-    onMounted(() => {
-      // Initialize data only once per client session
-      // No-ops on subsequent mounts thanks to guards
-      void ensureInitialized()
-    })
+  // Clear errors manually
+  const clearError = () => {
+    s.subscriptionError.value = null
+    s.invoicesError.value = null
   }
 
   return {
@@ -372,7 +374,8 @@ const _useBilling = () => {
     refreshInvoices,
     refreshAll,
     loadMoreInvoices,
-    ensureInitialized
+    ensureInitialized,
+    clearError
   }
 }
 
