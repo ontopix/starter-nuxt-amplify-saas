@@ -35,7 +35,7 @@ This repository is a pnpm monorepo that composes Nuxt 4 apps from Nuxt Layers an
 - Align with Node ≥20.19; use `corepack enable` for pnpm.
 
 ### Apps (apps/)
-- There two types of applications: frontend and backend.
+- There are two types of applications: frontend and backend.
 - Frontend applications are based on Nuxt 4 and can be composed by using the layers.
 - Backend applications are based on Amplify Gen2.
 - The `amplify` layer (layers/amplify/) provides client/server integration between Nuxt and Amplify.
@@ -231,9 +231,9 @@ pnpm saas:dev
 - `pnpm backend:sandbox:delete` — Clean up sandbox resources
 - `pnpm amplify:sandbox:generate-outputs` — Required before first frontend build
 - `pnpm amplify:sandbox:generate-graphql-client-code` — Generate types + operations
- - `pnpm backend:sandbox:seed` — Run sandbox seed (plans + users)
- - `pnpm backend:sandbox:seed:plans` — Seed only billing plans from JSON
- - `pnpm backend:sandbox:seed:users` — Seed only users from JSON
+- `pnpm backend:sandbox:seed` — Run sandbox seed (plans + users)
+- `pnpm backend:sandbox:seed:plans` — Seed only billing plans from JSON
+- `pnpm backend:sandbox:seed:users` — Seed only users from JSON
 
 ### Building
 - `pnpm --filter @starter-nuxt-amplify-saas/saas build` — Production build

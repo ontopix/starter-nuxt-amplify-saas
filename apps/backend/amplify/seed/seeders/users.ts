@@ -153,84 +153,31 @@ async function createUserSubscription(client: any, userId: string, planId: strin
   }
 }
 
-async function handleExistingUser(client: any, user: SeedUser): Promise<void> {
-  try {
-    console.log(`ℹ️  Creating database records for existing user: ${user.username}`);
-
-    // Create a placeholder UserProfile with a seed Stripe customer ID
-    // This will be updated when the user actually logs in
-    const seedStripeCustomerId = `cus_seed_${user.username.replace('@', '_').replace('+', '_')}`;
-
-    // Use the username as userId for now - this will be updated when user logs in
-    const userId = user.username;
-
-    // Check if UserProfile already exists
-    const { data: existingProfile } = await client.models.UserProfile.get({ userId });
-
-    if (!existingProfile) {
-      await client.models.UserProfile.create({
-        userId: userId,
-        stripeCustomerId: seedStripeCustomerId,
-      });
-      console.log(`✅ Created UserProfile for existing user: ${user.username}`);
-    } else {
-      console.log(`ℹ️  UserProfile already exists for: ${user.username}`);
-    }
-
-    // Create UserSubscription if planId is specified
-    if (user.planId) {
-      console.log(`🔄 Creating subscription for user: ${user.username} with planId: ${user.planId}`);
-
-      try {
-        // Check if subscription already exists
-        const { data: existingSubscription } = await client.models.UserSubscription.get({ userId });
-
-        if (!existingSubscription) {
-          const subscriptionData = {
-            userId: userId,
-            planId: user.planId,
-            stripeCustomerId: seedStripeCustomerId, // Use the same customer ID as UserProfile
-            status: 'active',
-            currentPeriodStart: new Date().toISOString(), // Required field
-            billingInterval: user.billingInterval || 'month',
-          };
-
-          console.log(`🔄 Creating subscription with data:`, subscriptionData);
-
-          const result = await client.models.UserSubscription.create(subscriptionData);
-          console.log(`✅ Created UserSubscription for existing user: ${user.username}`, result);
-        } else {
-          console.log(`ℹ️  UserSubscription already exists for: ${user.username}`);
-        }
-      } catch (subscriptionError) {
-        console.error(`❌ Error creating subscription for ${user.username}:`, subscriptionError);
-      }
-    } else {
-      console.log(`ℹ️  No planId specified for user: ${user.username}`);
-    }
-  } catch (error) {
-    console.warn(`⚠️  Could not create records for existing user ${user.username}:`, error);
-  }
-}
-
 async function seedUser(client: any, user: SeedUser): Promise<void> {
-  let isNewUser = false;
 
+  // Create or sign in user following AWS Amplify best practices
+  // Reference: https://docs.amplify.aws/react/deploy-and-host/sandbox-environments/seed/
   try {
-    // Create user in Cognito
+    // Attempt to create and sign up the user
     await createAndSignUpUser({
       username: user.username,
       password: user.password,
-      signInAfterCreation: false,
       signInFlow: 'Password',
+      signInAfterCreation: true, // Sign in after creation
       userAttributes: user.attributes
     });
     console.log(`✅ Created user: ${user.username}`);
-    isNewUser = true;
   } catch (err) {
-    if ((err as Error).name === 'UsernameExistsError') {
-      console.log(`ℹ️  User already exists: ${user.username}`);
-      isNewUser = false;
+    const error = err as Error;
+    if (error.name === 'UsernameExistsError') {
+      console.log(`ℹ️  User already exists: ${user.username}, signing in...`);
+      // User exists, sign them in instead
+      await signInUser({
+        username: user.username,
+        password: user.password,
+        signInFlow: 'Password'
+      });
+      console.log(`✅ Signed in existing user: ${user.username}`);
     } else {
       throw err;
     }
@@ -249,26 +196,19 @@ async function seedUser(client: any, user: SeedUser): Promise<void> {
     }
   }
 
-  // For existing users, we need to create UserProfile and UserSubscription
-  // but we can't authenticate, so we'll use a different approach
-  if (!isNewUser) {
-    console.log(`ℹ️  Processing existing user: ${user.username}`);
-    // We'll handle this case differently - create records without authentication
-    await handleExistingUser(client, user);
-    return;
-  }
-
-  // Only process new users
+  // Now process the user (either new or existing, both are signed in at this point)
   try {
     // Get current user info
     const currentUser = await auth.getCurrentUser();
     const userId = currentUser.userId;
 
-    // Check if UserProfile exists and has a real Stripe customer ID
+    // Check if UserProfile exists
     const { data: existingProfile } = await client.models.UserProfile.get({ userId });
 
-    if (!existingProfile) {
-      // Create Stripe customer
+    let stripeCustomerId: string;
+
+    if (!existingProfile || !existingProfile.stripeCustomerId || existingProfile.stripeCustomerId.startsWith('cus_seed_')) {
+      // Create or update Stripe customer
       const stripeSecretKey = await ensureStripeSecret();
       const stripe = createStripeClient(stripeSecretKey);
 
@@ -286,37 +226,27 @@ async function seedUser(client: any, user: SeedUser): Promise<void> {
       });
 
       console.log(`✅ Created Stripe customer ${stripeCustomer.id} for user: ${user.username}`);
+      stripeCustomerId = stripeCustomer.id;
 
-      await client.models.UserProfile.create({
-        userId: userId,
-        stripeCustomerId: stripeCustomer.id,
-      });
-      console.log(`✅ Created UserProfile for existing user: ${user.username}`);
-    } else if (existingProfile.stripeCustomerId.startsWith('cus_seed_')) {
-      // Update existing profile with real Stripe customer
-      const stripeSecretKey = await ensureStripeSecret();
-      const stripe = createStripeClient(stripeSecretKey);
-
-      const name = user.attributes?.name ||
-                   (user.attributes?.given_name && user.attributes?.family_name
-                     ? `${user.attributes.given_name} ${user.attributes.family_name}`
-                     : user.attributes?.given_name || user.attributes?.family_name || '');
-
-      const stripeCustomer = await stripe.customers.create({
-        email: user.username,
-        name: name,
-        metadata: {
-          userId: userId
-        }
-      });
-
-      console.log(`✅ Created Stripe customer ${stripeCustomer.id} for user: ${user.username}`);
-
-      await client.models.UserProfile.update({
-        userId: userId,
-        stripeCustomerId: stripeCustomer.id,
-      });
-      console.log(`✅ Updated UserProfile with real Stripe customer for user: ${user.username}`);
+      if (!existingProfile) {
+        // Create new profile
+        await client.models.UserProfile.create({
+          userId: userId,
+          stripeCustomerId: stripeCustomerId,
+        });
+        console.log(`✅ Created UserProfile for user: ${user.username}`);
+      } else {
+        // Update existing profile
+        await client.models.UserProfile.update({
+          userId: userId,
+          stripeCustomerId: stripeCustomerId,
+        });
+        console.log(`✅ Updated UserProfile with real Stripe customer for user: ${user.username}`);
+      }
+    } else {
+      // Use existing Stripe customer
+      stripeCustomerId = existingProfile.stripeCustomerId;
+      console.log(`ℹ️  Using existing Stripe customer ${stripeCustomerId} for user: ${user.username}`);
     }
 
     // Create subscription if planId is specified
@@ -344,14 +274,31 @@ export async function seedUsers(usersFile: SeedUsersFile): Promise<void> {
 
   console.log(`👥 Seeding ${usersFile.users.length} users...`);
 
+  let successCount = 0;
+  let failCount = 0;
+
   for (const user of usersFile.users) {
     try {
       await seedUser(client, user);
-    } catch (error) {
-      console.error(`❌ Failed to seed user ${user.username}:`, error);
+      successCount++;
+    } catch (error: any) {
+      failCount++;
+
+      // Check if it's an auth error with existing user
+      if (error.name === 'NotAuthorizedException' && error.message?.includes('Incorrect username or password')) {
+        console.error(`❌ Failed to seed user ${user.username}: User exists but cannot authenticate.`);
+        console.error(`   This usually means the user is in an invalid state (FORCE_CHANGE_PASSWORD or UNCONFIRMED).`);
+        console.error(`   Solution: Delete this user from AWS Cognito Console and run seed again.`);
+      } else {
+        console.error(`❌ Failed to seed user ${user.username}:`, error.message || error);
+      }
       // Continue with next user
     }
   }
+
+  console.log(`\n📊 Seeding Summary:`);
+  console.log(`   ✅ Success: ${successCount} users`);
+  console.log(`   ❌ Failed: ${failCount} users`);
 
   console.log('✅ Users seeded successfully');
 }

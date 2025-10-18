@@ -91,6 +91,10 @@
       "[role='alert']:has-text('Success')"
     ],
     "signupError": [
+      "text='An account with the given email already exists'",
+      "text='User already exists'",
+      "text='UsernameExistsException'",
+      "text='already exists'",
       "text='error'",
       "text='failed'",
       "text='invalid'",

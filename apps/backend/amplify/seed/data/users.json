@@ -4,7 +4,6 @@
       "username": "test+free1@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "email": "test+free1@ontopix.ai",
         "given_name": "Free",
         "family_name": "User1"
       },
@@ -14,7 +13,6 @@
       "username": "test+free2@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "email": "test+free2@ontopix.ai",
         "given_name": "Free",
         "family_name": "User2"
       },
@@ -24,7 +22,6 @@
       "username": "test+pro1@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "email": "test+pro1@ontopix.ai",
         "given_name": "Pro",
         "family_name": "User1"
       },
@@ -43,7 +40,6 @@
       "username": "test+pro2@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "email": "test+pro2@ontopix.ai",
         "given_name": "Pro",
         "family_name": "User2"
       },
@@ -62,7 +58,6 @@
       "username": "test+enterprise1@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "email": "test+enterprise1@ontopix.ai",
         "given_name": "Enterprise",
         "family_name": "User1"
       },
@@ -81,7 +76,6 @@
       "username": "test+enterprise2@ontopix.ai",
       "password": "TestPassword123!",
       "attributes": {
-        "email": "test+enterprise2@ontopix.ai",
         "given_name": "Enterprise",
         "family_name": "User2"
       },

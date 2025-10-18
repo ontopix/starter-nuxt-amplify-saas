@@ -1,0 +1,65 @@
+{
+  "testUsers": {
+    "free": [
+      {
+        "email": "test+free1@ontopix.ai",
+        "password": "TestPassword123!",
+        "plan": "free",
+        "hasPaymentMethod": false,
+        "hasInvoices": false
+      },
+      {
+        "email": "test+free2@ontopix.ai",
+        "password": "TestPassword123!",
+        "plan": "free",
+        "hasPaymentMethod": false,
+        "hasInvoices": false
+      }
+    ],
+    "pro": [
+      {
+        "email": "test+pro1@ontopix.ai",
+        "password": "TestPassword123!",
+        "plan": "pro",
+        "hasPaymentMethod": true,
+        "paymentMethodLast4": "4242",
+        "hasInvoices": true,
+        "subscriptionStatus": "active"
+      },
+      {
+        "email": "test+pro2@ontopix.ai",
+        "password": "TestPassword123!",
+        "plan": "pro",
+        "hasPaymentMethod": true,
+        "paymentMethodLast4": "4242",
+        "hasInvoices": true,
+        "subscriptionStatus": "active"
+      }
+    ],
+    "enterprise": [
+      {
+        "email": "test+enterprise1@ontopix.ai",
+        "password": "TestPassword123!",
+        "plan": "enterprise",
+        "hasPaymentMethod": true,
+        "paymentMethodLast4": "4242",
+        "hasInvoices": true,
+        "subscriptionStatus": "active"
+      },
+      {
+        "email": "test+enterprise2@ontopix.ai",
+        "password": "TestPassword123!",
+        "plan": "enterprise",
+        "hasPaymentMethod": true,
+        "paymentMethodLast4": "4242",
+        "hasInvoices": true,
+        "subscriptionStatus": "active"
+      }
+    ]
+  },
+  "metadata": {
+    "source": "Copied from backend seed data (apps/backend/amplify/seed/data/users.json)",
+    "lastUpdated": "2025-01-17",
+    "note": "These users must exist in the database. Run: pnpm backend:sandbox:seed:users. When username is an email, Cognito automatically sets the email attribute, so it should NOT be included in the attributes object."
+  }
+}

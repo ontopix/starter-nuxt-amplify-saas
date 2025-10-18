@@ -170,6 +170,9 @@ test.describe('New User Journey', () => {
   })
 
   test('5. Add Payment Method (through Stripe Portal)', async () => {
+    // Increase timeout for this test since it needs to wait for Stripe portal
+    test.setTimeout(60000) // 60 seconds
+
     try {
       // Find and click "Add Payment Method" button (not "Change Plan")
       const addPaymentSelectors = Selectors.get('billing', 'addPaymentButton')

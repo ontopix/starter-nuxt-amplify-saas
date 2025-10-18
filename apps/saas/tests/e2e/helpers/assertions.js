@@ -529,14 +529,36 @@ export class AssertionHelpers {
     let invoiceFound = false
     for (const indicator of invoiceIndicators) {
       try {
+        // Skip the generic $ selector as it catches plan prices
+        if (indicator === "text='$'") {
+          continue
+        }
+
         const element = this.page.locator(indicator)
         if (await element.isVisible({ timeout: 2000 })) {
-          // Additional check: make sure it's not just the word "Invoice" in a header
+          // Additional check: make sure it's not just a price display
           const text = await element.textContent()
-          if (text && (text.includes('#') || text.includes('$') || text.includes('Paid'))) {
-            invoiceFound = true
-            console.log(`⚠️  Found invoice indicator: ${indicator} with text: "${text}"`)
-            break
+
+          // More specific checks for actual invoices:
+          // - Must have "Invoice #" or similar
+          // - Must have "Paid" or "Pending" status
+          // - Exclude plan prices (e.g., "$0/month", "$29/month")
+          if (text) {
+            const isPlanPrice = text.match(/\$\d+(?:\.\d{2})?\s*\/\s*(?:month|year)/i)
+
+            if (isPlanPrice) {
+              console.log(`ℹ️  Skipping plan price: "${text}"`)
+              continue
+            }
+
+            const hasInvoiceNumber = text.match(/invoice\s*#/i)
+            const hasStatus = text.match(/\b(paid|pending|due|overdue)\b/i)
+
+            if (hasInvoiceNumber || hasStatus) {
+              invoiceFound = true
+              console.log(`⚠️  Found invoice indicator: ${indicator} with text: "${text}"`)
+              break
+            }
           }
         }
       } catch (e) {

@@ -1,295 +1,509 @@
-# E2E Testing Documentation
+# E2E Testing Architecture
 
-This directory contains End-to-End (E2E) tests for the SaaS application using Playwright.
+Comprehensive End-to-End testing suite for the SaaS application using Playwright.
 
-## Structure
+## Architecture Overview
+
+The E2E test suite follows a **layer-based architecture** that mirrors the application's structure:
 
 ```
 tests/e2e/
-├── .cache/             # Test cache directory (gitignored)
-│   └── newly-created-user.json  # Cached user data
+├── fixtures/           # Test data (copied from backend seed)
+│   ├── users.json           # Test user accounts
+│   └── stripe-cards.json    # Stripe test card data
 ├── config/             # Test configuration
-│   └── selectors.json      # Centralized UI selectors
-├── fixtures/           # Test data files
-│   └── stripe-cards.json     # Test credit card data for Stripe testing
+│   └── selectors.json       # Centralized UI selectors
 ├── helpers/            # Reusable test utilities
-│   ├── assertions.js         # Custom assertion helpers (cleaned)
-│   ├── auth.js              # Authentication helpers (cleaned)
-│   ├── data-management.js   # Data management utilities (simplified)
-│   └── stripe.js            # Stripe testing utilities (cleaned)
-├── specs/              # Test specifications (layer-based)
-│   ├── auth.spec.js         # Authentication layer tests (active)
-│   └── billing.spec.js      # Billing layer tests (partial - some skipped)
-└── utils/              # Utility functions
-    ├── cache.js             # Test cache system
-    └── selectors.js         # Selector helper utilities
+│   ├── auth.js             # Authentication operations
+│   ├── assertions.js       # Custom assertions
+│   └── stripe.js           # Stripe interactions
+├── utils/              # Utility functions
+│   ├── cache.js            # Test data caching
+│   └── selectors.js        # Selector helpers
+└── specs/              # Test specifications
+    ├── flows/              # Integration tests (multi-layer)
+    │   └── new-user-journey.spec.js
+    └── layers/             # Atomic tests (single-layer)
+        ├── auth/
+        │   └── auth.spec.js
+        └── billing/
+            ├── new-user.spec.js
+            └── plans.spec.js
 ```
 
 ## Test Organization
 
-Tests are organized by **layer concepts** that map to the application architecture, ensuring each layer has a single entry point file:
+### Two Types of Tests
 
-### Auth Layer Tests (`specs/auth.spec.js`)
-- **Signup with email verification** - Creates new users and verifies email
-- **Login with valid credentials** - Tests authentication flow
-- **Login with invalid credentials** - Tests error handling
+#### 1. **Flow Tests** (`specs/flows/`)
+Integration tests that combine functionality from multiple layers to test complete user journeys.
 
-### Billing Layer Tests (`specs/billing.spec.js`)
-- **New user free plan verification** - Verifies free plan state with no payment methods
-- **Payment method handling** - Credit card processing (pending implementation)
-- **Plan changes and upgrades** - Subscription modifications (pending implementation)
-- **Checkout flows** - Stripe Checkout integration (pending implementation)
-- **Customer portal integration** - Self-service billing portal (pending implementation)
+**Characteristics:**
+- Test end-to-end user scenarios
+- May involve multiple layers (auth + billing + others)
+- Focus on real-world use cases
+- Longer execution time
 
-**Note**: Some billing tests are currently skipped pending implementation of StripeHelpers methods.
+**Example:**
+- `new-user-journey.spec.js` - Complete flow from signup to subscription
 
-## Data Management System
+#### 2. **Layer Tests** (`specs/layers/`)
+Atomic tests organized by application layer, focusing on isolated functionality.
 
-### Multi-Mode Seeding
-The application uses a **multi-mode seeding system** that separates data by environment:
+**Characteristics:**
+- Test single layer functionality
+- Independent and focused
+- Faster execution
+- Easy to maintain
 
-- **Test Mode** (`--test`): Optimized data for E2E testing
-- **Sandbox Mode** (`--sandbox`): Development data (default)
-- **Production Mode** (`--production`): Production-ready data
-
-### Data Seeding
-Before running E2E tests, seed the database with test data:
-
-```bash
-# Seed test data (recommended before E2E tests)
-npm run test:e2e:seed
-
-# Or seed specific components
-npm run test:e2e:seed:users
-npm run test:e2e:seed:plans
+**Organization:**
+```
+specs/layers/
+├── auth/                    # Authentication layer tests
+│   ├── signup.spec.js      # User registration & email verification
+│   └── signin.spec.js      # User login & authentication
+└── billing/                 # Billing layer tests
+    ├── new-user.spec.js    # New user billing state
+    └── plans.spec.js       # Plan verification tests
 ```
 
-This populates the database with:
-- **Test users**: `test+free1@ontopix.ai`, `test+pro1@ontopix.ai`, etc.
-- **Billing plans**: Free ($0), Pro ($29), Enterprise ($99)
-- **Stripe products**: Properly configured for testing
+## Fixtures System
 
-## Fixtures
+Fixtures provide consistent test data across all tests. **All test data is copied from backend seed data** and lives in `fixtures/`.
 
-### `stripe-cards.json`
-Simplified test credit card data for Stripe testing:
-- **Success cards**: Visa, Mastercard, Amex, Visa Debit
-- **Test data**: Default expiry, CVC, and cardholder name
-- **No selectors**: Removed UI selector dependencies
+### Why Copy Instead of Reference?
 
-### `selectors.json`
-Centralized UI selector configuration:
-- **Auth selectors**: Login, signup, verification elements
-- **Billing selectors**: Plan management, payment methods
-- **Stripe selectors**: Checkout form elements
-- **Text patterns**: Flexible error and success message detection
+1. **Independence** - Tests don't depend on backend file structure
+2. **Stability** - Changes to seed data don't break tests
+3. **Clarity** - Test data is explicitly defined for testing
+4. **Flexibility** - Can modify test data without affecting seed
 
-### Cache System (`utils/cache.js`)
-Persistent test data caching:
-- **User caching**: Reuse created users across tests
-- **Session persistence**: Maintains state between test runs
-- **Performance**: Avoids recreating users for each test
+### Available Fixtures
+
+#### `fixtures/users.json`
+Test user accounts organized by plan type:
+
+```json
+{
+  "testUsers": {
+    "free": [
+      {
+        "email": "test+free1@ontopix.ai",
+        "password": "TestPassword123!",
+        "plan": "free",
+        "hasPaymentMethod": false
+      }
+    ],
+    "pro": [ /* ... */ ],
+    "enterprise": [ /* ... */ ]
+  }
+}
+```
+
+**Usage:**
+```javascript
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+// Load fixtures in test.beforeAll()
+test.beforeAll(() => {
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = dirname(__filename)
+  const fixturesPath = join(__dirname, '../../../fixtures/users.json')
+  const fixturesData = JSON.parse(readFileSync(fixturesPath, 'utf8'))
+  testUsers = fixturesData.testUsers
+})
+
+// Use in tests
+test('should login with free user', async () => {
+  const freeUser = testUsers.free[0]
+  await auth.login(freeUser)
+  // ... assertions
+})
+```
+
+#### `fixtures/stripe-cards.json`
+Stripe test credit cards:
+
+```json
+{
+  "successCards": {
+    "visa": {
+      "number": "4242424242424242",
+      "brand": "visa",
+      "description": "Basic successful Visa payment"
+    }
+  },
+  "testData": {
+    "defaultExpiry": "12/28",
+    "defaultCvc": "123"
+  }
+}
+```
 
 ## Helpers
 
-### Authentication Helper (`helpers/auth.js`)
-Features **flexible selector system** for robust element finding:
-- **Multiple selector fallbacks**: name, id, placeholder, data-testid
-- **Automatic retry logic**: Handles dynamic UI loading
-- **User management**: Creates and manages test users
-- **Email verification**: Handles verification codes
+Reusable utilities for common test operations.
 
-### Stripe Helper (`helpers/stripe.js`)
-- **Stripe integration**: Payment processing and webhooks
-- **Checkout flows**: Form filling and submission
-- **Customer portal**: Self-service billing interface
-- **3D Secure**: Authentication handling
-
-### Data Management (`helpers/data-management.js`)
-- **Simplified**: Only essential methods remain after cleanup
-- **Stripe cards**: Load test card data from `stripe-cards.json`
-- **Seeded users**: Access backend-seeded test users (hardcoded)
-- **Fixture loading**: JSON data management utilities
-- **Legacy removed**: All methods using deleted fixtures removed
-
-## Running Tests
-
-### Basic Commands
-```bash
-# Run all E2E tests
-npx playwright test tests/e2e/specs/
-
-# Run with Playwright UI
-npx playwright test tests/e2e/specs/ --ui
-
-# Run in headed mode (visible browser)
-npx playwright test tests/e2e/specs/ --headed
-
-# Debug mode (step through tests)
-npx playwright test tests/e2e/specs/ --debug
-```
-
-### Layer-Specific Tests
-```bash
-# Run authentication tests only
-npx playwright test tests/e2e/specs/auth.spec.js
-
-# Run billing tests only
-npx playwright test tests/e2e/specs/billing.spec.js
-
-# Run specific test by name
-npx playwright test tests/e2e/specs/ -g "login with valid credentials"
-```
-
-### Full Test Cycle
-```bash
-# Seed database + run all tests
-pnpm backend:sandbox:seed
-npx playwright test tests/e2e/specs/
-
-# Seed + run tests in headed mode
-pnpm backend:sandbox:seed
-npx playwright test tests/e2e/specs/ --headed
-```
-
-### Data Management
-```bash
-# Seed all test data (from backend)
-pnpm backend:sandbox:seed
-
-# Seed specific data types
-pnpm backend:sandbox:seed:users
-pnpm backend:sandbox:seed:plans
-
-# Clean test cache
-rm -rf tests/e2e/.cache/
-```
-
-## Test Architecture
-
-### Fixture-Based Testing
-1. **Fixtures** define consistent test data and scenarios
-2. **Helpers** provide reusable utilities for common operations
-3. **Specs** orchestrate test flows using helpers and fixtures
-
-### Benefits
-- **Consistent data** across test runs
-- **Easy maintenance** through centralized fixtures
-- **Reusable components** via helper functions
-- **Clear separation** of concerns
-
-### Centralized Selector System
-The test suite uses a **centralized selector system** with `SelectorHelper`:
+### `AuthHelpers` (`helpers/auth.js`)
+Authentication and navigation operations:
 
 ```javascript
-// Centralized selectors in config/selectors.json
+const auth = new AuthHelpers(page)
+
+await auth.login(user)              // Login with credentials
+await auth.signup(user)             // Create new account
+await auth.verifyEmail(email)       // Verify email
+await auth.logout()                 // Logout
+await auth.goto('/path')            // Navigate with base URL
+const isLoggedIn = await auth.isLoggedIn()  // Check auth state
+```
+
+### `AssertionHelpers` (`helpers/assertions.js`)
+Custom assertions for common verification patterns:
+
+```javascript
+const assertions = new AssertionHelpers(page)
+
+// Billing assertions
+await assertions.assertCurrentPlan('free')
+await assertions.assertPaymentMethodExists('4242')
+await assertions.assertNoPaymentMethods()
+await assertions.assertNoInvoices()
+
+// Subscription assertions
+await assertions.assertSubscriptionActive('pro')
+await assertions.waitForSubscriptionSync('pro')
+```
+
+### `StripeHelpers` (`helpers/stripe.js`)
+Stripe integration utilities:
+
+```javascript
+const stripe = new StripeHelpers(page)
+
+await stripe.addPaymentMethodInPortal(card)
+await stripe.changePlanInPortal('pro')
+await stripe.returnToApp()
+```
+
+## Configuration
+
+### Centralized Selectors (`config/selectors.json`)
+
+All UI selectors are centralized for easy maintenance:
+
+```json
 {
   "auth": {
     "emailInput": ["input[name='email']", "input[type='email']"],
-    "loginError": {
-      "textPatterns": ["Incorrect username or password"],
-      "selectors": ["[role='alert']", ".error-message"]
-    }
+    "loginButton": ["button:has-text('Sign in')", "[type='submit']"]
+  },
+  "billing": {
+    "currentPlan": ["[data-testid='current-plan']", "h2:has-text('Plan')"],
+    "manageSubscriptionButton": ["button:has-text('Change Plan')"]
   }
 }
-
-// Usage in tests
-const element = await SelectorHelper.findElement(page, 'auth', 'emailInput')
 ```
 
-This provides:
-- **Single source of truth** for all selectors
-- **Flexible text pattern matching** for error messages
-- **Easy maintenance** when UI changes
-- **Consistent usage** across all tests
+**Usage:**
+```javascript
+const element = await Selectors.findElement(page, 'auth', 'emailInput')
+```
+
+**Benefits:**
+- Single source of truth for selectors
+- Easy updates when UI changes
+- Supports multiple fallback selectors
+- Consistent across all tests
+
+## Running Tests
+
+### Prerequisites
+
+Ensure test data is seeded in the database:
+
+```bash
+# Seed Stripe plans
+pnpm backend:sandbox:seed:plans
+
+# Seed test users
+pnpm backend:sandbox:seed:users
+```
+
+### Run Commands
+
+```bash
+# All E2E tests
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e
+
+# Specific layer tests
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:auth              # All auth tests
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:auth:signup       # Signup tests only
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:auth:signin       # Signin tests only
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:billing           # All billing tests
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:billing:plans     # Plan tests only
+
+# Flow tests
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:flows
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:flow:new-user-journey
+
+# Development modes
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:ui      # UI mode
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:headed  # Visible browser
+pnpm --filter @starter-nuxt-amplify-saas/saas test:e2e:debug   # Step-through debug
+```
+
+### Run Specific Tests
+
+```bash
+# By file path
+npx playwright test tests/e2e/specs/layers/auth/auth.spec.js
+
+# By test name
+npx playwright test -g "Free plan user"
+
+# Single test with UI
+npx playwright test tests/e2e/specs/layers/billing/plans.spec.js --ui
+```
+
+## Test Development
+
+### Adding New Layer Tests
+
+1. **Create test file** in appropriate layer folder:
+   ```
+   specs/layers/[layer-name]/[test-name].spec.js
+   ```
+
+2. **Use fixtures** for test data:
+   ```javascript
+   const users = require('../../../fixtures/users.json')
+   const testUser = users.testUsers.free[0]
+   ```
+
+3. **Use helpers** for common operations:
+   ```javascript
+   const auth = new AuthHelpers(page)
+   const assertions = new AssertionHelpers(page)
+   ```
+
+4. **Follow naming conventions**:
+   - File: `[feature].spec.js` (short, descriptive)
+   - Test: `describe('Layer Name - Feature')`
+   - Individual: `test('specific behavior verification')`
+
+### Adding New Flow Tests
+
+1. **Create flow file**:
+   ```
+   specs/flows/[flow-name].spec.js
+   ```
+
+2. **Use serial execution** for dependent steps:
+   ```javascript
+   test.describe.serial('User Journey', () => {
+     // Steps execute in order
+   })
+   ```
+
+3. **Share state** between tests:
+```javascript
+   let sharedState = {}
+
+   test('Step 1', async () => {
+     sharedState.userId = await createUser()
+   })
+
+   test('Step 2', async () => {
+     await upgradeUser(sharedState.userId)
+   })
+   ```
+
+### Updating Fixtures
+
+When backend seed data changes:
+
+1. **Update fixture file** (e.g., `fixtures/users.json`)
+2. **Add metadata** comment documenting the change
+3. **Run tests** to verify compatibility
+4. **Update tests** if needed
+
+**Example:**
+```json
+{
+  "metadata": {
+    "source": "apps/backend/amplify/seed/data/users.json",
+    "lastUpdated": "2025-01-17",
+    "changes": "Added starter plan users"
+  }
+}
+```
 
 ## Best Practices
 
-### Test Organization
-1. **One entry point per layer** - Keep Playwright UI organized
-2. **Use helpers** for common operations instead of duplicating code
-3. **Leverage fixtures** for consistent test data
-4. **Group related tests** in describe blocks by feature
+### Test Structure
+
+✅ **DO:**
+- One layer per folder (`specs/layers/auth/`, `specs/layers/billing/`)
+- Short, descriptive file names (`auth.spec.js`, `plans.spec.js`)
+- Use fixtures for all test data
+- Use helpers for common operations
+- Use centralized selectors
+
+❌ **DON'T:**
+- Reference backend seed files directly
+- Hardcode selectors in tests
+- Duplicate helper logic
+- Mix layer concerns in atomic tests
 
 ### Data Management
-1. **Seed before testing** - Always populate database with test data
-2. **Use test-specific data** - Separate from development data
-3. **Clean up after runs** - Maintain clean test state
-4. **Cache verified users** - Avoid recreating successful accounts
+
+✅ **DO:**
+- Copy test data to `fixtures/`
+- Document fixture sources
+- Keep fixtures in sync with seed data
+- Use descriptive fixture structure
+
+❌ **DON'T:**
+- Import from `../../backend/seed/`
+- Hardcode user credentials
+- Generate random test data
+- Share fixtures between unrelated tests
 
 ### Selector Strategy
-1. **Use SelectorHelper** - Always use centralized selectors instead of hardcoded ones
-2. **Prefer semantic selectors** - name, id, data-testid over CSS
-3. **Use textPatterns for messages** - Flexible error and success message detection
-4. **Add wait conditions** - Handle dynamic content loading
-5. **Test error scenarios** - Verify proper error handling
+
+✅ **DO:**
+- Use `Selectors.get()` from config
+- Provide multiple fallback selectors
+- Use semantic attributes (data-testid, name)
+- Document selector purposes
+
+❌ **DON'T:**
+- Hardcode CSS selectors
+- Rely on brittle XPath
+- Use index-based selection
+- Skip timeout handling
 
 ## Troubleshooting
 
 ### Common Issues
-- **Selector timeouts**: Check if UI elements have changed in `config/selectors.json`
-- **Authentication failures**: Verify test users exist in database
-- **Payment failures**: Ensure Stripe test keys are configured
-- **Seed failures**: Check AWS permissions for sandbox access
-- **Navigation errors**: Use `auth.goto()` instead of `page.goto()` for relative URLs
-- **Missing methods**: Some StripeHelpers methods are pending implementation
 
-### Debug Steps
-1. Run tests in **headed mode** to see browser actions
-2. Use **debug mode** to step through test execution
-3. Check **test data seeding** completed successfully
-4. Verify **application is running** on expected port
-
-## Multi-Mode Seeding Integration
-
-### Backend Integration
-The E2E tests integrate with the backend's multi-mode seeding system:
-
+**Test fails with "User not found"**
 ```bash
-# Backend seeding (from apps/backend)
-npm run sandbox:seed:test          # Seed test environment
-npm run sandbox:seed:test:users    # Seed only test users
-npm run sandbox:seed:test:plans    # Seed only test plans
-
-# Frontend integration (from apps/saas)
-npm run test:e2e:seed             # Calls backend test seeding
-npm run test:e2e:full             # Seed + run tests
+# Solution: Seed test users
+pnpm backend:sandbox:seed:users
 ```
 
-### Data Directories
-The backend maintains separate data directories:
-- `apps/backend/amplify/seed/data/test/` - E2E test data
-- `apps/backend/amplify/seed/data/sandbox/` - Development data
-- `apps/backend/amplify/seed/data/production/` - Production data
+**Selector timeout errors**
+```bash
+# Solution: Check config/selectors.json
+# Add new selector or update existing ones
+```
 
-### Environment Modes
-- **SEED_MODE=test**: Optimized for E2E testing scenarios
-- **SEED_MODE=sandbox**: Default development environment
-- **SEED_MODE=production**: Production deployment data
+**Payment method not showing**
+```bash
+# Solution: Verify Stripe configuration
+# Check STRIPE_SECRET_KEY in sandbox secrets
+pnpm backend:sandbox:seed:users  # Re-seed with Stripe data
+```
 
-This ensures complete separation between test and development data, preventing test contamination and enabling reliable E2E testing.
+**Navigation errors**
+```javascript
+// Wrong:
+await page.goto('/settings/billing')
 
-## Current Status
+// Correct:
+await auth.goto('/settings/billing')
+```
 
-### ✅ Completed Cleanup
-The E2E test suite has been cleaned up and optimized:
+### Debug Workflow
 
-- **Legacy code removed**: All unused methods and fixtures deleted
-- **Centralized selectors**: All tests use `SelectorHelper` for consistent element finding
-- **Navigation fixed**: All `page.goto()` calls replaced with `auth.goto()` for proper URL handling
-- **Cache system**: User caching implemented for test performance
-- **Simplified architecture**: Only essential, actively-used code remains
+1. **Run in headed mode** to see browser:
+   ```bash
+   pnpm test:e2e:headed -- [test-file]
+   ```
 
-### 🚧 Pending Implementation
-Some billing tests are currently skipped pending implementation of StripeHelpers methods:
+2. **Use UI mode** for interactive debugging:
+   ```bash
+   pnpm test:e2e:ui -- [test-file]
+   ```
 
-- `fillPaymentMethodForm()` - Fill payment method forms
-- `savePaymentMethod()` - Save payment methods
-- `selectPlan()` - Select billing plans
-- `completeCheckout()` - Complete Stripe checkout
+3. **Add console logs** in helpers:
+   ```javascript
+   console.log('[AuthHelper] Logging in:', user.email)
+   ```
 
-### 📁 File Status
-- **Active**: `auth.spec.js`, `billing.spec.js` (partial), `selectors.json`, `stripe-cards.json`
-- **Cleaned**: `data-management.js`, `auth.js`, `stripe.js`, `assertions.js`
-- **Removed**: `billing.js`, `test-cleanup.js`, legacy fixtures
-- **New**: `cache.js`, `selectors.js`, centralized selector system
+4. **Check selector visibility**:
+   ```javascript
+   const element = await Selectors.findElement(page, 'auth', 'emailInput')
+   console.log('Element visible:', await element.isVisible())
+   ```
+
+## Architecture Benefits
+
+### Maintainability
+- **Clear separation** between flows and layers
+- **Centralized configuration** (selectors, fixtures)
+- **Reusable components** (helpers, utils)
+- **Independent tests** that don't affect each other
+
+### Scalability
+- **Easy to add** new layer tests
+- **Simple to update** when UI changes
+- **Flexible fixtures** for different scenarios
+- **Parallel execution** of independent tests
+
+### Developer Experience
+- **Clear organization** - easy to find tests
+- **Consistent patterns** - predictable structure
+- **Good tooling** - Playwright UI, headed mode
+- **Fast feedback** - atomic tests run quickly
+
+## Current Test Coverage
+
+### Auth Layer (`specs/layers/auth/`)
+
+**Signup Tests** (`signup.spec.js`)
+- ✅ Create new user and verify email
+- ✅ Handle signup with existing email
+
+**Signin Tests** (`signin.spec.js`) - Uses `fixtures/users.json`
+- ✅ Login successfully with valid credentials (free user)
+- ✅ Fail login with invalid email
+- ✅ Fail login with wrong password (pro user)
+- ✅ Fail login with empty credentials
+
+### Billing Layer (`specs/layers/billing/`)
+- ✅ New user free plan verification (`new-user.spec.js`)
+- ✅ Free plan user verification (`plans.spec.js`)
+- ✅ Pro plan user verification (`plans.spec.js`)
+- ✅ Enterprise plan user verification (`plans.spec.js`)
+- ✅ Multiple users independent testing (`plans.spec.js`)
+
+### Flow Tests (`specs/flows/`)
+- ✅ New user complete journey (`new-user-journey.spec.js`)
+  - Signup → Login → Billing → Payment → Subscription
+
+## Future Enhancements
+
+Potential additions to the test suite:
+
+### Additional Layer Tests
+- **Auth Layer**: Password reset, MFA, session timeout
+- **Billing Layer**: Plan changes, cancellations, invoice downloads
+- **Profile Layer**: User profile updates, preferences
+- **Teams Layer**: Team management, invitations, roles
+
+### Additional Flow Tests
+- **Upgrade Journey**: Free → Pro → Enterprise
+- **Downgrade Journey**: Enterprise → Pro → Free
+- **Payment Failure Recovery**: Failed payment → Update card → Retry
+- **Team Collaboration**: Create team → Invite members → Assign roles
+
+### Infrastructure
+- **CI/CD Integration**: Automated test runs on PR
+- **Test Reports**: HTML reports with screenshots
+- **Performance Tests**: Load testing, stress testing
+- **Visual Regression**: Screenshot comparison tests

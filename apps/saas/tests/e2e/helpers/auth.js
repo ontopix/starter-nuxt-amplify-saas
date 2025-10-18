@@ -156,7 +156,8 @@ export class AuthHelpers {
     }
   }
 
-  async signup({ email, firstName, lastName, password }) {
+  async signup({ email, firstName, lastName, password }, options = {}) {
+    const { expectError = false } = options
     console.log(`Starting signup for: ${email} (${firstName} ${lastName})`)
 
     await this.goto('/auth/signup')
@@ -199,7 +200,14 @@ export class AuthHelpers {
           const errorElement = this.page.locator(selector)
           if (await errorElement.isVisible({ timeout: 1000 })) {
             const errorText = await errorElement.textContent()
-            console.log(`Found error during signup: ${errorText}`)
+            console.log(`Signup error detected: ${errorText}`)
+
+            // If we expect an error, just return without throwing
+            if (expectError) {
+              console.log('Error was expected, continuing...')
+              return
+            }
+
             throw new Error(`Signup failed with error: ${errorText}`)
           }
         } catch (e) {
@@ -215,7 +223,9 @@ export class AuthHelpers {
 
     } catch (error) {
       console.log(`Error during signup: ${error.message}`)
-      throw error
+      if (!expectError) {
+        throw error
+      }
     }
   }
 
@@ -246,7 +256,8 @@ export class AuthHelpers {
     console.log(`URL after verification: ${finalUrl}`)
   }
 
-  async login({ email, password }) {
+  async login({ email, password }, options = {}) {
+    const { expectError = false } = options
     console.log(`Starting login for: ${email}`)
 
     await this.goto('/auth/login')
@@ -282,6 +293,13 @@ export class AuthHelpers {
           if (await errorElement.isVisible({ timeout: 1000 })) {
             const errorText = await errorElement.textContent()
             console.log(`Login error detected: ${errorText}`)
+
+            // If we expect an error, just return without throwing
+            if (expectError) {
+              console.log('Error was expected, continuing...')
+              return
+            }
+
             throw new Error(`Login failed: ${errorText}. Please check credentials (TEST_USER/TEST_PASS).`)
           }
         } catch (e) {
@@ -294,7 +312,9 @@ export class AuthHelpers {
 
     } catch (error) {
       console.log(`Error during login: ${error.message}`)
-      throw error
+      if (!expectError) {
+        throw error
+      }
     }
   }
 

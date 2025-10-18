@@ -583,6 +583,8 @@ export class StripeHelpers {
       }
 
       // Submit the form - look for portal-specific submit buttons
+      console.log('🔍 Looking for submit button in portal...')
+
       const portalSubmitSelectors = [
         'button:has-text("Add")',
         'button:has-text("Save")',
@@ -594,34 +596,345 @@ export class StripeHelpers {
       let submitButton = null
       for (const selector of portalSubmitSelectors) {
         try {
+          console.log(`Trying selector: ${selector}`)
           const button = this.page.locator(selector).first()
           if (await button.isVisible({ timeout: 3000 })) {
+            const isDisabled = await button.isDisabled().catch(() => false)
+            console.log(`✅ Found button with selector: ${selector}, disabled: ${isDisabled}`)
             submitButton = button
-            console.log(`✅ Found submit button: ${selector}`)
             break
           }
         } catch (e) {
+          console.log(`❌ Selector ${selector} not found`)
           // Continue to next selector
         }
       }
 
       if (!submitButton) {
+        // Log all visible buttons for debugging
+        console.log('🔍 Listing all visible buttons:')
+        const allButtons = await this.page.locator('button').all()
+        for (const btn of allButtons) {
+          try {
+            const text = await btn.textContent()
+            const isVisible = await btn.isVisible()
+            if (isVisible) {
+              console.log(`  - Button text: "${text}"`)
+            }
+          } catch (e) {
+            // Skip
+          }
+        }
         throw new Error('Submit button not found in portal')
       }
 
       // Wait for form validation and button to become enabled
-      await this.page.waitForTimeout(1000)
+      console.log('⏳ Waiting for form validation and button to enable...')
 
-      await submitButton.click()
-      console.log('✅ Submitted payment method form')
+      // First, give Stripe time to validate the form
+      await this.page.waitForTimeout(3000)
+
+      // Now wait for the button to be enabled
+      console.log('🔍 Waiting for button to be enabled...')
+
+      // Poll the button state until it's enabled or timeout
+      const startTime = Date.now()
+      const timeout = 20000 // 20 seconds timeout
+      let buttonEnabled = false
+
+      while (Date.now() - startTime < timeout) {
+        try {
+          const isDisabled = await submitButton.isDisabled()
+          const hasDisabledAttr = await submitButton.getAttribute('disabled')
+          const ariaDisabled = await submitButton.getAttribute('aria-disabled')
+
+          console.log(`Button state check - isDisabled: ${isDisabled}, disabled attr: ${hasDisabledAttr}, aria-disabled: ${ariaDisabled}`)
+
+          if (!isDisabled && hasDisabledAttr === null && ariaDisabled !== 'true') {
+            buttonEnabled = true
+            console.log('✅ Submit button is now enabled!')
+            break
+          }
+
+          console.log('⏳ Button still disabled, waiting 1s...')
+          await this.page.waitForTimeout(1000)
+        } catch (e) {
+          console.log(`⚠️  Error checking button state: ${e.message}`)
+          await this.page.waitForTimeout(1000)
+        }
+      }
+
+      if (!buttonEnabled) {
+        console.error('❌ Button did not enable within timeout period')
+        // Take screenshot for debugging
+        await this.page.screenshot({ path: 'test-results/button-disabled-timeout.png', fullPage: true })
+        throw new Error('Submit button remained disabled after 20s timeout')
+      }
+
+      // Before clicking, check if there are any validation errors visible
+      console.log('🔍 Checking for validation errors before submit...')
+      const preErrorSelectors = [
+        '[role="alert"]',
+        '.error',
+        '[class*="error"]',
+        '[class*="Error"]'
+      ]
+
+      for (const selector of preErrorSelectors) {
+        try {
+          const error = this.page.locator(selector)
+          if (await error.isVisible({ timeout: 500 })) {
+            const errorText = await error.textContent()
+            if (errorText && errorText.trim().length > 0) {
+              console.error(`⚠️  Pre-submit error visible: ${errorText}`)
+            }
+          }
+        } catch (e) {
+          // Continue checking
+        }
+      }
+
+      // 🎨 VISUAL DEBUG: Add red border to the button so we can see what we're clicking
+      console.log('🎨 Adding red border to button for visual debugging...')
+      try {
+        await submitButton.evaluate(btn => {
+          btn.style.border = '5px solid red'
+          btn.style.outline = '5px solid red'
+          btn.style.boxShadow = '0 0 10px 5px red'
+        })
+        console.log('✅ Red border added to button')
+
+        // Take a screenshot with the red border
+        await this.page.screenshot({ path: 'test-results/button-with-red-border.png', fullPage: true })
+        console.log('📸 Screenshot taken: button-with-red-border.png')
+
+        // Wait a bit so it's visible if running headed
+        await this.page.waitForTimeout(1000)
+      } catch (e) {
+        console.log(`⚠️  Could not add red border: ${e.message}`)
+      }
+
+      console.log('🖱️  Attempting to click submit button...')
+      const urlBeforeClick = this.page.url()
+      console.log(`📍 URL before click: ${urlBeforeClick}`)
+
+      // Get button info for debugging
+      const buttonInfo = await submitButton.evaluate(btn => {
+        const rect = btn.getBoundingClientRect()
+        const styles = window.getComputedStyle(btn)
+        return {
+          text: btn.textContent,
+          tagName: btn.tagName,
+          type: btn.type,
+          disabled: btn.disabled,
+          inViewport: rect.top >= 0 && rect.bottom <= window.innerHeight,
+          position: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+          zIndex: styles.zIndex,
+          pointerEvents: styles.pointerEvents,
+          visibility: styles.visibility,
+          display: styles.display
+        }
+      })
+
+      console.log('🔍 Button info:', JSON.stringify(buttonInfo, null, 2))
+
+      // Scroll button into view if needed
+      if (!buttonInfo.inViewport) {
+        console.log('📜 Scrolling button into view...')
+        await submitButton.scrollIntoViewIfNeeded()
+        await this.page.waitForTimeout(500)
+      }
+
+      // Wait 5 seconds before clicking to let everything stabilize
+      console.log('⏳ Waiting 5 seconds before clicking to let page stabilize...')
+      await this.page.waitForTimeout(5000)
+      console.log('✅ 5 second wait complete, proceeding with click')
+
+      // Try multiple click strategies
+      let clickSucceeded = false
+      let clickError = null
+
+      // Strategy 1: Scroll and regular click
+      try {
+        console.log('Strategy 1: Scroll + Regular click')
+        await submitButton.scrollIntoViewIfNeeded()
+        await this.page.waitForTimeout(500)
+        await submitButton.click({ timeout: 5000 })
+        console.log('✅ Regular click executed')
+        clickSucceeded = true
+      } catch (e) {
+        clickError = e.message
+        console.log(`⚠️  Regular click failed: ${e.message}`)
+      }
+
+      // Strategy 2: Force click (ignores overlays)
+      if (!clickSucceeded) {
+        try {
+          console.log('Strategy 2: Force click (ignores overlays)')
+          await submitButton.click({ force: true, timeout: 5000 })
+          console.log('✅ Force click executed')
+          clickSucceeded = true
+        } catch (e) {
+          console.log(`⚠️  Force click failed: ${e.message}`)
+        }
+      }
+
+      // Strategy 3: Dispatch click event directly
+      if (!clickSucceeded) {
+        try {
+          console.log('Strategy 3: Dispatch click event')
+          await submitButton.evaluate(btn => {
+            const event = new MouseEvent('click', {
+              view: window,
+              bubbles: true,
+              cancelable: true
+            })
+            btn.dispatchEvent(event)
+          })
+          console.log('✅ Click event dispatched')
+          clickSucceeded = true
+        } catch (e) {
+          console.log(`⚠️  Dispatch click failed: ${e.message}`)
+        }
+      }
+
+      // Strategy 4: Focus and press Enter
+      if (!clickSucceeded) {
+        try {
+          console.log('Strategy 4: Focus + Enter key')
+          await submitButton.focus()
+          await this.page.waitForTimeout(500)
+          await submitButton.press('Enter')
+          console.log('✅ Enter key pressed')
+          clickSucceeded = true
+        } catch (e) {
+          console.log(`⚠️  Enter key failed: ${e.message}`)
+        }
+      }
+
+      // Strategy 5: Submit the form directly
+      if (!clickSucceeded) {
+        try {
+          console.log('Strategy 5: Submit form directly')
+          await submitButton.evaluate(btn => {
+            const form = btn.closest('form')
+            if (form) {
+              form.submit()
+            } else {
+              btn.click()
+            }
+          })
+          console.log('✅ Form submitted directly')
+          clickSucceeded = true
+        } catch (e) {
+          console.log(`⚠️  Form submit failed: ${e.message}`)
+        }
+      }
+
+      if (!clickSucceeded) {
+        await this.page.screenshot({ path: 'test-results/click-failed.png', fullPage: true })
+        throw new Error(`All click strategies failed. Last error: ${clickError}`)
+      }
+
+      // Wait for either navigation or error
+      console.log('⏳ Waiting for form submission...')
+      await this.page.waitForTimeout(5000)
+
+      const urlAfterClick = this.page.url()
+      console.log(`📍 URL after click: ${urlAfterClick}`)
+
+      // Check for errors on the page after submission
+      console.log('🔍 Checking for errors after submission...')
+      const errorSelectors = [
+        '[role="alert"]',
+        '.error',
+        '[class*="error"]',
+        '[class*="Error"]',
+        'text=/error/i',
+        'text=/failed/i',
+        'text=/invalid/i',
+        'text=/incorrect/i'
+      ]
+
+      let errorFound = false
+      let errorMessage = ''
+      for (const selector of errorSelectors) {
+        try {
+          const error = this.page.locator(selector)
+          if (await error.isVisible({ timeout: 1000 })) {
+            const errorText = await error.textContent()
+            if (errorText && errorText.trim().length > 0) {
+              console.error(`❌ Error found on page: ${errorText}`)
+              errorMessage = errorText
+              errorFound = true
+              break
+            }
+          }
+        } catch (e) {
+          // Continue checking
+        }
+      }
+
+      if (errorFound) {
+        await this.page.screenshot({ path: 'test-results/payment-method-error.png', fullPage: true })
+        throw new Error(`Payment method form submission failed: ${errorMessage}`)
+      }
+
+      // Check if URL changed (successful submission)
+      if (urlAfterClick !== urlBeforeClick) {
+        console.log('✅ URL changed after click - form likely submitted')
+      } else {
+        console.log('⚠️  URL did not change after click - checking page state...')
+      }
 
       // Wait for navigation to confirmation page or success
       try {
         await this.page.waitForURL('**/flow-confirmation**', { timeout: 10000 })
         console.log('✅ Payment method added - reached confirmation page')
+        return true
       } catch (e) {
-        // Alternative: check if we're back to portal overview
-        console.log('ℹ️  Did not reach confirmation page, checking current state...')
+        console.log('ℹ️  Did not reach confirmation page within 10s')
+      }
+
+      // If no confirmation page, verify we're back to portal overview with the card
+      const urlAfterWait = this.page.url()
+      if (urlAfterWait.includes('billing.stripe.com')) {
+        console.log('🔍 Verifying payment method was added in portal...')
+
+        // Look for card ending in last 4 digits
+        const cardNumber = cardData.number || cardData.card?.number || '4242424242424242'
+        const lastFour = cardNumber.slice(-4)
+
+        const cardSelectors = [
+          `text="•••• ${lastFour}"`,
+          `text="****${lastFour}"`,
+          `text="${lastFour}"`,
+          `text=/.*${lastFour}.*/i`
+        ]
+
+        let cardFound = false
+        for (const selector of cardSelectors) {
+          try {
+            const element = this.page.locator(selector)
+            if (await element.isVisible({ timeout: 3000 })) {
+              console.log(`✅ Found card in portal: ${selector}`)
+              cardFound = true
+              break
+            }
+          } catch (e) {
+            // Continue checking
+          }
+        }
+
+        if (cardFound) {
+          console.log('✅ Payment method verified in portal')
+          return true
+        } else {
+          console.error('❌ Payment method not found in portal after submission')
+          console.log('📸 Taking screenshot for debugging...')
+          await this.page.screenshot({ path: 'test-results/payment-method-not-found.png', fullPage: true })
+          throw new Error('Payment method was not added to portal (card not found)')
+        }
       }
 
       console.log('✅ Payment method added successfully in portal')
